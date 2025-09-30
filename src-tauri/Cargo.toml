@@ -1,5 +1,5 @@
 [package]
-name = "my-vue-app"
+name = "c_tools"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -11,7 +11,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "my_vue_app_lib"
+name = "c_tools_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -19,7 +19,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 rand = "0.8.3"
-tauri = { version = "2", features = ["tray-icon"] }
+tauri = { version = "2", features = ["tray-icon", "image-ico"] }
 tauri-plugin-opener = "2"
 walkdir = "2"
 tauri-plugin-fs = "2"
@@ -37,6 +37,7 @@ tauri-plugin-shell = "2"
 sysinfo = "0.29" #系统参数获取
 tauri-plugin-process = "2"
 jwalk = "0.6"
+tauri-plugin-http = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-global-shortcut = "2"

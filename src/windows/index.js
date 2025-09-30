@@ -47,7 +47,6 @@ class Windows {
     const existWin = await this.getWin(args.label)
     if (existWin) {
       console.log('窗口已存在>>', existWin)
-      // ...
     }
     // 创建窗口对象
     const win = new WebviewWindow(args.label, args)
@@ -65,13 +64,13 @@ class Windows {
         console.log('is-maximized')
         await win.maximize()
       }
-      router.push({ 'path': args.url })
       win.show()
     })
 
     win.once('tauri://error', async (error) => {
       console.log('window create error!', error)
     })
+    return win
   }
 
   // 获取窗口

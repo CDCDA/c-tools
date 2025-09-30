@@ -169,6 +169,7 @@ onUnmounted(() => {
 }
 
 .clipboard-history {
+  //background-color: #f5f5f5;
   background-color: #f5f5f5;
   border-radius: 8px;
   height: 100%;

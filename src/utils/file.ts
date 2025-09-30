@@ -1,15 +1,4 @@
-import {
-  mkdir,
-  exists,
-  readDir,
-  readTextFile,
-  remove,
-  rename,
-  writeTextFile,
-  type FileEntry,
-  type FsOptions,
-  type ReadDirOptions,
-} from "@tauri-apps/plugin-fs";
+import { mkdir, exists, readDir, readTextFile, remove, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { BaseDirectory } from "@tauri-apps/api/path";
 
 import {

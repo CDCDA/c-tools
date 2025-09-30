@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useCodeMirror } from "./useCodeMirror"; // 确保路径正确
 import { format } from "sql-formatter";
 
@@ -79,6 +79,12 @@ defineExpose({
   .cm-foldGutter {
     background: white !important;
   }
+  .cm-editor.cm-focused.cm-selectionBackground {
+    background-color: #0b66b533 !important; /* 一个漂亮的半透明蓝色 */
+  }
+  // .cm-activeLine {
+  //   background: yellow !important;
+  // }
 }
 // .cm-foldGutter .cm-gutterElement {
 //   margin-top: 0px !important;

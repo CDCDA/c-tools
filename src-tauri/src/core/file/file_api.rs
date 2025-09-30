@@ -202,8 +202,7 @@ pub fn list_directory_recursive_jwalk(
 
     for entry in entries {
         let depth = entry.depth(); // 0 是 root_path 本身，1 是第一级子项
-
-        // 创建新节点
+                                   // 创建新节点
         let node = FileNode::new(&entry);
 
         // depth 从 1 开始，所以我们要映射到从 0 开始的索引
@@ -214,7 +213,7 @@ pub fn list_directory_recursive_jwalk(
         // 1. 回溯：如果当前深度小于索引路径的长度，说明我们已经完成了子树的遍历
         // 需要回退到正确的父节点。
         if relative_depth < node_path_indices.len() {
-            node_path_indices.truncate(depth);
+            node_path_indices.truncate(relative_depth);
         }
 
         // 2. 找到父节点并添加子节点
@@ -233,19 +232,16 @@ pub fn list_directory_recursive_jwalk(
         }
         // 3. 深入：如果当前节点是目录，记录下它的位置以便后续的子节点可以找到它
         if !entry.file_type().is_file() {
-            // 找到刚刚被推入的那个节点的位置索引
-            let mut parent_node: &mut FileNode =
-                &mut roots[node_path_indices.get(0).cloned().unwrap_or(0)];
-
-            if node_path_indices.len() > 0 {
+            let new_node_index = if node_path_indices.is_empty() {
+                // 如果是根节点，它的索引在 roots 数组中
+                roots.len() - 1
+            } else {
+                // 如果是子节点，需要再次找到父节点来获取它的索引
+                let mut parent_node = &mut roots[node_path_indices[0]];
                 for &index in &node_path_indices[1..] {
                     parent_node = &mut parent_node.children[index];
                 }
-            }
-            let new_node_index = if parent_node.children.len() > 0 {
                 parent_node.children.len() - 1
-            } else {
-                0
             };
             node_path_indices.push(new_node_index);
         }

@@ -1,10 +1,12 @@
 import FileHasher from "@/views/plugins/fileHasher/index.vue";
 import SqlConverter from "@/views/plugins/sqlConverter/index.vue";
 import JsonEditor from "@/views/plugins/jsonEditor/index.vue";
+// import AiFixedTips from "@/views/plugins/aiFixedTips/index.vue";
 // import Clipboard from "@/views/plugins/clipboard/index.vue";
 import SystemInfo from "@/views/plugins/systemInfo/index.vue";
 import FileOrganizer from "@/views/plugins/fileOrganizer/index.vue";
 import FileTreeJson from "@/views/plugins/fileTreeJson/index.vue";
+import NginxFormater from "@/views/plugins/nginxFormater/index.vue";
 
 export const pluginData = [
   {
@@ -12,6 +14,7 @@ export const pluginData = [
     name: "哈希计算",
     description: "多种算法的哈希计算",
     icon: "pluginIcons-哈希",
+    ico: "icons/哈希.ico",
     shortcut: "Alt+F",
     type: "tool",
     key: "fileHasher",
@@ -20,6 +23,7 @@ export const pluginData = [
   {
     id: 2,
     name: "sql日志转化",
+    ico: "icons/sql.ico",
     description: "用于docker日志的sql转化",
     icon: "pluginIcons-sql",
     shortcut: "= 表达式",
@@ -27,20 +31,33 @@ export const pluginData = [
     key: "sqlConverter",
     component: SqlConverter,
   },
+  {
+    id: 3,
+    name: "nginx格式化",
+    ico: "icons/nginx.ico",
+    description: "nginx格式化",
+    icon: "pluginIcons-nginx",
+    shortcut: "= 表达式",
+    type: "tool",
+    key: "nginxFormater",
+    component: NginxFormater,
+  },
   // {
   //   id: 3,
-  //   name: "翻译-驼峰",
+  //   name: "ai固定提示词",
   //   description: "翻译中文到英文并转化为驼峰格式",
   //   icon: "pluginIcons-翻译",
   //   shortcut: "trans 文本",
   //   type: "tool",
-  //   key: "",
+  //   key: "aiFixedTips",
+  //   component: AiFixedTips,
   // },
   {
     id: 4,
     name: "JSON 格式化",
     description: "格式化和验证 JSON 数据",
     icon: "pluginIcons-json",
+    ico: "icons/json.ico",
     shortcut: "json 内容",
     type: "tool",
     key: "jsonEditor",
@@ -70,6 +87,7 @@ export const pluginData = [
     name: "系统信息",
     description: "系统信息",
     icon: "pluginIcons-系统信息",
+    ico: "icons/系统信息.ico",
     shortcut: "md 内容",
     type: "tool",
     key: "systemInfo",
@@ -80,9 +98,10 @@ export const pluginData = [
     name: "文件树",
     description: "文件树",
     icon: "pluginIcons-文件树",
+    ico: "icons/文件树.ico",
     shortcut: "md 内容",
     type: "tool",
-    key: "systemInfo",
+    key: "fileTreeJson",
     component: FileTreeJson,
   },
   {
@@ -90,19 +109,20 @@ export const pluginData = [
     name: "文件整理",
     description: "文件整理",
     icon: "pluginIcons-文件整理",
+    ico: "icons/文件整理.ico",
     shortcut: "md 内容",
     type: "tool",
-    key: "systemInfo",
+    key: "fileOrganizer",
     component: FileOrganizer,
   },
 ];
 
 export const getPluginByKey = (key: string) => {
-  console.log(key);
+  // console.log(key);
   const plugin = pluginData.find((item) => {
     console.log(item.key, key);
     return item.key === key;
   });
-  console.log(plugin);
+  // console.log(plugin);
   return plugin;
 };

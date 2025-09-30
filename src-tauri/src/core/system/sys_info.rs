@@ -68,9 +68,6 @@ struct ProcessInfo {
     memory_usage: u64, // bytes
 }
 
-
-
-#[tauri::command]
 pub async fn get_dynamic_system_info() -> DynamicSystemInfo {
     let mut sys = System::new_all();
     sys.refresh_all(); // 刷新所有信息

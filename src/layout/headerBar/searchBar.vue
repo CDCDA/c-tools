@@ -10,17 +10,20 @@
       />
     </div>
     <div class="header-bar-right" data-tauri-drag-region>
-      <c-image class="user-avatar" :src="avatarUrl"></c-image>
+      <c-image class="user-avatar" :src="avatarUrl" @click="handleAvatarClick"></c-image>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, Directive, watch } from "vue";
-import { listen } from "@tauri-apps/api/event";
-const emit = defineEmits(["pluginSearch"]);
+// import { listen } from "@tauri-apps/api/event";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const emit = defineEmits(["pluginSearch", "changeMode"]);
 const searchText = ref("");
-const currentWindow = ref() as any;
+// const currentWindow = ref() as any;
+import { setWindowSize } from "@/utils/window.ts";
 const avatarUrl = new URL("@/assets/images/feitu-bridge.jpg", import.meta.url).href;
 onMounted(async () => {
   // currentWindow.value = getCurrentWindow();
@@ -55,6 +58,12 @@ const preventDrag: Directive = {
   },
 };
 const vPreventDrag = preventDrag;
+
+function handleAvatarClick() {
+  emit("changeMode", "setting");
+  router.push({ name: "account" });
+  setWindowSize();
+}
 
 onMounted(() => {
   // listen("tauri://blur", () => {

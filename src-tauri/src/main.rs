@@ -5,12 +5,15 @@ use commands::file_commands::{
     calculate_file_hash, list_directory_recursively, list_directory_recursively_jwalk,
 };
 use commands::system_commands::get_system_info;
+use core::system::tray::create_tray;
+use tauri::menu::MenuBuilder;
 use tauri::Manager;
 
 #[cfg(desktop)]
 // mod tray;
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             let _ = app
                 .get_webview_window("main")
@@ -29,6 +32,26 @@ fn main() {
             list_directory_recursively,
             list_directory_recursively_jwalk
         ])
+        .setup(|app| {
+            let menu = MenuBuilder::new(app)
+                .text("open", "Open")
+                .text("close", "Close")
+                .check("check_item", "Check Item")
+                .separator()
+                .text("disabled_item", "Disabled Item")
+                .text("status", "Status: Processing...")
+                .build()?;
+
+            app.set_menu(menu.clone())?;
+
+            // Update individual menu item text
+            menu.get("status")
+                .unwrap()
+                .as_menuitem_unchecked()
+                .set_text("Status: Ready")?;
+            create_tray(&app.app_handle())?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("运行Tauri应用失败");
 }

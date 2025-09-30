@@ -7,35 +7,32 @@
       </el-input>
     </div>
     <div class="file-option">
-      <el-input class="file-option-item" v-model="excludeFiles" placeholder="请输入排除文件,例如:.git,node_modules" />      
-      <el-input-number class="file-option-item" v-model="maxDepth" placeholder="深度,默认10,0表示不限制" />    
+      <el-input class="file-option-item" v-model="excludeFiles" placeholder="请输入排除文件,例如:.git,node_modules" />
+      <el-input-number class="file-option-item" v-model="maxDepth" placeholder="深度,默认10,0表示不限制" />
     </div>
     <div class="file-json">
-      <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading" />    
+      <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading" />
     </div>
     <div class="tools">
-      <el-button type="text" @click="handleCharTree">字符树</el-button>      
-      <el-button type="text" @click="handleJsonTree">json树</el-button>      
-      <el-button type="text" @click="handleFormat">格式化</el-button>      
-      <div class="time">耗时：{{ (consumingTime / 1000).toFixed(2) }}s</div>      
-      <div class="count">字符数：{{ fileJson.length }}</div>    
+      <el-button type="text" @click="handleCharTree">字符树</el-button>
+      <el-button type="text" @click="handleJsonTree">json树</el-button>
+      <el-button type="text" @click="handleFormat">格式化</el-button>
+      <div class="time">耗时：{{ (consumingTime / 1000).toFixed(2) }}s</div>
+      <div class="count">字符数：{{ fileJson.length }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { BaseDirectory } from "@tauri-apps/api/path";
-
+import { ref, onMounted, nextTick } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import Editor from "@/components/editor/index.vue";
-import { message } from "@tauri-apps/plugin-dialog";
-import { fsApi } from "@/utils/file";
-import { ElMessage } from "element-plus";
+import { fsApi } from "../../../utils/file";
+import { ElNotification } from "element-plus";
 const fileJson = ref("");
 const tempFileJson = ref("");
-const jsonEditorRef = ref(null);
-const targetPath = ref("");
+const jsonEditorRef = ref<any>();
+const targetPath = ref("") as any;
 const loading = ref(false);
 const consumingTime = ref(0);
 const excludeFiles = ref(".git,node_modules,target");
@@ -43,13 +40,13 @@ const maxDepth = ref(10);
 const selectFile = async () => {
   const selectPath = await fsApi.openFileDialog({ directory: true });
   if (!selectPath) {
-    ElMessage.error("未获取到文件夹");
+    ElNotification.error("未获取到文件夹");
     return;
   }
   targetPath.value = selectPath;
   loading.value = true;
   const startTime = new Date().getTime();
-  
+
   const files = await invoke("list_directory_recursively_jwalk", {
     path: selectPath,
     excludeFiles: excludeFiles.value, // 修改为驼峰命名以匹配后端期望
@@ -57,14 +54,12 @@ const selectFile = async () => {
   });
   fileJson.value = JSON.stringify(files);
   nextTick(() => {
-    jsonEditorRef.value.formatContent();
+    jsonEditorRef.value?.formatContent();
     loading.value = false;
     const endTime = new Date().getTime();
     consumingTime.value = endTime - startTime;
   });
 };
-
-const processFile = async (filePath) => {};
 
 const handleCopy = async () => {
   const text = fileJson.value;
@@ -76,7 +71,7 @@ const handleCopy = async () => {
     });
   } catch (err) {
     console.error("复制失败:", err);
-    message("复制失败，请重试", { title: "错误", type: "error" });
+    ElNotification.error("复制失败，请重试");
   }
 };
 
@@ -93,7 +88,7 @@ const handleCharTree = () => {
 const handleJsonTree = () => {
   fileJson.value = tempFileJson.value;
   nextTick(() => {
-    jsonEditorRef.value.formatContent();
+    jsonEditorRef.value?.formatContent();
   });
 };
 

@@ -30,12 +30,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted, Directive, watch } from "vue";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+// import { getCurrentWindow } from "@tauri-apps/api/window";
+// import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { Image } from "@tauri-apps/api/image";
+
 import Windows from "@/windows/index.js";
 import { listen } from "@tauri-apps/api/event";
 import { useRouter } from "vue-router";
 const router = useRouter();
-const currentWindow = getCurrentWindow();
+// const currentWindow = getCurrentWindow();
 import { Setting } from "@element-plus/icons-vue";
 const props = defineProps({
   plugin: {
@@ -73,13 +76,24 @@ const close = () => {
 const handleCommand = async (command: string) => {
   if (command === "window") {
     const newWindow = new Windows();
-    newWindow.createWin({
+    const win = await newWindow.createWin({
       label: props.plugin.key,
       title: props.plugin.name,
       url: `/plugin/${props.plugin.key}`,
+      decorations: false,
     });
+    win.once("tauri://created", async () => {
+      try {
+        const image = await Image.fromPath(props.plugin.ico);
+        // 2. 将加载后的图像对象设置为窗口图标
+        await win.setIcon(image);
+      } catch (error) {
+        console.error("设置图标失败:", error);
+      }
+    });
+
     close();
-    currentWindow.hide();
+    // currentWindow.hide();
   } else if (command === "exit") {
     router.push({ name: "home" });
     // 退出

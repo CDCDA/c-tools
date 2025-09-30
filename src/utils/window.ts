@@ -12,12 +12,13 @@ export const adjustWindowSize = async () => {
   const width: any = rect.width;
   const height: any = rect.height;
   if (!width || !height) return;
+  console.log(width, height);
   // 调整窗口大小
   try {
     await currentWindow.setSize({
       type: "Physical",
       width: parseInt(width),
-      height: parseInt(height),
+      height: parseInt(height) - 15,
     } as any);
   } catch (error) {
     console.error("调整窗口大小失败:", error);

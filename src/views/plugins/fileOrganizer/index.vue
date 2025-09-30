@@ -1,336 +1,328 @@
 <template>
   <div class="page-main">
-    <div ref="dropZone" class="drop-zone" :class="{ 'drag-over': dragOver }">
-      <div class="drop-content" @drop.prevent="handleDrop">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
-          />
-        </svg>
-        <p>拖放文件到此处</p>
-        <p class="small">或</p>
-        <button @click="selectFile">选择文件</button>
+    <div class="file-select">
+      <el-input v-model="targetPath">
+        <template #prepend><span style="cursor: pointer" @click="selectFile">选择文件夹</span></template>
+        <template #append>
+          <span style="cursor: pointer" :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }" @click="handleOrganize"
+            >开始整理</span
+          >
+        </template>
+      </el-input>
+    </div>
+    <!-- <div class="file-option">
+      <el-input class="file-option-item" v-model="excludeFiles" placeholder="请输入排除文件,例如:.git,node_modules" />
+      <el-input-number class="file-option-item" v-model="maxDepth" placeholder="深度,默认10,0表示不限制" />
+    </div> -->
+    <div class="file-tree-container">
+      <div class="tree-original">
+        <div class="title">源文件</div>
+        <el-tree-v2 v-loading="loading" :data="treeData" :props="props" :height="450">
+          <template #default="{ node }">
+            <el-icon class="el-icon--left">
+              <Document v-if="node.data.is_file" />
+              <Folder v-else-if="!node.expanded" />
+              <FolderOpened v-else />
+            </el-icon>
+            <span>{{ node.label }}</span>
+          </template>
+        </el-tree-v2>
+      </div>
+      <div class="tree-new">
+        <div class="title">排序文件</div>
+        <el-tree-v2 v-loading="newLoading" :data="newTreeData" :props="props" :height="450">
+          <template #default="{ node }">
+            <el-icon class="el-icon--left">
+              <Document v-if="!node.data.is_file" />
+              <Folder v-else-if="!node.expanded" />
+              <FolderOpened v-else />
+            </el-icon>
+            <span>{{ node.label }}</span>
+          </template>
+        </el-tree-v2>
       </div>
     </div>
-
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>正在计算哈希值...</p>
-    </div>
-
-    <div v-if="result" class="result-page-main">
-      <h2>文件信息</h2>
-      <div class="file-info">
-        <p><strong>文件名:</strong> {{ result.filename }}</p>
-        <p><strong>文件大小:</strong> {{ formatFileSize(result.size) }}</p>
+    <div class="tools">
+      <div class="left-tools">
+        <div class="ai-model">AI模型：</div>
+        <el-button type="text" @click="handleSelectAiModel"
+          >{{ `${aiModel.modelName}(${aiModel.modelId})` }}
+        </el-button>
       </div>
-
-      <h2>哈希值</h2>
-      <div class="hash-results">
-        <div class="hash-item">
-          <label>MD5:</label>
-          <div class="hash-value">{{ result.md5 }}</div>
-        </div>
-        <div class="hash-item">
-          <label>SHA-1:</label>
-          <div class="hash-value">{{ result.sha1 }}</div>
-        </div>
-        <div class="hash-item">
-          <label>SHA-256:</label>
-          <div class="hash-value">{{ result.sha256 }}</div>
-        </div>
-        <div class="hash-item">
-          <label>BLAKE3:</label>
-          <div class="hash-value">{{ result.blake3 }}</div>
-        </div>
+      <div class="center-tools">{{ tips }}</div>
+      <div class="right-tools">
+        <div class="time">文件耗时：{{ (fileConsumingTime / 1000).toFixed(2) }}s</div>
+        <div class="time">整理耗时：{{ (organizeConsumingTime / 1000).toFixed(2) }}s</div>
       </div>
-
-      <div class="actions">
-        <button @click="copyAll">复制所有哈希值</button>
-        <button @click="reset">校验新文件</button>
-      </div>
+      <!-- <el-button type="text" @click="handleCharTree">字符树</el-button>
+      <el-button type="text" @click="handleJsonTree">json树</el-button>
+      <el-button type="text" @click="handleFormat">格式化</el-button> -->
     </div>
-
-    <div v-if="error" class="error">
-      <p>{{ error }}</p>
-    </div>
+    <model-select-drawer
+      ref="modelSelectDrawerRef"
+      v-model:isOpen="isOpen"
+      :selectedModel="aiModel"
+      @setModel="setModel"
+    />
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
+import { Document, Folder, FolderOpened } from "@element-plus/icons-vue";
 import { invoke } from "@tauri-apps/api/core";
-import { message, open } from "@tauri-apps/plugin-dialog";
-import { listen } from "@tauri-apps/api/event";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-const dropZone = ref(null);
-const dragOver = ref(false);
-const loading = ref(false);
-const result = ref(null);
-const error = ref(null);
+import { fsApi } from "../../../utils/file";
+import { ElNotification } from "element-plus";
+import { sendMessage } from "../../../api/ai";
 
-// 备选方法获取文件路径
-const getFilePath = async (file) => {
+import ModelSelectDrawer from "@/components/ai/modelSelectDrawer.vue";
+const targetPath = ref("");
+const loading = ref(false);
+const newLoading = ref(false);
+const tips = ref("");
+const jsonFormat = [
+  {
+    action: "add",
+    targetPath: "C:\\Users\\cit\\Desktop\\新增分类",
+  },
+  {
+    action: "move",
+    path: "C:\\Users\\cit\\Desktop\\NetAssist",
+    targetPath: "C:\\Users\\cit\\Desktop\\新增分类\\NetAssist",
+  },
+];
+const aiModel = ref({
+  apiKey: "sk-e1HIH7pyEhMjxfV8A1oEK5VOCxKoXORiHwuLikXJo8jZr1MZ",
+  baseUrl: "https://api.moonshot.cn/v1/chat/completions",
+  modelName: "KIMI",
+  stream: false,
+  temperature: 0.6,
+  modelId: "moonshot-v1-8k",
+  message: `整理这个文件树JSON,允许新增分类文件夹,分类文件夹的名称由你决定即可,最后仅返回操作JSON,格式为${JSON.stringify(jsonFormat)},务必保证json完整`,
+});
+const isOpen = ref(false);
+const fileConsumingTime = ref(0);
+const organizeConsumingTime = ref(0);
+
+const excludeFiles = ref(".git,node_modules,target");
+const maxDepth = ref(1);
+const treeData = ref([]) as any;
+const newTreeData = ref([]) as any;
+const props = {
+  value: "path",
+  children: "children",
+  label: "name",
+};
+
+const setModel = (model: any) => {
+  aiModel.value = model;
+};
+
+const handleOrganize = async () => {
+  const startTime = new Date().getTime();
+  newLoading.value = true;
+  tips.value = "AI正在整理中,请耐心等待";
+  const messages = [
+    {
+      role: "system",
+      content: "你是 Kimi，由 Moonshot AI 提供的人工智能助手",
+    },
+    {
+      role: "user",
+      content: `${JSON.stringify(treeData.value)} ${aiModel.value.message}`,
+    },
+  ];
+
+  // 移除外层的 try...catch，让错误在顶层被捕获
+  // 或者像下面这样进行更精细的控制
+
   try {
-    // 使用Tauri API获取文件路径
-    const { path } = await import("@tauri-apps/api/path");
-    return await path.basename(file.name);
-  } catch (e) {
-    console.error("获取文件路径失败:", e);
-    return null;
+    const response = await sendMessage(messages, aiModel.value);
+    if (response.ok) {
+      try {
+        const data = await response.json(); // <-- 我们怀疑这里出问题
+        const answer = data.choices[0].message.content;
+        tips.value = "提取文件操作数组...";
+        // 提取answer中的JSON数组
+        try {
+          const jsonMatch = answer.match(/\[\s*\{.*?\}\s*\]/s);
+          if (jsonMatch && jsonMatch[0]) {
+            const jsonArray = JSON.parse(jsonMatch[0]);
+            console.log("操作数组", jsonArray);
+            if (jsonArray.length > 0) {
+              tips.value = "正在生成新的文件树...";
+              await generateNewTree(jsonArray);
+              const endTime = new Date().getTime();
+              organizeConsumingTime.value = endTime - startTime;
+            }
+            // console.log("提取到的JSON数组:", jsonArray);
+            // ElNotification.success(`成功提取到 ${jsonArray.length} 个操作项`);
+          } else {
+            // 尝试直接解析整个answer，可能AI直接返回了JSON而没有其他内容
+            // const jsonArray = JSON.parse(answer);
+            // console.log("直接解析到的JSON数组:", jsonArray);
+            // ElNotification.success(`成功提取到 ${jsonArray.length} 个操作项`);
+          }
+        } catch (jsonExtractError) {
+          console.error("提取JSON数组失败!", jsonExtractError);
+          ElNotification.error("无法从AI响应中提取有效的JSON数组");
+        } finally {
+          newLoading.value = false;
+        }
+      } catch (jsonError: any) {
+        console.error("解析JSON失败!", jsonError);
+        ElNotification.error(`解析响应失败: ${jsonError.message}`);
+      }
+    } else {
+      const errorData = await response.json().catch(() => response.text()); // 更健壮的错误处理
+      throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData)}`);
+    }
+  } catch (err: any) {
+    // 这个 catch 会捕获网络错误或上面抛出的 API Error
+    console.error("请求或处理过程中发生错误:", err);
+    ElNotification.error(`整理失败: ${err.message}`);
+  }
+};
+
+const generateNewTree = (jsonArray: any) => {
+  try {
+    const tempTree = JSON.parse(JSON.stringify(treeData.value));
+    jsonArray.forEach((item: any) => {
+      let fileName = item.targetPath.split("\\").pop();
+      if (item.action === "add") {
+        tempTree.push({
+          name: fileName,
+          path: item.targetPath,
+          children: [],
+        });
+      }
+      if (item.action === "move") {
+        const index = tempTree.findIndex((node: any) => node.path === item.path);
+        if (index !== -1) {
+          tempTree[index].path = item.targetPath;
+        }
+        if (item.targetPath) {
+          let dir = item.targetPath.replace(`\\${fileName}`, "");
+          const targetIndex = tempTree.findIndex((node: any) => node.path === dir);
+          if (targetIndex !== -1) {
+            tempTree[targetIndex].children.push(tempTree[index]);
+            tempTree.splice(index, 1);
+          }
+        }
+      }
+    });
+    newTreeData.value = tempTree;
+    console.log("新的文件树", newTreeData.value);
+    newLoading.value = false;
+    tips.value = "生成新的文件树成功";
+  } catch (err: any) {
+    console.log("生成新的文件树失败", err);
+    ElNotification.error(`生成新的文件树失败: ${err.message}`);
+    tips.value = "生成新的文件树失败";
   }
 };
 
 const selectFile = async () => {
-  const selected = await open({
-    multiple: false,
-    filters: [
-      {
-        name: "Any File",
-        extensions: ["*"],
-      },
-    ],
+  const selectPath = (await fsApi.openFileDialog({ directory: true })) as any;
+  if (!selectPath) {
+    ElNotification.error("未获取到文件夹");
+    return;
+  }
+  targetPath.value = selectPath;
+  loading.value = true;
+  const startTime = new Date().getTime();
+
+  const files = await invoke("list_directory_recursively_jwalk", {
+    path: selectPath,
+    excludeFiles: excludeFiles.value, // 修改为驼峰命名以匹配后端期望
+    maxDepth: maxDepth.value,
   });
-
-  if (selected) {
-    if (typeof selected === "string") {
-      await processFile(selected);
-    } else if (selected.path) {
-      // 处理FileEntry对象
-      await processFile(selected.path);
-    }
-  }
+  treeData.value = files;
+  console.log("文件树", treeData.value);
+  const endTime = new Date().getTime();
+  fileConsumingTime.value = endTime - startTime;
+  loading.value = false;
 };
 
-const processFile = async (filePath) => {
-  try {
-    error.value = null;
-    loading.value = true;
-    result.value = null;
-
-    console.log("处理文件:", filePath);
-
-    // 调用Rust命令计算哈希值
-    result.value = await invoke("calculate_hashes", { filePath });
-  } catch (err) {
-    console.error("Error:", err);
-    error.value = `计算哈希失败: ${err}`;
-    message(`计算哈希失败: ${err}`, { title: "错误", type: "error" });
-  } finally {
-    loading.value = false;
-  }
-};
-
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return "0 Bytes";
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
-
-const copyAll = async () => {
-  if (!result.value) return;
-
-  const text = `文件名: ${result.value.filename}
-文件大小: ${formatFileSize(result.value.size)}
-MD5: ${result.value.md5}
-SHA-1: ${result.value.sha1}
-SHA-256: ${result.value.sha256}
-BLAKE3: ${result.value.blake3}`;
-
-  try {
-    await navigator.clipboard.writeText(text);
-    message("已复制所有哈希值到剪贴板！", { title: "成功" });
-  } catch (err) {
-    console.error("复制失败:", err);
-    message("复制失败，请重试", { title: "错误", type: "error" });
-  }
-};
-// 添加文件拖拽监听器
-let unlistenFileDrop = ref(null);
-const dropRef = ref("drop");
-const dragenter = ref(false);
-
-onMounted(async () => {
-  // getCurrentWebviewWindow().onDragDropEvent(({ payload }) => {
-  //   if (!payload) message(`文件无效: ${err}`, { title: "错误", type: "error" });
-  //   const { paths } = payload;
-  //   if (paths.length > 0) {
-  //     console.log("SSS", paths[0]);
-  //     processFile(paths[0]);
-  //   }
-  // });
-  unlistenFileDrop.value = await listen("tauri://drag-drop", ({ payload }) => {
-    if (payload?.paths.length > 0) {
-      processFile(payload.paths[0]);
-    }
-  });
-});
-
-const reset = () => {
-  result.value = null;
-  error.value = null;
+const handleSelectAiModel = () => {
+  isOpen.value = true;
 };
 </script>
 
-<style scoped>
-p {
-  text-align: center;
-  margin-bottom: 25px;
-  color: #95a5a6;
+<style lang="scss" scoped>
+.page-main {
+  padding-bottom: 0;
+  height: calc(100% - 20px);
 }
-
-.drop-zone {
-  border: 3px dashed #3498db;
-  height: calc(100% - 40px);
-  border-radius: 10px;
-  padding: 40px 20px;
-  text-align: center;
-  background-color: rgba(52, 152, 219, 0.05);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.drop-zone.drag-over {
-  background-color: rgba(52, 152, 219, 0.15);
-  border-color: #2ecc71;
-}
-
-.drop-content {
+.file-select {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 15px;
+  justify-content: space-between;
+  .file-path {
+    flex: 1;
+    height: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background: white;
+    margin: 0 5px;
+  }
+  //margin-bottom: 10px;
 }
-
-.drop-content svg {
-  fill: #3498db;
-  margin-bottom: 10px;
-}
-
-button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  transition: background-color 0.2s;
-  margin-top: 10px;
-}
-
-button:hover {
-  background-color: #2980b9;
-}
-
-button:first-of-type {
-  background-color: #2ecc71;
-}
-
-button:first-of-type:hover {
-  background-color: #27ae60;
-}
-
-.small {
-  font-size: 0.9rem;
-  color: #95a5a6;
-}
-
-.result-page-main {
-  margin-top: 30px;
-  padding-bottom: 30px;
-}
-
-.file-info {
-  background-color: #ecf0f1;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-}
-
-.file-info p {
-  text-align: left;
-  margin: 10px 0;
-}
-
-.hash-results {
+.file-option {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  // margin-bottom: 10px;
+  .file-option-item:nth-child(1) {
+    margin-right: 10px;
+  }
 }
-
-.hash-item {
+.file-tree-container {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  justify-content: space-between;
 }
-
-label {
-  font-weight: bold;
-  color: #2c3e50;
+.tree-original,
+.tree-new {
+  width: calc(50% - 7px);
+  height: 100%;
 }
-
-.hash-value {
-  font-family: "Courier New", Courier, monospace;
-  background-color: #ecf0f1;
-  padding: 10px 15px;
-  border-radius: 6px;
-  word-break: break-all;
+.title {
   font-size: 14px;
-  line-height: 1.5;
+  padding: 5px 0;
 }
-
-.actions {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 30px;
+.el-tree {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  height: calc(100% - 30px);
+  :deep(.el-vl__wrapper, .el-vl__window) {
+    height: 100%;
+  }
 }
-
-.loading {
+.tools {
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  margin: 30px 0;
-  gap: 15px;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(52, 152, 219, 0.2);
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+  font-size: 14px;
+  .left-tools {
+    display: flex;
+    justify-content: start;
+    align-items: center;
   }
-  100% {
-    transform: rotate(360deg);
+  .right-tools {
+    display: flex;
+    justify-content: end;
+    align-items: center;
   }
-}
-
-.error {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 8px;
-  color: #721c24;
-  text-align: center;
+  .count,
+  .time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0px 9px 15px;
+  }
 }
 </style>

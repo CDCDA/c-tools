@@ -1,58 +1,52 @@
 use tauri::{
-    menu::{Menu, MenuItem, Submenu},
+    menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager, Runtime,
+    Manager,
 };
 
-pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
-    let quit_i = MenuItem::with_id(app, "quit", "突出", true, None::<&str>)?;
+pub fn create_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
     let show_i = MenuItem::with_id(app, "show", "显示", true, None::<&str>)?;
-    let hide_i = MenuItem::with_id(app, "hide", "隐藏", true, None::<&str>)?;
-    let edit_i = MenuItem::with_id(app, "edit_file", "编辑", true, None::<&str>)?;
-    let new_i = MenuItem::with_id(app, "new_file", "添加", true, None::<&str>)?;
-    let a = Submenu::with_id_and_items(app, "File", "文章", true, &[&new_i, &edit_i])?;
-    // 分割线
-    let menu = Menu::with_items(app, &[&quit_i, &show_i, &hide_i, &a])?;
-
-    let _ = TrayIconBuilder::with_id("tray")
+    let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
+    // 创建系统托盘
+    let _tray = TrayIconBuilder::new()
+        // 添加托盘图标
         .icon(app.default_window_icon().unwrap().clone())
+        // 添加菜单
         .menu(&menu)
-        .show_menu_on_left_click(false)
-        .on_menu_event(move |app, event| match event.id.as_ref() {
+        // 监听托盘图标发出的鼠标事件
+        .on_tray_icon_event(|tray, event| match event {
+            // 左键点击托盘图标显示窗口
+            TrayIconEvent::Click {
+                id: _,
+                position: _,
+                rect: _,
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+            } => {
+                let win = tray
+                    .app_handle()
+                    .get_webview_window("main")
+                    .expect("REASON");
+                win.show().unwrap();
+                // 获取窗口焦点
+                win.set_focus().unwrap();
+            }
+            _ => {}
+        })
+        // 监听菜单事件
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "show" => {
+                let win = app.get_webview_window("main").unwrap();
+                win.show().unwrap();
+                // 获取窗口焦点
+                win.set_focus().unwrap();
+            }
             "quit" => {
                 app.exit(0);
             }
-            "show" => {
-                let window = app.get_webview_window("main").unwrap();
-                let _ = window.show();
-            }
-            "hide" => {
-                let window = app.get_webview_window("main").unwrap();
-                let _ = window.hide();
-            }
-            "edit_file" => {
-                println!("edit_file");
-            }
-            "new_file" => {
-                println!("new_file");
-            }
-            // Add more events here
             _ => {}
         })
-        .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::Click {
-                button: MouseButton::Left,
-                button_state: MouseButtonState::Up,
-                ..
-            } = event
-            {
-                let app = tray.app_handle();
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
-                }
-            }
-        })
-        .build(app);
-    Ok(())
+        .build(app)?;
+    tauri::Result::Ok(())
 }

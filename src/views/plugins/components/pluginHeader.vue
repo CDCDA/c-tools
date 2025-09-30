@@ -1,6 +1,7 @@
 <template>
   <div class="plugin-header" data-tauri-drag-region>
     <div class="plugin-header-left" data-tauri-drag-region>
+      <svg-icon :iconName="props.plugin.icon"></svg-icon>
       <div>{{ props.plugin.name }}</div>
     </div>
     <div class="plugin-header-center" data-tauri-drag-region>
@@ -58,7 +59,7 @@ const lessen = () => {
   currentWindow.minimize();
 };
 const blowUp = () => {
-  currentWindow.unminimize();
+  currentWindow.maximize();
 };
 const close = () => {
   currentWindow.close();
@@ -75,6 +76,9 @@ const close = () => {
   z-index: 999;
   user-select: none;
   border-bottom: 1px solid #ccc;
+  .svg-icon {
+    margin-right: 5px;
+  }
   .plugin-header-left {
     height: 100%;
     margin: 0 20px;

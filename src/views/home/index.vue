@@ -1,10 +1,9 @@
 <template>
   <div class="home-container" :style="{ height: mode == 'search' ? 'fit-content' : '100vh' }">
-    <SearchBar @pluginSearch="handleSearch" v-if="mode == 'search'" />
+    <SearchBar @pluginSearch="handleSearch" v-if="mode == 'search'" @changeMode="changeMode" />
     <PluginBar v-if="mode == 'plugin'" :plugin="selectPlugin" @pluginSearch="pluginSearch" @pluginClose="pluginClose" />
     <PluginList ref="pluginListRef" v-if="mode == 'search'" @pluginShow="pluginShow" />
     <main class="content-container" v-if="mode !== 'search'">
-      <RouterView v-if="mode == 'manage'" />
       <div class="component-container" v-if="mode == 'plugin'">
         <component ref="pluginRef" class="application" :is="component" />
       </div>
@@ -18,9 +17,8 @@ import PluginBar from "@/layout/headerBar/pluginBar.vue";
 import SearchBar from "@/layout/headerBar/searchBar.vue";
 import { setWindowSize, adjustWindowSize } from "@/utils/window.ts";
 import { nextTick, ref } from "vue";
-import { RouterView } from "vue-router";
 
-// search:查找插件,plugin:运行子插件,manage:管理插件,
+// search:查找插件,plugin:运行子插件,setting:管理插件,
 const mode = ref("search");
 const pluginListRef = ref(null) as any;
 const handleSearch = (query: string) => {
@@ -41,6 +39,10 @@ const pluginShow = (plugin: any) => {
     setWindowSize();
     selectPlugin.value = plugin;
   });
+};
+
+const changeMode = (newMode: string) => {
+  mode.value = newMode;
 };
 
 const pluginClose = () => {

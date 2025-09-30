@@ -1,10 +1,11 @@
 // src/composables/useCodeMirror.js
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { EditorState } from '@codemirror/state';
-import { EditorView, keymap, lineNumbers, highlightActiveLine } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { bracketMatching, syntaxHighlighting, defaultHighlightStyle, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language';
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete';
+import { searchKeymap } from '@codemirror/search';
 
 
 export function useCodeMirror(props, emit) {
@@ -17,6 +18,7 @@ export function useCodeMirror(props, emit) {
       view.value?.destroy();
 
       const extensions = [
+        // EditorView.baseTheme,
         lineNumbers(),
         history(),
         foldGutter(),
@@ -25,7 +27,9 @@ export function useCodeMirror(props, emit) {
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         autocompletion(),
         highlightActiveLine(),
-        keymap.of([...defaultKeymap, ...historyKeymap, ...completionKeymap, indentWithTab]),
+        EditorState.allowMultipleSelections.of(true),
+
+        keymap.of([...searchKeymap, ...defaultKeymap, ...historyKeymap, ...completionKeymap, indentWithTab]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             const newCode = update.state.doc.toString();
@@ -45,11 +49,11 @@ export function useCodeMirror(props, emit) {
         extensions.push(sql({ dialect: StandardSQL }));
       }
 
-      // 动态导入主题
-      if (props.theme === 'dark') {
-        const { oneDark } = await import('@codemirror/theme-one-dark');
-        extensions.push(oneDark);
-      }
+      // // 动态导入主题
+      // if (props.theme === 'dark') {
+      //   const { oneDark } = await import('@codemirror/theme-one-dark');
+      //   extensions.push(oneDark);
+      // }
 
       const state = EditorState.create({
         doc: props.modelValue,
