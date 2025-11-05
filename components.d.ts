@@ -9,6 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BaseChart: typeof import('./src/components/charts/baseChart.vue')['default']
+    copy: typeof import('./src/components/editor/index copy.vue')['default']
+    DraggleList: typeof import('./src/components/drag/draggleList.vue')['default']
     Editor: typeof import('./src/components/editor/index.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
@@ -27,9 +29,13 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElTreeV2: typeof import('element-plus/es')['ElTreeV2']
+    FileConfigDrawer: typeof import('./src/components/file/fileConfigDrawer.vue')['default']
+    FileTree: typeof import('./src/components/file/fileTree.vue')['default']
     Image: typeof import('./src/components/image/index.vue')['default']
     ModelSelectDrawer: typeof import('./src/components/ai/modelSelectDrawer.vue')['default']
+    RegexSelectDrawer: typeof import('./src/components/regex/regexSelectDrawer.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SvgIcon: typeof import('./src/components/svgIcon/index.vue')['default']

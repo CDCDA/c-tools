@@ -39,7 +39,8 @@
       "icons/文件树.ico",
       "icons/系统信息.ico",
       "icons/文件整理.ico",
-      "icons/哈希.ico"
+      "icons/哈希.ico",
+      "icons/正则.ico"
     ],
     "resources": [
       "icons/32x32.png"

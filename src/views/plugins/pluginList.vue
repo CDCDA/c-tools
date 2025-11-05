@@ -18,7 +18,7 @@
         </div>
       </div>
     </div>
-    <div class="plugin-wrap recommend-match" v-if="recommendMatchPlugins.length > 0">
+    <!-- <div class="plugin-wrap recommend-match" v-if="recommendMatchPlugins.length > 0">
       <div class="title">匹配推荐</div>
       <div class="plugin-list recent-used">
         <div class="plugin-item" v-for="plugin in recommendMatchPlugins" :key="plugin.id" @click="selectPlugin(plugin)">
@@ -26,7 +26,7 @@
           <div class="plugin-item-title">{{ plugin.name }}</div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 

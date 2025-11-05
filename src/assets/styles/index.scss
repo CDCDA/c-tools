@@ -8,6 +8,10 @@
   flex-direction: column;
 }
 
+.el-drawer__body {
+  padding: 15px 20px;
+}
+
 // ::-webkit-scrollbar {
 //   width: 8px;
 //   height: 8px;
@@ -32,4 +36,10 @@
   width: fit-content !important;
   min-width: 200px;
   max-width: 300px;
+}
+
+.el-popper {
+  span {
+    white-space: break-spaces;
+  }
 }

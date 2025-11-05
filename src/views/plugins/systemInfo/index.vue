@@ -72,23 +72,22 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted, toRefs, reactive } from "vue";
-import Editor from "@/components/editor/index.vue";
+<script setup lang="ts">
+import { ref, onMounted, toRefs, reactive } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { ElMessage } from "element-plus";
 import BaseChart from "@/components/charts/baseChart.vue";
-import { formatBytesToGB } from "@/utils/formatters";
+import { formatBytesToGB } from "@/utils/formatters.ts";
 const loading = ref(true);
 const systemInfo = reactive({
-  system: {},
-  cpus: [],
-  memory: {},
-  disks: [],
+  system: {} as any,
+  cpus: [] as any,
+  memory: {} as any,
+  disks: [] as any,
 });
-const { system, cpus, memory, disks } = toRefs(systemInfo);
-const memoryList = ref([]);
-const memoryTimeList = ref([]);
+const { system, cpus, disks } = toRefs(systemInfo);
+const memoryList = ref([]) as any;
+const memoryTimeList = ref([]) as any;
 const memoryOptions = reactive({
   grid: {
     left: "5%",
@@ -116,7 +115,7 @@ const memoryOptions = reactive({
 
 const initData = async () => {
   try {
-    const apiData = await invoke("get_system_info");
+    const apiData = (await invoke("get_system_info")) as any;
     // 正确映射API响应数据
     systemInfo.system = apiData.system || apiData;
     systemInfo.cpus = apiData.cpus || [];
@@ -132,7 +131,7 @@ const initData = async () => {
     memoryOptions.xAxis.data = memoryTimeList.value;
     loading.value = false;
     // console.log("系统信息获取成功:", systemInfo);
-  } catch (error) {
+  } catch (error: any) {
     console.error("系统信息获取失败:", error);
     ElMessage.error(`获取系统信息失败: ${error.message}`);
   }

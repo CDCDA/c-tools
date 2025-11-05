@@ -2,7 +2,8 @@
 mod commands;
 mod core;
 use commands::file_commands::{
-    calculate_file_hash, list_directory_recursively, list_directory_recursively_jwalk,
+    calculate_file_hash, list_directory_recursively, list_directory_recursively_jwalk, move_file,
+    read_file, remove_file, write_file,
 };
 use commands::system_commands::get_system_info;
 use core::system::tray::create_tray;
@@ -30,7 +31,11 @@ fn main() {
             calculate_file_hash,
             get_system_info,
             list_directory_recursively,
-            list_directory_recursively_jwalk
+            list_directory_recursively_jwalk,
+            read_file,
+            write_file,
+            move_file,
+            remove_file,
         ])
         .setup(|app| {
             let menu = MenuBuilder::new(app)

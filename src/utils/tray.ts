@@ -60,7 +60,7 @@ export async function changeTrayIcon(iconName: string) {
     const newIconPath = `icons/${iconName}`;
     await trayInstance.setIcon(newIconPath);
     console.log(`Tray icon changed to ${iconName}`);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to change tray icon:", error);
   }
 }

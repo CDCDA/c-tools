@@ -2,7 +2,7 @@
   <div class="page-main">
     <div class="file-select">
       <el-input v-model="targetPath">
-        <template #prepend><span style="cursor: pointer" @click="selectFile">选择文件夹</span></template>
+        <template #prepend><span style="cursor: pointer" @click="handleSelectFile()">选择文件夹</span></template>
         <template #append>
           <span style="cursor: pointer" :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }" @click="handleOrganize"
             >开始整理</span
@@ -10,24 +10,14 @@
         </template>
       </el-input>
     </div>
-    <!-- <div class="file-option">
-      <el-input class="file-option-item" v-model="excludeFiles" placeholder="请输入排除文件,例如:.git,node_modules" />
-      <el-input-number class="file-option-item" v-model="maxDepth" placeholder="深度,默认10,0表示不限制" />
-    </div> -->
     <div class="file-tree-container">
-      <div class="tree-original">
-        <div class="title">源文件</div>
-        <el-tree-v2 v-loading="loading" :data="treeData" :props="props" :height="450">
-          <template #default="{ node }">
-            <el-icon class="el-icon--left">
-              <Document v-if="node.data.is_file" />
-              <Folder v-else-if="!node.expanded" />
-              <FolderOpened v-else />
-            </el-icon>
-            <span>{{ node.label }}</span>
-          </template>
-        </el-tree-v2>
-      </div>
+      <file-tree
+        ref="fileTreeRef"
+        style="width: calc(50% - 7px)"
+        key="fileOrganizer"
+        :defaultOptions="{ excludeFiles: '.git,node_modules,target' }"
+        @update:path="(val: any) => (targetPath = val)"
+      />
       <div class="tree-new">
         <div class="title">排序文件</div>
         <el-tree-v2 v-loading="newLoading" :data="newTreeData" :props="props" :height="450">
@@ -51,7 +41,7 @@
       </div>
       <div class="center-tools">{{ tips }}</div>
       <div class="right-tools">
-        <div class="time">文件耗时：{{ (fileConsumingTime / 1000).toFixed(2) }}s</div>
+        <div class="time">文件耗时：{{ (fileTreeRef?.fileConsumingTime || 0 / 1000).toFixed(2) }}s</div>
         <div class="time">整理耗时：{{ (organizeConsumingTime / 1000).toFixed(2) }}s</div>
       </div>
       <!-- <el-button type="text" @click="handleCharTree">字符树</el-button>
@@ -70,14 +60,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Document, Folder, FolderOpened } from "@element-plus/icons-vue";
-import { invoke } from "@tauri-apps/api/core";
-import { fsApi } from "../../../utils/file";
+import { openFileDialog } from "@/utils/file.ts";
 import { ElNotification } from "element-plus";
-import { sendMessage } from "../../../api/ai";
+import { sendMessage } from "@/api/ai.ts";
+import fileTree from "@/components/file/fileTree.vue";
 
 import ModelSelectDrawer from "@/components/ai/modelSelectDrawer.vue";
 const targetPath = ref("");
-const loading = ref(false);
 const newLoading = ref(false);
 const tips = ref("");
 const jsonFormat = [
@@ -101,11 +90,8 @@ const aiModel = ref({
   message: `整理这个文件树JSON,允许新增分类文件夹,分类文件夹的名称由你决定即可,最后仅返回操作JSON,格式为${JSON.stringify(jsonFormat)},务必保证json完整`,
 });
 const isOpen = ref(false);
-const fileConsumingTime = ref(0);
 const organizeConsumingTime = ref(0);
 
-const excludeFiles = ref(".git,node_modules,target");
-const maxDepth = ref(1);
 const treeData = ref([]) as any;
 const newTreeData = ref([]) as any;
 const props = {
@@ -129,7 +115,7 @@ const handleOrganize = async () => {
     },
     {
       role: "user",
-      content: `${JSON.stringify(treeData.value)} ${aiModel.value.message}`,
+      content: `${JSON.stringify(fileTreeRef.value?.treeData || [])} ${aiModel.value.message}`,
     },
   ];
 
@@ -140,7 +126,7 @@ const handleOrganize = async () => {
     const response = await sendMessage(messages, aiModel.value);
     if (response.ok) {
       try {
-        const data = await response.json(); // <-- 我们怀疑这里出问题
+        const data = await response.json();
         const answer = data.choices[0].message.content;
         tips.value = "提取文件操作数组...";
         // 提取answer中的JSON数组
@@ -221,27 +207,21 @@ const generateNewTree = (jsonArray: any) => {
     tips.value = "生成新的文件树失败";
   }
 };
+const fileTreeRef = ref<any>();
 
-const selectFile = async () => {
-  const selectPath = (await fsApi.openFileDialog({ directory: true })) as any;
-  if (!selectPath) {
-    ElNotification.error("未获取到文件夹");
-    return;
+/**
+ * 选择文件夹
+ */
+const handleSelectFile = async (path?: string) => {
+  if (!path) {
+    const selectPath = await openFileDialog({ directory: true });
+    if (!selectPath) {
+      ElNotification.error("未获取到文件夹");
+      return;
+    }
+    targetPath.value = selectPath;
   }
-  targetPath.value = selectPath;
-  loading.value = true;
-  const startTime = new Date().getTime();
-
-  const files = await invoke("list_directory_recursively_jwalk", {
-    path: selectPath,
-    excludeFiles: excludeFiles.value, // 修改为驼峰命名以匹配后端期望
-    maxDepth: maxDepth.value,
-  });
-  treeData.value = files;
-  console.log("文件树", treeData.value);
-  const endTime = new Date().getTime();
-  fileConsumingTime.value = endTime - startTime;
-  loading.value = false;
+  fileTreeRef.value?.getFileTree(targetPath.value);
 };
 
 const handleSelectAiModel = () => {

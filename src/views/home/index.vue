@@ -5,7 +5,9 @@
     <PluginList ref="pluginListRef" v-if="mode == 'search'" @pluginShow="pluginShow" />
     <main class="content-container" v-if="mode !== 'search'">
       <div class="component-container" v-if="mode == 'plugin'">
-        <component ref="pluginRef" class="application" :is="component" />
+        <transition name="fade" mode="out-in">
+          <component ref="pluginRef" class="application" :is="component" />
+        </transition>
       </div>
     </main>
   </div>
@@ -33,6 +35,7 @@ const pluginSearch = (query: string) => {
 const selectPlugin = ref({}) as any;
 
 const pluginShow = (plugin: any) => {
+  // console.log(plugin);
   mode.value = "plugin";
   component.value = plugin.component;
   nextTick(() => {
@@ -53,7 +56,7 @@ const pluginClose = () => {
   });
 };
 
-const component = ref(null);
+const component = ref(null) as any;
 </script>
 
 <style lang="scss" scoped>
@@ -69,5 +72,13 @@ const component = ref(null);
 }
 .component-container {
   height: 100%;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

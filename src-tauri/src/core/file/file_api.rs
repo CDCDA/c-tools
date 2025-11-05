@@ -1,6 +1,7 @@
 use jwalk::{DirEntry, WalkDir};
 use serde::Serialize;
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
 use walkdir::{DirEntry as WalkDirEntry, WalkDir as WalkDirNormal};
 
 #[derive(Debug, Serialize)]
@@ -46,7 +47,11 @@ fn is_not_hidden(entry: &WalkDirEntry) -> bool {
         .unwrap_or(false)
 }
 
-fn is_not_hidden_jwalk(entry: &DirEntry<((), ())>, exclude_files: &Vec<String>) -> bool {
+fn is_not_hidden_jwalk(
+    entry: &DirEntry<((), ())>,
+    exclude_files: &Vec<String>,
+    include_files: &Vec<String>,
+) -> bool {
     let mut is_hidden = false;
     if !exclude_files.is_empty() {
         let file_name = entry.file_name().to_string_lossy();
@@ -54,6 +59,21 @@ fn is_not_hidden_jwalk(entry: &DirEntry<((), ())>, exclude_files: &Vec<String>) 
             if file_name.contains(exclude_file) {
                 is_hidden = true;
                 break;
+            }
+        }
+    }
+    if !include_files.is_empty() {
+        let file_name = entry.file_name().to_string_lossy();
+        let is_file = entry.file_type().is_file();
+        if !is_file {
+            is_hidden = false;
+        } else {
+            for include_file in include_files {
+                // eprintln!("文件名:{};包含文件:{}", file_name, include_file);
+                if !file_name.contains(include_file) {
+                    is_hidden = true;
+                    break;
+                }
             }
         }
     }
@@ -147,6 +167,7 @@ pub fn list_directory_recursive(
 pub fn list_directory_recursive_jwalk(
     path: String,
     exclude_files: String,
+    include_files: String,
     max_depth: usize,
 ) -> Result<Vec<FileNode>, String> {
     let root_path = PathBuf::from(path);
@@ -160,7 +181,15 @@ pub fn list_directory_recursive_jwalk(
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
     }
-    eprintln!("排除文件:{:?}", exclude_vec);
+    // eprintln!("排除文件:{:?}", exclude_vec);
+    let mut include_vec: Vec<String> = Vec::new();
+    if !include_files.is_empty() || include_files != "" {
+        include_vec = include_files
+            .split(',')
+            .map(|s| s.to_string())
+            .collect::<Vec<String>>();
+    }
+    // eprintln!("包含文件:{:?}", include_vec);
     // --- 步骤 1: 并行收集 ---
     let walker = WalkDir::new(&root_path)
         .min_depth(1)
@@ -172,7 +201,7 @@ pub fn list_directory_recursive_jwalk(
             // 这比在最后对一个巨大的 Vec 排序要高效得多
             children.retain(|dir_entry_result| {
                 dir_entry_result.as_ref().map_or(false, |dir_entry| {
-                    is_not_hidden_jwalk(dir_entry, &exclude_vec)
+                    is_not_hidden_jwalk(dir_entry, &exclude_vec, &include_vec)
                 })
             });
             // 按文件名排序
@@ -248,4 +277,69 @@ pub fn list_directory_recursive_jwalk(
     }
 
     Ok(roots)
+}
+
+// 获取文件内容
+pub fn read(file_path: String) -> Result<String, String> {
+    return Ok(
+        std::fs::read_to_string(&file_path).map_err(|e| format!("读取文件内容失败: {:?}", e))?
+    );
+}
+
+// 删除文件内容
+pub fn remove(file_path: String) -> Result<(), String> {
+    return Ok(std::fs::remove_file(&file_path).map_err(|e| format!("删除文件失败: {:?}", e))?);
+}
+
+// 移动文件
+pub fn move_file_api(file_path: String, new_file_path: String) -> Result<(), String> {
+    return Ok(std::fs::rename(&file_path, &new_file_path)
+        .map_err(|e| format!("移动文件失败: {:?}", e))?);
+}
+
+// 修改文件内容，如果文件不存在则创建目录和文件
+pub fn write(file_path: String, content: String) -> Result<(), String> {
+    let path = Path::new(&file_path);
+
+    // 确保目录存在
+    ensure_directory_exists(path)?;
+
+    // 写入文件内容
+    fs::write(path, content).map_err(|e| format!("写入文件内容失败: {:?}", e))?;
+
+    Ok(())
+}
+
+// 确保文件所在目录存在
+fn ensure_directory_exists(file_path: &Path) -> Result<(), String> {
+    if let Some(parent) = file_path.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("创建目录 '{}' 失败: {}", parent.display(), e))?;
+            println!("已创建目录: {}", parent.display());
+        }
+    }
+    Ok(())
+}
+
+// 创建目录（包括多级目录）
+pub fn create_directory(dir_path: String) -> Result<(), String> {
+    let path = Path::new(&dir_path);
+    fs::create_dir_all(path).map_err(|e| format!("创建目录 '{}' 失败: {}", dir_path, e))?;
+    Ok(())
+}
+
+// 检查文件或目录是否存在
+pub fn exists(path: String) -> bool {
+    Path::new(&path).exists()
+}
+
+// 检查是否是目录
+pub fn is_directory(path: String) -> bool {
+    Path::new(&path).is_dir()
+}
+
+// 检查是否是文件
+pub fn is_file(path: String) -> bool {
+    Path::new(&path).is_file()
 }

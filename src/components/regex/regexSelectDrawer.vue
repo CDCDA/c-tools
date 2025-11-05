@@ -1,5 +1,12 @@
 <template>
-  <el-drawer v-model="isOpen" title="选择AI模型" size="360px" :with-header="false" direction="btt" @close="closeDrawer">
+  <el-drawer
+    v-model="isOpen"
+    title="选择正则方案"
+    size="360px"
+    :with-header="false"
+    direction="rtl"
+    @close="closeDrawer"
+  >
     <div class="drawer-inner">
       <div class="drawer-header">
         <h3>模型设置</h3>

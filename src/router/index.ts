@@ -68,6 +68,12 @@ const routes: Array<any> = [
         meta: { label: "文件整理", preload: true },
         component: () => import("@/views/plugins/fileOrganizer/index.vue"),
       },
+      {
+        path: "/batchRegex",
+        name: "batchRegex",
+        meta: { label: "批量正则", preload: true },
+        component: () => import("@/views/plugins/batchRegex/index.vue"),
+      },
     ],
   },
   {

@@ -1,6 +1,6 @@
 <template>
   <div class="page-main nginx">
-    <Editor class="nginx-editor" ref="nginxEditorRef" v-model="nginxStr" language="nginx" :theme="currentTheme" />
+    <Editor class="nginx-editor" ref="nginxEditorRef" v-model="nginxStr" language="nginx" />
     <div class="tools">
       <el-button type="text" @click="handleFormat">格式化</el-button>
       <!-- <el-button type="text" @click="handleDuplicateRemoval">数组去重</el-button>
@@ -11,12 +11,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
 import Editor from "@/components/editor/index.vue";
-import { format } from "nginxbeautifier";
+import { ElNotification } from "element-plus";
 
 const nginxStr = ref("");
-const nginxEditorRef = ref(null);
+const nginxEditorRef = ref(null) as any;
 
 const simpleFormatNginx = (config: string, indentSize: number = 2): string => {
   const lines = config.split("\n");
@@ -35,7 +35,7 @@ const simpleFormatNginx = (config: string, indentSize: number = 2): string => {
     // 处理闭合括号
     if (trimmed.endsWith("}")) {
       if (trimmed.length > 1) {
-        console.log("QQQ", indent.repeat(indentLevel) + trimmed.replace("}", "") + "\n");
+        // console.log("QQQ", indent.repeat(indentLevel) + trimmed.replace("}", "") + "\n");
         result += indent.repeat(indentLevel) + trimmed.replace("}", "") + "\n";
         trimmed = "}";
       }
@@ -54,7 +54,14 @@ const simpleFormatNginx = (config: string, indentSize: number = 2): string => {
 };
 
 const handleFormat = () => {
-  nginxStr.value = simpleFormatNginx(nginxStr.value, 2);
+  try {
+    nginxStr.value = simpleFormatNginx(nginxEditorRef.value?.getValue(), 2);
+  } catch (error: any) {
+    console.error("格式化失败:", error);
+    ElNotification.error("格式化失败:" + error.message);
+    return;
+  }
+
   // nginxEditorRef.value?.formatContent();
 };
 </script>

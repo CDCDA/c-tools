@@ -8,28 +8,26 @@
         <el-option v-for="lang in languageList" :key="lang.value" :label="lang.label" :value="lang.value" />
       </el-select>
       <el-checkbox v-model="options.autoCopy" class="tool-item" label="自动复制" />
-
       <el-button type="success" class="tool-item" @click="parseLogToSQL"> 转化 </el-button>
     </div>
     <div class="sql-output-wrap">
-      <Editor class="sql-output" ref="sqlOutputRef" v-model="outputSql" language="sql" :theme="currentTheme" />
+      <Editor class="sql-output" ref="sqlOutputRef" v-model="outputSql" language="sql" />
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
 import Editor from "@/components/editor/index.vue";
 import { format } from "sql-formatter";
-import { ElMessage } from "element-plus";
-const language = ref("sql");
+import { ElNotification } from "element-plus";
 const options = ref({
   language: "sql",
   autoCopy: true,
-});
+}) as any;
 const inputSql = ref("");
 const outputSql = ref("");
-const sqlOutputRef = ref(null);
+const sqlOutputRef = ref(null) as any;
 
 const languageList = [
   { label: "Standard SQL", value: "sql" },
@@ -42,11 +40,11 @@ const languageList = [
 async function parseLogToSQL() {
   // 提取SQL语句和参数行
   const lines = inputSql.value.split("\n");
-  const sqlLine = lines.find((line) => line.includes("Preparing:"));
-  const paramsLine = lines.find((line) => line.includes("Parameters:"));
+  const sqlLine = lines.find((line) => line.includes("Preparing:")) as any;
+  const paramsLine = lines.find((line) => line.includes("Parameters:")) as any;
 
   if (!sqlLine || !paramsLine) {
-    ElMessage.error("无效日志sql");
+    ElNotification.error("无效日志sql");
   }
 
   // 提取原始SQL（移除前缀）
@@ -152,12 +150,12 @@ async function parseLogToSQL() {
       language: options.value.language,
       indent: "    ", // 4空格缩进
       uppercase: true, // 关键字大写
-    });
+    } as any);
     // sqlOutputRef.value?.setValue(outputSql.value);
     options.value.autoCopy ? copyResult() : "";
-  } catch (err) {
+  } catch (err: any) {
     outputSql.value = "SQL格式化错误: " + err.message;
-    ElMessage.error(outputSql.value);
+    ElNotification.error(outputSql.value);
   }
 }
 
@@ -165,10 +163,15 @@ const copyResult = async () => {
   if (!outputSql.value) return;
   try {
     await navigator.clipboard.writeText(outputSql.value);
-    ElMessage.success("已复制到剪贴板!");
-  } catch (err) {
-    error.value = "复制失败: " + err.message;
-    ElMessage.error(error.value);
+    ElNotification.success({
+      title: "成功",
+      message: "已复制到剪贴板!",
+    });
+  } catch (err: any) {
+    ElNotification.error({
+      title: "错误",
+      message: "复制失败: " + err.message,
+    });
   }
 };
 </script>

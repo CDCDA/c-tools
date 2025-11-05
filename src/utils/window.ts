@@ -12,7 +12,7 @@ export const adjustWindowSize = async () => {
   const width: any = rect.width;
   const height: any = rect.height;
   if (!width || !height) return;
-  console.log(width, height);
+  // console.log(width, height);
   // 调整窗口大小
   try {
     await currentWindow.setSize({
@@ -20,7 +20,7 @@ export const adjustWindowSize = async () => {
       width: parseInt(width),
       height: parseInt(height) - 15,
     } as any);
-  } catch (error) {
+  } catch (error: any) {
     console.error("调整窗口大小失败:", error);
   }
 };
@@ -35,7 +35,7 @@ export const setWindowSize = async (width: any, height: any) => {
       width: parseInt(width),
       height: parseInt(height),
     } as any);
-  } catch (error) {
+  } catch (error: any) {
     console.error("设置窗口大小失败:", error);
   }
 };

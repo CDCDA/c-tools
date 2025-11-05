@@ -1,7 +1,7 @@
 <template>
   <div class="page-main">
     <div ref="dropZone" class="drop-zone" :class="{ 'drag-over': dragOver }">
-      <div class="drop-content" @drop.prevent="handleDrop">
+      <div class="drop-content">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
           <path
             d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
@@ -57,32 +57,21 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { message, open } from "@tauri-apps/plugin-dialog";
+import { open } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-const dropZone = ref(null);
+import { ElNotification } from "element-plus";
+// import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+const dropZone = ref(null) as any;
 const dragOver = ref(false);
 const loading = ref(false);
-const result = ref(null);
-const error = ref(null);
-
-// 备选方法获取文件路径
-const getFilePath = async (file) => {
-  try {
-    // 使用Tauri API获取文件路径
-    const { path } = await import("@tauri-apps/api/path");
-    return await path.basename(file.name);
-  } catch (e) {
-    console.error("获取文件路径失败:", e);
-    return null;
-  }
-};
+const result = ref(null) as any;
+const error = ref(null) as any;
 
 const selectFile = async () => {
-  const selected = await open({
+  const selected = (await open({
     multiple: false,
     filters: [
       {
@@ -90,7 +79,7 @@ const selectFile = async () => {
         extensions: ["*"],
       },
     ],
-  });
+  })) as any;
 
   if (selected) {
     if (typeof selected === "string") {
@@ -101,8 +90,8 @@ const selectFile = async () => {
     }
   }
 };
-
-const processFile = async (filePath) => {
+// 处理文件的函数
+const processFile = async (filePath: any) => {
   try {
     error.value = null;
     loading.value = true;
@@ -115,13 +104,13 @@ const processFile = async (filePath) => {
   } catch (err) {
     console.error("Error:", err);
     error.value = `计算哈希失败: ${err}`;
-    message(`计算哈希失败: ${err}`, { title: "错误", type: "error" });
+    ElNotification.error(`计算哈希失败: ${err}`);
   } finally {
     loading.value = false;
   }
 };
 
-const formatFileSize = (bytes) => {
+const formatFileSize = (bytes: any) => {
   if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
@@ -143,16 +132,14 @@ BLAKE3: ${result.value.blake3}`;
 
   try {
     await navigator.clipboard.writeText(text);
-    message("已复制所有哈希值到剪贴板！", { title: "成功" });
+    ElNotification.success("已复制所有哈希值到剪贴板！");
   } catch (err) {
     console.error("复制失败:", err);
-    message("复制失败，请重试", { title: "错误", type: "error" });
+    ElNotification.error("复制失败，请重试");
   }
 };
 // 添加文件拖拽监听器
-let unlistenFileDrop = ref(null);
-const dropRef = ref("drop");
-const dragenter = ref(false);
+let unlistenFileDrop = ref(null) as any;
 
 onMounted(async () => {
   // getCurrentWebviewWindow().onDragDropEvent(({ payload }) => {
@@ -163,7 +150,7 @@ onMounted(async () => {
   //     processFile(paths[0]);
   //   }
   // });
-  unlistenFileDrop.value = await listen("tauri://drag-drop", ({ payload }) => {
+  unlistenFileDrop.value = await listen("tauri://drag-drop", ({ payload }: any) => {
     if (payload?.paths.length > 0) {
       processFile(payload.paths[0]);
     }

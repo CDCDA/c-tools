@@ -7,6 +7,7 @@ import SystemInfo from "@/views/plugins/systemInfo/index.vue";
 import FileOrganizer from "@/views/plugins/fileOrganizer/index.vue";
 import FileTreeJson from "@/views/plugins/fileTreeJson/index.vue";
 import NginxFormater from "@/views/plugins/nginxFormater/index.vue";
+import BatchRegex from "@/views/plugins/batchRegex/index.vue";
 
 export const pluginData = [
   {
@@ -114,6 +115,17 @@ export const pluginData = [
     type: "tool",
     key: "fileOrganizer",
     component: FileOrganizer,
+  },
+  {
+    id: 10,
+    name: "批量正则",
+    description: "批量正则",
+    icon: "pluginIcons-正则",
+    ico: "icons/正则.ico",
+    shortcut: "md 内容",
+    type: "tool",
+    key: "batchRegex",
+    component: BatchRegex,
   },
 ];
 

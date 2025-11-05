@@ -87,7 +87,7 @@ const handleCommand = async (command: string) => {
         const image = await Image.fromPath(props.plugin.ico);
         // 2. 将加载后的图像对象设置为窗口图标
         await win.setIcon(image);
-      } catch (error) {
+      } catch (error: any) {
         console.error("设置图标失败:", error);
       }
     });

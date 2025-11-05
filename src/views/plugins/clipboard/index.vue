@@ -13,19 +13,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import Editor from "@/components/editor/index.vue";
 import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
 import { ElMessage } from "element-plus";
 import { currentWindow } from "@/utils/window.ts";
 import { Command } from "@tauri-apps/plugin-shell";
-const jsonStr = ref("");
-const jsonEditorRef = ref(null);
-const textList = ref([]);
+const textList = ref([]) as any;
 
 // 格式化时间为 YYYY-MM-DD HH:MM:SS
-const formatTime = (date) => {
+const formatTime = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -34,11 +31,11 @@ const formatTime = (date) => {
   const seconds = String(date.getSeconds()).padStart(2, "0");
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
-const handleFormat = () => {
-  jsonEditorRef.value?.format();
-};
+// const handleFormat = () => {
+//   jsonEditorRef.value?.format();
+// };
 
-const handleDoubleClick = async (content) => {
+const handleDoubleClick = async (content: any) => {
   try {
     // 复制内容到剪贴板
     await writeText(content);
@@ -80,7 +77,7 @@ const handleDoubleClick = async (content) => {
       // 使用spawn适应UI交互特性
       await command.spawn();
       console.log("粘贴命令已发送");
-    } catch (cmdError) {
+    } catch (cmdError: any) {
       console.error("粘贴命令执行失败:", cmdError);
       // 尝试备选方案 - 直接写入剪贴板并通知用户手动粘贴
       // 显示详细错误信息帮助诊断问题
@@ -91,7 +88,7 @@ const handleDoubleClick = async (content) => {
         duration: 5000,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: "插入失败，请手动粘贴",
       type: "error",
@@ -101,7 +98,7 @@ const handleDoubleClick = async (content) => {
   }
 };
 
-const handleCopy = async (content) => {
+const handleCopy = async (content: any) => {
   try {
     await writeText(content);
     ElMessage({
@@ -109,7 +106,7 @@ const handleCopy = async (content) => {
       type: "success",
       duration: 1500,
     });
-  } catch (error) {
+  } catch (error: any) {
     ElMessage({
       message: "复制失败",
       type: "error",
@@ -119,7 +116,7 @@ const handleCopy = async (content) => {
   }
 };
 
-let clipboardInterval;
+let clipboardInterval = null as any;
 let lastContent = "";
 
 onMounted(async () => {
@@ -147,10 +144,10 @@ onMounted(async () => {
         }
         lastContent = currentContent;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("读取剪贴板失败:", error);
     }
-  }, 1000);
+  }, 1000) as any;
 });
 
 onUnmounted(() => {

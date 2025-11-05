@@ -1,57 +1,81 @@
 <template>
   <div class="page-main">
     <div class="file-select">
-      <el-input v-model="targetPath">
-        <template #prepend><span style="cursor: pointer" @click="selectFile">选择文件夹</span></template>
+      <el-input v-model="options.path">
+        <template #prepend><span style="cursor: pointer" @click="selectFile()">选择文件夹</span></template>
         <template #append><span style="cursor: pointer" @click="handleCopy">复制json</span></template>
       </el-input>
-    </div>
-    <div class="file-option">
-      <el-input class="file-option-item" v-model="excludeFiles" placeholder="请输入排除文件,例如:.git,node_modules" />
-      <el-input-number class="file-option-item" v-model="maxDepth" placeholder="深度,默认10,0表示不限制" />
     </div>
     <div class="file-json">
       <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading" />
     </div>
     <div class="tools">
+      <el-button type="text" @click="hanldeOpenConfig">文件查询配置</el-button>
       <el-button type="text" @click="handleCharTree">字符树</el-button>
       <el-button type="text" @click="handleJsonTree">json树</el-button>
       <el-button type="text" @click="handleFormat">格式化</el-button>
       <div class="time">耗时：{{ (consumingTime / 1000).toFixed(2) }}s</div>
       <div class="count">字符数：{{ fileJson.length }}</div>
     </div>
+    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import fileConfigDrawer from "@/components/file/fileConfigDrawer.vue";
+import { list, openFileDialog } from "@/utils/file.ts";
 import Editor from "@/components/editor/index.vue";
-import { fsApi } from "../../../utils/file";
 import { ElNotification } from "element-plus";
 const fileJson = ref("");
 const tempFileJson = ref("");
 const jsonEditorRef = ref<any>();
-const targetPath = ref("") as any;
+
 const loading = ref(false);
 const consumingTime = ref(0);
-const excludeFiles = ref(".git,node_modules,target");
-const maxDepth = ref(10);
-const selectFile = async () => {
-  const selectPath = await fsApi.openFileDialog({ directory: true });
-  if (!selectPath) {
-    ElNotification.error("未获取到文件夹");
-    return;
+
+const options = ref({
+  // 遍历的文件夹路径
+  path: "",
+  //最大遍历深度
+  maxDepth: 10,
+  // 排除的文件或文件夹，多个用逗号分隔
+  excludeFiles: ".git,node_modules,target,.jar",
+  // 包含的文件或文件夹，多个用逗号分隔
+  includeFiles: "",
+  // 是否立即刷新
+  refreshImmediately: true,
+});
+
+const fileConfigDrawerRef = ref<any>(null);
+
+function hanldeOpenConfig() {
+  fileConfigDrawerRef.value.init(options.value);
+}
+
+function updateOptions(newOptions: any) {
+  options.value = newOptions;
+  if (options.value.refreshImmediately) {
+    selectFile(options.value.path);
   }
-  targetPath.value = selectPath;
+}
+
+const selectFile = async (path?: string) => {
+  if (!path) {
+    const selectPath = await openFileDialog({ directory: true });
+    if (!selectPath) {
+      ElNotification.error("未获取到文件夹");
+      return;
+    }
+    options.value.path = selectPath;
+  } else {
+    options.value.path = path;
+  }
+  window.localStorage.setItem("fileTreeJson-fileOptions", JSON.stringify(options.value));
   loading.value = true;
   const startTime = new Date().getTime();
 
-  const files = await invoke("list_directory_recursively_jwalk", {
-    path: selectPath,
-    excludeFiles: excludeFiles.value, // 修改为驼峰命名以匹配后端期望
-    maxDepth: maxDepth.value,
-  });
+  const files = await list(options.value);
   fileJson.value = JSON.stringify(files);
   nextTick(() => {
     jsonEditorRef.value?.formatContent();
@@ -133,7 +157,13 @@ const jsonToTreeString = (nodes: FileNode[], rootName?: string): string => {
   return output;
 };
 
-onMounted(async () => {});
+onMounted(async () => {
+  const fileOptions = window.localStorage.getItem("fileTreeJson-fileOptions");
+  if (fileOptions) {
+    options.value = JSON.parse(fileOptions);
+    selectFile(options.value.path);
+  }
+});
 </script>
 
 <style lang="scss" scoped>
