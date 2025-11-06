@@ -81,7 +81,7 @@ const jsonFormat = [
   },
 ];
 const aiModel = ref({
-  apiKey: "sk-e1HIH7pyEhMjxfV8A1oEK5VOCxKoXORiHwuLikXJo8jZr1MZ",
+  apiKey: import.meta.env.API_KEY,
   baseUrl: "https://api.moonshot.cn/v1/chat/completions",
   modelName: "KIMI",
   stream: false,
