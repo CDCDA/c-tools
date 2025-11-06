@@ -26,8 +26,8 @@ const TmtClient = tencentcloud.tmt.v20180321.Client;
 
 const clientConfig = {
   credential: {
-    secretId: "AKIDyEJLKcmiRwKYaQ3iDVDi0Ociqpb9g7b9",
-    secretKey: "Xr0WqtlPp6A0e4HLBtOgV7XkjU1Wq10m",
+    secretId: import.meta.env.SECRET_ID,
+    secretKey: import.meta.env.SECRET_KEY,
   },
   region: "ap-beijing",
   profile: {
