@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import draggableList from "@/components/drag/draggleList.vue";
+import { ElNotification, ElMessageBox } from "element-plus";
 import { ref } from "vue";
 const open = ref(false);
 const emit = defineEmits(["getRegex", "update:regexList"]);
@@ -47,12 +47,6 @@ const init = (params: any) => {
   open.value = true;
 };
 const regexList = ref([]) as any;
-
-const listOptions = {
-  animation: 150,
-  handle: ".drag-handle",
-  ghostClass: "dragging",
-};
 
 function handleClick(row: any) {
   emit("getRegex", row);

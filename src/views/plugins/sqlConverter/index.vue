@@ -8,7 +8,7 @@
         <el-option v-for="lang in languageList" :key="lang.value" :label="lang.label" :value="lang.value" />
       </el-select>
       <el-checkbox v-model="options.autoCopy" class="tool-item" label="自动复制" />
-      <el-button type="success" class="tool-item" @click="parseLogToSQL"> 转化 </el-button>
+      <el-button type="primary" size="mini" class="tool-item" @click="parseLogToSQL"> 转化 </el-button>
     </div>
     <div class="sql-output-wrap">
       <Editor class="sql-output" ref="sqlOutputRef" v-model="outputSql" language="sql" />

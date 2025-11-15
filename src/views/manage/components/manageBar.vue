@@ -26,6 +26,7 @@ function handleClick() {
   align-items: center;
   color: #a0a8d0;
   z-index: 999;
+
   user-select: none;
   border-bottom: 1px solid #ccc;
   .manage-bar-left {
@@ -39,7 +40,11 @@ function handleClick() {
       font-size: 18px;
       padding-right: 15px;
       padding-left: 20px;
-
+      background-color: #00968c;
+      color: #fff;
+      :deep(.el-tag__content) {
+        margin-bottom: 4px;
+      }
       :deep(.el-tag__close) {
         width: 20px;
         height: 20px;

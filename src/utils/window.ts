@@ -10,9 +10,18 @@ export const adjustWindowSize = async () => {
   const rect = content.getBoundingClientRect();
 
   const width: any = rect.width;
-  const height: any = rect.height;
+  let height: any = rect.height;
   if (!width || !height) return;
   // console.log(width, height);
+
+  const header = document.querySelector(".header-bar") as any;
+  if (header) {
+    const pluginListContainer = document.querySelector(".plugin-list-container") as any;
+    const tHeight = header.getBoundingClientRect().height + pluginListContainer.getBoundingClientRect().height;
+    if (tHeight > rect.height) {
+      height = tHeight;
+    }
+  }
   // 调整窗口大小
   try {
     await currentWindow.setSize({

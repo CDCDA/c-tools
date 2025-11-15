@@ -158,7 +158,7 @@ onMounted(async () => {
       margin-right: 10px;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
       background: white;
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 10px 15px;
       display: flex;
       flex-direction: column;
@@ -181,7 +181,7 @@ onMounted(async () => {
       height: 100%;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
       background: white;
-      border-radius: 6px;
+      border-radius: 4px;
       display: flex;
       .disks-item {
         display: flex;
@@ -237,14 +237,14 @@ onMounted(async () => {
       margin-right: 10px;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
       background: white;
-      border-radius: 6px;
+      border-radius: 4px;
     }
     .cpu {
       width: calc(30% - 10px);
       height: 100%;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
       background: white;
-      border-radius: 6px;
+      border-radius: 4px;
       display: flex;
       flex-wrap: wrap;
       border-left: 1px solid #ccc;

@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { useAiStore } from "../../store/modules/ai";
+import { useAiStore } from "@/store/modules/ai";
 const aiStore = useAiStore();
 const rules = ref({
   modelName: [{ required: true, message: "请选择模型名称", trigger: ["blur"] }],
@@ -56,9 +56,6 @@ const emit = defineEmits<{
 const handleModelChange = (modelId: string) => {
   const selectedModelData = modelList.value.find((item) => item.modelId === modelId);
   selectedModel.value = selectedModelData;
-  // if (selectedModelData) {
-  //   formData.value.modelName = selectedModelData.modelName;
-  // }
 };
 
 const isOpen = computed({
@@ -75,7 +72,9 @@ const modelList = ref<any[]>([]);
 
 // 加载模型列表
 const loadModels = () => {
-  modelList.value = aiStore.getModelList();
+  // console.log("loadModels", aiStore);
+  modelList.value = aiStore.modelList;
+  console.log("modelList", aiStore.modelList);
 };
 
 // 监听props变化，更新本地状态

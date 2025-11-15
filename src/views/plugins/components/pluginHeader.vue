@@ -1,5 +1,5 @@
 <template>
-  <div class="plugin-header" data-tauri-drag-region>
+  <div class="plugin-header" data-tauri-drag-region v-if="props.plugin.showHeader">
     <div class="plugin-header-left" data-tauri-drag-region>
       <svg-icon :iconName="props.plugin.icon"></svg-icon>
       <div>{{ props.plugin.name }}</div>

@@ -24,16 +24,11 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { ElNotification } from "element-plus";
-const aiModelList = ref([
-  {
-    apiKey: "sk-e1HIH7pyEhMjxfV8A1oEK5VOCxKoXORiHwuLikXJo8jZr1MZ",
-    baseUrl: "https://api.moonshot.cn/v1",
-    modelName: "KIMI",
-    modelId: "moonshot-v1-8k",
-  },
-]);
+import { useAiStore } from "@/store/modules/ai";
+const aiStore = useAiStore();
+const aiModelList = ref([]) as any;
 
 const handleEditClick = (row: any) => {
   console.log(row);
@@ -75,6 +70,14 @@ const handleCellDoubleClick = (row: any, column: any) => {
     });
   }
 };
+
+function init() {
+  aiModelList.value = aiStore.modelList;
+}
+
+onMounted(() => {
+  init();
+});
 </script>
 <style scoped lang="scss">
 .manage-page-main {
@@ -82,7 +85,7 @@ const handleCellDoubleClick = (row: any, column: any) => {
   height: 100%;
   .ai-model-tip {
     margin: 15px;
-    border-radius: 6px;
+    border-radius: 4px;
     background: white;
     height: 80px;
     display: flex;
@@ -101,7 +104,7 @@ const handleCellDoubleClick = (row: any, column: any) => {
     width: calc(100% - 30px);
     height: calc(100% - 135px);
     margin: 15px;
-    border-radius: 6px;
+    border-radius: 4px;
     overflow: hidden;
     background: white;
     .el-button {
@@ -110,7 +113,7 @@ const handleCellDoubleClick = (row: any, column: any) => {
     }
 
     .el-table {
-      border-radius: 6px;
+      border-radius: 4px;
       margin: 10px;
       width: calc(100% - 20px);
     }

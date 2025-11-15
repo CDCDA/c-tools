@@ -41,8 +41,12 @@
       </div>
       <div class="center-tools">{{ tips }}</div>
       <div class="right-tools">
-        <div class="time">文件耗时：{{ (fileTreeRef?.fileConsumingTime || 0 / 1000).toFixed(2) }}s</div>
-        <div class="time">整理耗时：{{ (organizeConsumingTime / 1000).toFixed(2) }}s</div>
+        <div class="time">
+          文件耗时：<span>{{ (fileTreeRef?.fileConsumingTime || 0 / 1000).toFixed(2) }}s</span>
+        </div>
+        <div class="time">
+          整理耗时：<span>{{ (organizeConsumingTime / 1000).toFixed(2) }}s</span>
+        </div>
       </div>
       <!-- <el-button type="text" @click="handleCharTree">字符树</el-button>
       <el-button type="text" @click="handleJsonTree">json树</el-button>

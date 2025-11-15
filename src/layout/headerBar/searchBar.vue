@@ -77,6 +77,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .header-bar {
   height: 50px;
+  min-height: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -19,6 +19,8 @@ import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
 import { ElMessage } from "element-plus";
 import { currentWindow } from "@/utils/window.ts";
 import { Command } from "@tauri-apps/plugin-shell";
+import { invoke } from "@tauri-apps/api/core";
+
 const textList = ref([]) as any;
 
 // 格式化时间为 YYYY-MM-DD HH:MM:SS
@@ -37,56 +39,11 @@ const formatTime = (date: Date) => {
 
 const handleDoubleClick = async (content: any) => {
   try {
-    // 复制内容到剪贴板
-    await writeText(content);
-    // 增加剪贴板更新延迟，确保内容已正确写入
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    ElMessage({
-      message: "内容已复制到剪贴板",
-      type: "success",
-      duration: 1000,
-    });
-
-    // 双重确保焦点切换：先最小化再隐藏窗口
-    await currentWindow.minimize();
-    await new Promise((resolve) => setTimeout(resolve, 300));
     await currentWindow.hide();
-
-    // 优化等待时间，确保目标窗口获得焦点
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // 使用更可靠的粘贴方式，添加详细日志
     try {
-      console.log("开始执行粘贴命令...");
-      const command = Command.create("powershell", [
-        "-ExecutionPolicy",
-        "Bypass",
-        "-NoProfile",
-        "-Command",
-        "Start-Sleep -Milliseconds 500; " +
-          "try { " +
-          "  $wshell = New-Object -ComObject WScript.Shell -ErrorAction Stop; " +
-          '  $wshell.SendKeys("^v"); ' +
-          '  Write-Host "Paste command executed successfully"; ' +
-          "} catch { " +
-          '  Write-Error "SendKeys failed: $_"; ' +
-          "  exit 1; " +
-          "}",
-      ]);
-
-      // 使用spawn适应UI交互特性
-      await command.spawn();
-      console.log("粘贴命令已发送");
-    } catch (cmdError: any) {
-      console.error("粘贴命令执行失败:", cmdError);
-      // 尝试备选方案 - 直接写入剪贴板并通知用户手动粘贴
-      // 显示详细错误信息帮助诊断问题
-      const errorMsg = cmdError.message || JSON.stringify(cmdError);
-      ElMessage({
-        message: `粘贴失败: ${errorMsg}，请手动粘贴 (Ctrl+V)`,
-        type: "error",
-        duration: 5000,
-      });
+      const result = await invoke("paste", { text: content });
+    } catch (error: any) {
+      console.error("插入失败:", error);
     }
   } catch (error: any) {
     ElMessage({

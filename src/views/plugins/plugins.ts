@@ -2,12 +2,14 @@ import FileHasher from "@/views/plugins/fileHasher/index.vue";
 import SqlConverter from "@/views/plugins/sqlConverter/index.vue";
 import JsonEditor from "@/views/plugins/jsonEditor/index.vue";
 // import AiFixedTips from "@/views/plugins/aiFixedTips/index.vue";
-// import Clipboard from "@/views/plugins/clipboard/index.vue";
+import Clipboard from "@/views/plugins/clipboard/index.vue";
 import SystemInfo from "@/views/plugins/systemInfo/index.vue";
 import FileOrganizer from "@/views/plugins/fileOrganizer/index.vue";
 import FileTreeJson from "@/views/plugins/fileTreeJson/index.vue";
 import NginxFormater from "@/views/plugins/nginxFormater/index.vue";
 import BatchRegex from "@/views/plugins/batchRegex/index.vue";
+import codeGenerator from "@/views/plugins/codeGenerator/index.vue";
+import ColorExtraction from "@/views/plugins/colorExtraction/index.vue";
 
 export const pluginData = [
   {
@@ -19,6 +21,7 @@ export const pluginData = [
     shortcut: "Alt+F",
     type: "tool",
     key: "fileHasher",
+    showHeader: true,
     component: FileHasher,
   },
   {
@@ -30,6 +33,7 @@ export const pluginData = [
     shortcut: "= 表达式",
     type: "tool",
     key: "sqlConverter",
+    showHeader: true,
     component: SqlConverter,
   },
   {
@@ -41,6 +45,7 @@ export const pluginData = [
     shortcut: "= 表达式",
     type: "tool",
     key: "nginxFormater",
+    showHeader: true,
     component: NginxFormater,
   },
   // {
@@ -62,18 +67,20 @@ export const pluginData = [
     shortcut: "json 内容",
     type: "tool",
     key: "jsonEditor",
+    showHeader: true,
     component: JsonEditor,
   },
-  // {
-  //   id: 5,
-  //   name: "剪贴板",
-  //   description: "获取和管理剪贴板内容",
-  //   icon: "pluginIcons-剪贴板",
-  //   shortcut: "ts 时间戳",
-  //   type: "tool",
-  //   key: "clipboard",
-  //   component: Clipboard,
-  // },
+  {
+    id: 5,
+    name: "剪贴板",
+    description: "获取和管理剪贴板内容",
+    icon: "pluginIcons-剪贴板",
+    shortcut: "ts 时间戳",
+    type: "tool",
+    key: "clipboard",
+    showHeader: true,
+    component: Clipboard,
+  },
   // {
   //   id: 6,
   //   name: "备忘",
@@ -92,6 +99,7 @@ export const pluginData = [
     shortcut: "md 内容",
     type: "tool",
     key: "systemInfo",
+    showHeader: true,
     component: SystemInfo,
   },
   {
@@ -103,6 +111,7 @@ export const pluginData = [
     shortcut: "md 内容",
     type: "tool",
     key: "fileTreeJson",
+    showHeader: true,
     component: FileTreeJson,
   },
   {
@@ -114,6 +123,7 @@ export const pluginData = [
     shortcut: "md 内容",
     type: "tool",
     key: "fileOrganizer",
+    showHeader: true,
     component: FileOrganizer,
   },
   {
@@ -125,7 +135,38 @@ export const pluginData = [
     shortcut: "md 内容",
     type: "tool",
     key: "batchRegex",
+    showHeader: true,
     component: BatchRegex,
+  },
+  {
+    id: 11,
+    name: "代码生成",
+    description: "代码生成",
+    icon: "pluginIcons-代码",
+    ico: "icons/代码.ico",
+    shortcut: "md 内容",
+    type: "tool",
+    key: "codeGenerator",
+    showHeader: true,
+    component: codeGenerator,
+  },
+  {
+    id: 12,
+    name: "取色",
+    description: "取色",
+    icon: "pluginIcons-取色",
+    ico: "icons/取色.ico",
+    shortcut: "md 内容",
+    type: "tool",
+    key: "colorExtraction",
+    showHeader: false,
+    transparent: true,
+    fullscreen: true,
+    alwaysOnTop: true,
+    newWindow: true,
+    width: 0,
+    height: 0,
+    component: ColorExtraction,
   },
 ];
 

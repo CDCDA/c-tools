@@ -8,8 +8,12 @@
       :options="editorOptions"
       :style="editorStyle"
       @init="onEditorInit"
-      @change="onContentChange"
     />
+    <div class="code-editor-footer">
+      <div class="code-editor-footer-left">
+        <el-button type="text" size="mini" @click="formatCode">格式化</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -37,6 +41,22 @@ import "ace-builds/src-noconflict/snippets/json";
 import "ace-builds/src-noconflict/snippets/sql";
 import "ace-builds/src-noconflict/snippets/javascript";
 
+// 导入 worker 文件
+import "ace-builds/src-noconflict/worker-json";
+import "ace-builds/src-noconflict/worker-javascript";
+
+// 配置 worker 路径
+const aceConfig = ace.config;
+aceConfig.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/");
+aceConfig.setModuleUrl(
+  "ace/mode/javascript_worker",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/worker-javascript.js"
+);
+aceConfig.setModuleUrl(
+  "ace/mode/json_worker",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/worker-json.js"
+);
+
 const props = defineProps({
   modelValue: { type: String, default: "" },
   language: { type: String, default: "json" },
@@ -50,7 +70,7 @@ const aceEditorRef = ref();
 const editorInstance = ref();
 const editorContent = ref(props.modelValue);
 
-const debouncedEmit = debounce((value: string) => {
+let debouncedEmit = debounce((value: string) => {
   emit("update:modelValue", value);
 }, props.debounceDelay);
 
@@ -63,16 +83,16 @@ const languageMap = {
   json: "json",
   sql: "sql",
   javascript: "javascript",
-};
+} as any;
 
 // 主题映射
 const themeMap = {
   light: "chrome",
   dark: "monokai",
-};
+} as any;
 
-const aceLanguage = computed(() => languageMap[props.language] || "text");
-const aceTheme = computed(() => themeMap[props.theme] || "chrome");
+const aceLanguage = computed(() => languageMap[props.language] || "text") as any;
+const aceTheme = computed(() => themeMap[props.theme] || "chrome") as any;
 
 // 编辑器配置
 const editorOptions = {
@@ -346,12 +366,27 @@ defineExpose({
   overflow: hidden;
   border: 1px solid #ddd;
   background: white;
-  border-radius: 6px;
+  border-radius: 4px;
   min-height: 0;
-
+  .code-editor-footer {
+    background: #00968c;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    width: calc(100% - 20px);
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    padding: 0 10px;
+    .el-button {
+      color: #fff;
+    }
+  }
   // Ace Editor 会自动填充容器
   :deep(.vue-ace-editor) {
-    height: 100%;
+    height: calc(100% - 20px);
     width: 100%;
   }
 }

@@ -32,7 +32,7 @@ import ManageBar from "./components/manageBar.vue";
   .manage-main {
     height: 100%;
     width: inherit;
-    background: #f0f3f4;
+    background: white;
     width: 100%;
     display: flex;
   }

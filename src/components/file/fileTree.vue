@@ -15,7 +15,7 @@
         </el-tooltip>
         <el-tooltip content="刷新" placement="top">
           <el-icon>
-            <Refresh-left @click="getFileTree(options.path)" />
+            <RefreshLeft @click="getFileTree(options.path)" />
           </el-icon>
         </el-tooltip>
         <el-tooltip content="设置" placement="top">
@@ -55,8 +55,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { Document, Folder, FolderOpened, Setting, Check, Close, RefreshLeft, View } from "@element-plus/icons-vue";
+import { ref, onMounted, onUnmounted, nextTick, onBeforeUnmount } from "vue";
+import { Document, Folder, FolderOpened, Setting, Check, Close, View, RefreshLeft } from "@element-plus/icons-vue";
 import { list, read } from "@/utils/file.ts";
 import { ElNotification } from "element-plus";
 import fileConfigDrawer from "./fileConfigDrawer.vue";

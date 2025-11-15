@@ -117,8 +117,8 @@ defineExpose({
     }
   }
   .plugin-item {
-    width: 90px;
-    height: 90px;
+    width: 86px;
+    height: 86px;
     border-radius: 9px;
     margin: 0;
     display: flex;
@@ -132,7 +132,7 @@ defineExpose({
       margin-bottom: 8px;
     }
     .plugin-item-title {
-      font-size: 15px;
+      font-size: 14px;
     }
     &:hover,
     &:active {

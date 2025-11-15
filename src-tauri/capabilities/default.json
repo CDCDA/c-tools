@@ -11,9 +11,16 @@
     "systemInfo",
     "fileTreeJson",
     "fileOrganizer",
-    "batchRegex"
+    "batchRegex",
+    "codeGenerator",
+    "colorExtraction"
   ],
   "permissions": [
+    "core:window:allow-set-position",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-set-decorations",
+    "core:window:allow-set-ignore-cursor-events",
+    "core:window:allow-set-always-on-top",
     "fs:allow-app-read",
     "fs:allow-app-read-recursive",
     "fs:allow-appcache-read",

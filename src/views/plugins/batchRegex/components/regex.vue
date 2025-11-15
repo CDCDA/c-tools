@@ -30,7 +30,7 @@
 import { ref, onMounted } from "vue";
 import { DocumentAdd, DocumentChecked, QuestionFilled, Memo } from "@element-plus/icons-vue";
 import Editor from "@/components/editor/index.vue";
-import { ElNotification } from "element-plus";
+import { ElNotification, ElMessageBox } from "element-plus";
 import RegexDrawer from "./regexDrawer.vue";
 import { saveData, getData } from "@/utils/dataSave.ts";
 const regexList = ref([]) as any;
@@ -56,9 +56,9 @@ function handleGetRegex(row: any) {
   regex.value = row;
 }
 
-function updateRegex() {
-  emit("update:regex", regex.value);
-}
+// function updateRegex() {
+//   emit("update:regex", regex.value);
+// }
 const regexDrawerRef = ref(null) as any;
 
 function handleShowList() {
@@ -76,10 +76,6 @@ function updateRegexList(val: any) {
   regexList.value = val;
   saveRegex();
 }
-// 生成随机数
-function randomIntFromInterval(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
 // 保存为新方案
 function handleSave() {
   ElMessageBox.prompt("请输入正则方案名称", "Tip", {
@@ -87,7 +83,7 @@ function handleSave() {
     cancelButtonText: "取消",
     inputPattern: /\S+/,
     inputErrorMessage: "请输入正则方案名称",
-  }).then(({ value }) => {
+  }).then(({ value }: any) => {
     if (regexList.value.find((item: any) => item.title === value)) {
       ElNotification.error("正则方案名称已存在");
       return;
@@ -111,7 +107,7 @@ function handleUpdate() {
     inputPattern: /\S+/,
     inputValue: regex.value.title,
     inputErrorMessage: "请输入正则方案名称",
-  }).then(({ value }) => {
+  }).then(({ value }: any) => {
     if (regexList.value.find((item: any) => item.title === value && item.id !== regex.value.id)) {
       ElNotification.error("正则方案名称已存在");
       return;

@@ -47,7 +47,8 @@ onMounted(() => {
 }
 .sidebar-menu {
   height: 100vh;
-  padding: 10px;
+  padding: 10px 6px;
+  background: #f5f5f5;
   .sub-menu-item,
   .menu-item-label {
     height: 45px;
@@ -55,6 +56,7 @@ onMounted(() => {
     align-items: center;
     justify-content: start;
     padding: 0 10px;
+    font-size: 13px;
   }
   .menu-item-label {
     height: 35px;
@@ -64,14 +66,25 @@ onMounted(() => {
   .sub-menu-item {
     font-size: 15px;
     cursor: pointer;
-    cursor: pointer;
+    position: relative;
   }
   .sub-menu-item-label {
     margin-bottom: 2px;
   }
   .active {
-    background: #d7d7d7;
+    background: #eaedef;
     border-radius: 4px;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 100%;
+      background-color: var(--el-color-primary);
+      border-radius: 2px;
+    }
   }
   .svg-icon {
     height: 20px;

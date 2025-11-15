@@ -100,7 +100,7 @@ const processFile = async (filePath: any) => {
     console.log("处理文件:", filePath);
 
     // 调用Rust命令计算哈希值
-    result.value = await invoke("calculate_hashes", { filePath });
+    result.value = await invoke("calculate_file_hash", { path: filePath });
   } catch (err) {
     console.error("Error:", err);
     error.value = `计算哈希失败: ${err}`;
@@ -203,7 +203,7 @@ button {
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
@@ -266,7 +266,7 @@ label {
   font-family: "Courier New", Courier, monospace;
   background-color: #ecf0f1;
   padding: 10px 15px;
-  border-radius: 6px;
+  border-radius: 4px;
   word-break: break-all;
   font-size: 14px;
   line-height: 1.5;

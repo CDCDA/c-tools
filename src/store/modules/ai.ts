@@ -4,7 +4,7 @@
 
 import { defineStore } from "pinia";
 import { ref } from "vue";
-const useAiStore = defineStore("user", () => {
+const useAiStore = defineStore("ai", () => {
   const modelList = ref([
     {
       apiKey: "sk-e1HIH7pyEhMjxfV8A1oEK5VOCxKoXORiHwuLikXJo8jZr1MZ",

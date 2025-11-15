@@ -42,14 +42,18 @@
 
     <div class="tools">
       <div class="left-tools">
-        <div class="time" v-if="mode === 'multi'">文件耗时：{{ (fileTreeRef?.consumingTime / 1000).toFixed(2) }}s</div>
+        <div class="time" v-if="mode === 'multi'">
+          文件耗时：<span>{{ (fileTreeRef?.consumingTime / 1000).toFixed(2) }}s</span>
+        </div>
         <el-tooltip content="写入文件" placement="top">
           <el-icon @click="handleWriteFile()" v-if="currentFile.path && mode === 'single'"><Edit /></el-icon>
         </el-tooltip>
       </div>
       <div class="center-tools">{{ tips }}</div>
       <div class="right-tools">
-        <div class="time">正则耗时：{{ (regexConsumingTime / 1000).toFixed(2) }}s</div>
+        <div class="time">
+          正则耗时：<span>{{ (regexConsumingTime / 1000).toFixed(2) }}s</span>
+        </div>
         <el-tooltip :content="mode === 'single' ? '批量模式' : '单例模式'" placement="top">
           <el-icon @click="mode = mode === 'single' ? 'multi' : 'single'"><Switch /></el-icon>
         </el-tooltip>
@@ -59,11 +63,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { Plus, QuestionFilled, DocumentAdd, Switch, Edit } from "@element-plus/icons-vue";
+import { ref } from "vue";
+import { Switch, Edit } from "@element-plus/icons-vue";
 import { write, read, openFileDialog } from "@/utils/file.ts";
 import { ElNotification } from "element-plus";
-import { saveData, getData } from "@/utils/dataSave.ts";
 
 import Editor from "@/components/editor/index.vue";
 import fileTree from "@/components/file/fileTree.vue";
@@ -233,37 +236,6 @@ const handleMultiRegex = async () => {
           }
         }
       }
-    }
-  }
-  .tools {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    .left-tools {
-      display: flex;
-      justify-content: start;
-      align-items: center;
-      .el-button--text {
-        margin-top: 2px;
-      }
-    }
-    .right-tools {
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      .el-icon {
-        margin-left: 10px;
-        cursor: pointer;
-      }
-    }
-    .count,
-    .time {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 0px 9px 0px;
     }
   }
 }

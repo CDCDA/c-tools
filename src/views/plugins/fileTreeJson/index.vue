@@ -10,12 +10,20 @@
       <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading" />
     </div>
     <div class="tools">
-      <el-button type="text" @click="hanldeOpenConfig">文件查询配置</el-button>
-      <el-button type="text" @click="handleCharTree">字符树</el-button>
-      <el-button type="text" @click="handleJsonTree">json树</el-button>
-      <el-button type="text" @click="handleFormat">格式化</el-button>
-      <div class="time">耗时：{{ (consumingTime / 1000).toFixed(2) }}s</div>
-      <div class="count">字符数：{{ fileJson.length }}</div>
+      <div class="tools-left">
+        <div class="time">
+          耗时：<span>{{ (consumingTime / 1000).toFixed(2) }}s</span>
+        </div>
+        <div class="count">
+          字符数：<span>{{ fileJson.length }}</span>
+        </div>
+      </div>
+      <div class="tools-right">
+        <el-button type="text" @click="hanldeOpenConfig">文件查询配置</el-button>
+        <el-button type="text" @click="handleCharTree">字符树</el-button>
+        <el-button type="text" @click="handleJsonTree">json树</el-button>
+        <el-button type="text" @click="handleFormat">格式化</el-button>
+      </div>
     </div>
     <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
   </div>
@@ -201,15 +209,19 @@ onMounted(async () => {
 .tools {
   width: 100%;
   display: flex;
-  justify-content: end;
+  justify-content: space-between;
   align-items: center;
+  .tools-left,
+  .tools-right {
+    display: flex;
+  }
   .count,
   .time {
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 0px 9px 15px;
+    padding: 8px 15px 9px 0px;
   }
 }
 </style>

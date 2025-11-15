@@ -131,11 +131,16 @@ onMounted(() => {
       font-size: 18px;
       padding-right: 15px;
       padding-left: 20px;
-
+      background-color: #00968c;
+      color: #fff;
+      :deep(.el-tag__content) {
+        margin-bottom: 4px;
+      }
       :deep(.el-tag__close) {
         width: 20px;
         height: 20px;
         font-size: 20px;
+        margin-bottom: 2px;
       }
       .plugin-close {
         margin-left: 5px;

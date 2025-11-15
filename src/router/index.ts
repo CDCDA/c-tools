@@ -74,6 +74,18 @@ const routes: Array<any> = [
         meta: { label: "批量正则", preload: true },
         component: () => import("@/views/plugins/batchRegex/index.vue"),
       },
+      {
+        path: "/codeGenerator",
+        name: "codeGenerator",
+        meta: { label: "代码生成器", preload: true },
+        component: () => import("@/views/plugins/codeGenerator/index.vue"),
+      },
+      {
+        path: "/colorExtraction",
+        name: "colorExtraction",
+        meta: { label: "取色", preload: true },
+        component: () => import("@/views/plugins/colorExtraction/index.vue"),
+      },
     ],
   },
   {

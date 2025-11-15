@@ -13,7 +13,6 @@ pub struct HashResult {
 }
 
 // 计算文件哈希值
-#[tauri::command]
 pub async fn calculate_hashes(file_path: PathBuf) -> Result<HashResult, String> {
     match compute_file_hashes(&file_path).await {
         Ok(result) => Ok(result),

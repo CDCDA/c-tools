@@ -10,6 +10,7 @@ export const useUserStore = defineStore("user", () => {
   const userId = ref("");
   const token = ref("");
   const nickName = ref("");
+  const createTime = ref("");
   const email = ref("");
   const permission = ref([]) as any;
   return {
@@ -20,6 +21,7 @@ export const useUserStore = defineStore("user", () => {
     avatar,
     nickName,
     email,
+    createTime,
   };
 });
 

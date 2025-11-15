@@ -2,7 +2,7 @@ use jwalk::{DirEntry, WalkDir};
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
-use walkdir::{DirEntry as WalkDirEntry, WalkDir as WalkDirNormal};
+use walkdir::DirEntry as WalkDirEntry;
 
 #[derive(Debug, Serialize)]
 pub struct FileNode {
@@ -39,13 +39,13 @@ impl FileNode {
     }
 }
 
-fn is_not_hidden(entry: &WalkDirEntry) -> bool {
-    entry
-        .file_name()
-        .to_str()
-        .map(|s| !s.starts_with('.') && s != "node_modules" && s != "target" && s != ".git")
-        .unwrap_or(false)
-}
+// fn is_not_hidden(entry: &WalkDirEntry) -> bool {
+//     entry
+//         .file_name()
+//         .to_str()
+//         .map(|s| !s.starts_with('.') && s != "node_modules" && s != "target" && s != ".git")
+//         .unwrap_or(false)
+// }
 
 fn is_not_hidden_jwalk(
     entry: &DirEntry<((), ())>,
@@ -85,84 +85,84 @@ fn is_not_hidden_jwalk(
         .unwrap_or(false)
 }
 
-#[tauri::command]
-pub fn list_directory_recursive(
-    _path: String,
-    exclude_files: String,
-    max_depth: usize,
-) -> Result<Vec<FileNode>, String> {
-    let root_path = PathBuf::from(_path);
-    if !root_path.is_dir() {
-        return Err(format!("路径 '{}' 不是一个有效的目录", root_path.display()));
-    }
-    let walker = WalkDirNormal::new(&root_path)
-        .min_depth(1) // 从根目录的子项开始
-        .max_depth(max_depth) // 设置一个合理的深度限制
-        .sort_by_file_name() // walkdir 帮你排序！
-        .into_iter();
-    let mut roots = Vec::new();
-    // 栈里直接存放节点的索引路径，而不是不安全的引用
-    let mut node_path_indices: Vec<usize> = Vec::new();
+// #[tauri::command]
+// pub fn list_directory_recursive(
+//     _path: String,
+//     exclude_files: String,
+//     max_depth: usize,
+// ) -> Result<Vec<FileNode>, String> {
+//     let root_path = PathBuf::from(_path);
+//     if !root_path.is_dir() {
+//         return Err(format!("路径 '{}' 不是一个有效的目录", root_path.display()));
+//     }
+//     let walker = WalkDirNormal::new(&root_path)
+//         .min_depth(1) // 从根目录的子项开始
+//         .max_depth(max_depth) // 设置一个合理的深度限制
+//         .sort_by_file_name() // walkdir 帮你排序！
+//         .into_iter();
+//     let mut roots = Vec::new();
+//     // 栈里直接存放节点的索引路径，而不是不安全的引用
+//     let mut node_path_indices: Vec<usize> = Vec::new();
 
-    for entry_result in walker.filter_entry(is_not_hidden) {
-        let entry = match entry_result {
-            Ok(e) => e,
-            Err(e) => {
-                eprintln!("遍历时跳过错误: {}", e);
-                continue; // 跳过有问题的条目
-            }
-        };
-        let depth = entry.depth(); // 0 是 root_path 本身，1 是第一级子项
+//     for entry_result in walker.filter_entry(is_not_hidden) {
+//         let entry = match entry_result {
+//             Ok(e) => e,
+//             Err(e) => {
+//                 eprintln!("遍历时跳过错误: {}", e);
+//                 continue; // 跳过有问题的条目
+//             }
+//         };
+//         let depth = entry.depth(); // 0 是 root_path 本身，1 是第一级子项
 
-        // 创建新节点
-        let node = FileNode::new_normal(&entry);
+//         // 创建新节点
+//         let node = FileNode::new_normal(&entry);
 
-        // depth 从 1 开始，所以我们要映射到从 0 开始的索引
-        let relative_depth = depth - 1;
+//         // depth 从 1 开始，所以我们要映射到从 0 开始的索引
+//         let relative_depth = depth - 1;
 
-        // --- 这就是社区通用的、安全的树构建逻辑 ---
+//         // --- 这就是社区通用的、安全的树构建逻辑 ---
 
-        // 1. 回溯：如果当前深度小于索引路径的长度，说明我们已经完成了子树的遍历
-        // 需要回退到正确的父节点。
-        if relative_depth < node_path_indices.len() {
-            node_path_indices.truncate(depth);
-        }
+//         // 1. 回溯：如果当前深度小于索引路径的长度，说明我们已经完成了子树的遍历
+//         // 需要回退到正确的父节点。
+//         if relative_depth < node_path_indices.len() {
+//             node_path_indices.truncate(depth);
+//         }
 
-        // 2. 找到父节点并添加子节点
-        if node_path_indices.is_empty() {
-            // 如果索引路径为空，说明这是第一级节点
-            roots.push(node);
-        } else {
-            // 否则，我们需要通过索引路径找到父节点
-            let mut parent_node = &mut roots[node_path_indices.get(0).cloned().unwrap_or(0)];
+//         // 2. 找到父节点并添加子节点
+//         if node_path_indices.is_empty() {
+//             // 如果索引路径为空，说明这是第一级节点
+//             roots.push(node);
+//         } else {
+//             // 否则，我们需要通过索引路径找到父节点
+//             let mut parent_node = &mut roots[node_path_indices.get(0).cloned().unwrap_or(0)];
 
-            // 沿着索引路径深入，直到找到直接父节点
-            for &index in &node_path_indices[1..] {
-                parent_node = &mut parent_node.children[index];
-            }
-            parent_node.children.push(node);
-        }
-        // 3. 深入：如果当前节点是目录，记录下它的位置以便后续的子节点可以找到它
-        if !entry.file_type().is_file() {
-            // 找到刚刚被推入的那个节点的位置索引
-            let mut parent_node: &mut FileNode =
-                &mut roots[node_path_indices.get(0).cloned().unwrap_or(0)];
+//             // 沿着索引路径深入，直到找到直接父节点
+//             for &index in &node_path_indices[1..] {
+//                 parent_node = &mut parent_node.children[index];
+//             }
+//             parent_node.children.push(node);
+//         }
+//         // 3. 深入：如果当前节点是目录，记录下它的位置以便后续的子节点可以找到它
+//         if !entry.file_type().is_file() {
+//             // 找到刚刚被推入的那个节点的位置索引
+//             let mut parent_node: &mut FileNode =
+//                 &mut roots[node_path_indices.get(0).cloned().unwrap_or(0)];
 
-            if node_path_indices.len() > 0 {
-                for &index in &node_path_indices[1..] {
-                    parent_node = &mut parent_node.children[index];
-                }
-            }
-            let new_node_index = if parent_node.children.len() > 0 {
-                parent_node.children.len() - 1
-            } else {
-                0
-            };
-            node_path_indices.push(new_node_index);
-        }
-    }
-    Ok(roots)
-}
+//             if node_path_indices.len() > 0 {
+//                 for &index in &node_path_indices[1..] {
+//                     parent_node = &mut parent_node.children[index];
+//                 }
+//             }
+//             let new_node_index = if parent_node.children.len() > 0 {
+//                 parent_node.children.len() - 1
+//             } else {
+//                 0
+//             };
+//             node_path_indices.push(new_node_index);
+//         }
+//     }
+//     Ok(roots)
+// }
 
 pub fn list_directory_recursive_jwalk(
     path: String,

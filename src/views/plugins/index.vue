@@ -12,8 +12,9 @@ import { ref } from "vue";
 import { useRoute } from "vue-router";
 import { getPluginByKey } from "./plugins.js";
 import PluginHeader from "./components/pluginHeader.vue";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 const route = useRoute();
-
+const currentWindow = getCurrentWindow();
 // 获取路由query参数
 const queryParams = route.query;
 console.log("路由query参数:", queryParams);
@@ -21,6 +22,9 @@ const plugin = ref({}) as any;
 if (queryParams.key) {
   plugin.value = getPluginByKey(queryParams.key);
   console.log(plugin.value);
+  if (plugin.value.fullscreen) {
+    currentWindow.setFullscreen(true);
+  }
 }
 </script>
 

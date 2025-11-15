@@ -8,12 +8,18 @@ export const saveData = (pluginName: string, fileName: string, data: any, type?:
     fileName = `${fileName}-${new Date().getTime()}`;
   }
 
-  const filePath = `${dataSavePath}/${userName}/${pluginName}/${fileName}`;
+  const filePath = `${dataSavePath}/${userName}/${pluginName}/${fileName}.json`;
   console.log("filePath", filePath);
   write(filePath, JSON.stringify(data));
 };
 
-export const getData = async (pluginName: string, fileName: string) => {
+export const getData = async (pluginName: string, fileName: string, type?: string) => {
+  if (type === "date") {
+    fileName = `${fileName}-${new Date().getTime()}`;
+  }
+  if (type === "user") {
+    fileName = `${fileName}.json`;
+  }
   const filePath = `${dataSavePath}/${userName}/${pluginName}/${fileName}`;
   const data = await read(filePath);
   if (!data) {

@@ -7,7 +7,8 @@ use tauri::{
 pub fn create_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
     let show_i = MenuItem::with_id(app, "show", "显示", true, None::<&str>)?;
     let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
+    let hide_i = MenuItem::with_id(app, "hide", "隐藏", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show_i, &quit_i, &hide_i])?;
     // 创建系统托盘
     let _tray = TrayIconBuilder::new()
         // 添加托盘图标
@@ -41,6 +42,10 @@ pub fn create_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
                 win.show().unwrap();
                 // 获取窗口焦点
                 win.set_focus().unwrap();
+            }
+            "hide" => {
+                let win = app.get_webview_window("main").unwrap();
+                win.hide().unwrap();
             }
             "quit" => {
                 app.exit(0);
