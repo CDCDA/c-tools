@@ -51,12 +51,24 @@
         </div>
       </template>
     </el-tree-v2>
-    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
+    <file-config-drawer
+      ref="fileConfigDrawerRef"
+      @update:options="updateOptions"
+    />
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, onBeforeUnmount } from "vue";
-import { Document, Folder, FolderOpened, Setting, Check, Close, View, RefreshLeft } from "@element-plus/icons-vue";
+import {
+  Document,
+  Folder,
+  FolderOpened,
+  Setting,
+  Check,
+  Close,
+  View,
+  RefreshLeft,
+} from "@element-plus/icons-vue";
 import { list, read } from "@/utils/file.ts";
 import { ElNotification } from "element-plus";
 import fileConfigDrawer from "./fileConfigDrawer.vue";
@@ -170,7 +182,10 @@ function hanldeOpenConfig() {
 const getFileTree = async (path: string) => {
   if (!path) return ElNotification.error("请指定要遍历的文件夹");
   options.value.path = path;
-  window.localStorage.setItem(`${props.key}-fileOptions`, JSON.stringify(options.value));
+  window.localStorage.setItem(
+    `${props.key}-fileOptions`,
+    JSON.stringify(options.value)
+  );
   loading.value = true;
   const startTime = new Date().getTime();
   const files = await list(options.value);
@@ -236,7 +251,9 @@ const treeHeight = ref(400);
 // 计算树的高度
 const calculateTreeHeight = () => {
   nextTick(() => {
-    const treeContainer = document.querySelector(".el-vl__wrapper") as HTMLElement;
+    const treeContainer = document.querySelector(
+      ".el-vl__wrapper"
+    ) as HTMLElement;
     if (treeContainer) {
       const containerHeight = treeContainer.clientHeight;
       treeHeight.value = containerHeight;
@@ -334,7 +351,7 @@ defineExpose({
   }
   .el-tree {
     width: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
     height: calc(100% - 30px);
     :deep(.el-vl__wrapper, .el-vl__window) {

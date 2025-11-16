@@ -2,12 +2,25 @@
   <div class="page-main">
     <div class="file-select">
       <el-input v-model="options.path">
-        <template #prepend><span style="cursor: pointer" @click="selectFile()">选择文件夹</span></template>
-        <template #append><span style="cursor: pointer" @click="handleCopy">复制json</span></template>
+        <template #prepend
+          ><span style="cursor: pointer" @click="selectFile()"
+            >选择文件夹</span
+          ></template
+        >
+        <template #append
+          ><span style="cursor: pointer" @click="handleCopy"
+            >复制json</span
+          ></template
+        >
       </el-input>
     </div>
     <div class="file-json">
-      <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading" />
+      <Editor
+        ref="jsonEditorRef"
+        v-model="fileJson"
+        language="json"
+        v-loading="loading"
+      />
     </div>
     <div class="tools">
       <div class="tools-left">
@@ -19,13 +32,18 @@
         </div>
       </div>
       <div class="tools-right">
-        <el-button type="text" @click="hanldeOpenConfig">文件查询配置</el-button>
+        <el-button type="text" @click="hanldeOpenConfig"
+          >文件查询配置</el-button
+        >
         <el-button type="text" @click="handleCharTree">字符树</el-button>
         <el-button type="text" @click="handleJsonTree">json树</el-button>
         <el-button type="text" @click="handleFormat">格式化</el-button>
       </div>
     </div>
-    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
+    <file-config-drawer
+      ref="fileConfigDrawerRef"
+      @update:options="updateOptions"
+    />
   </div>
 </template>
 
@@ -79,7 +97,10 @@ const selectFile = async (path?: string) => {
   } else {
     options.value.path = path;
   }
-  window.localStorage.setItem("fileTreeJson-fileOptions", JSON.stringify(options.value));
+  window.localStorage.setItem(
+    "fileTreeJson-fileOptions",
+    JSON.stringify(options.value)
+  );
   loading.value = true;
   const startTime = new Date().getTime();
 
@@ -133,7 +154,11 @@ interface FileNode {
 
 const jsonToTreeString = (nodes: FileNode[], rootName?: string): string => {
   let output = rootName ? `${rootName}/\n` : "";
-  const buildNodeString = (node: FileNode, prefix: string, isLast: boolean): string => {
+  const buildNodeString = (
+    node: FileNode,
+    prefix: string,
+    isLast: boolean
+  ): string => {
     let line = prefix;
     line += isLast ? "└── " : "├── ";
     line += node.name;
@@ -186,7 +211,7 @@ onMounted(async () => {
   .file-path {
     flex: 1;
     height: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
     color: #333;

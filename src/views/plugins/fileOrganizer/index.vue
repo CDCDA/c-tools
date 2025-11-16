@@ -2,9 +2,16 @@
   <div class="page-main">
     <div class="file-select">
       <el-input v-model="targetPath">
-        <template #prepend><span style="cursor: pointer" @click="handleSelectFile()">选择文件夹</span></template>
+        <template #prepend
+          ><span style="cursor: pointer" @click="handleSelectFile()"
+            >选择文件夹</span
+          ></template
+        >
         <template #append>
-          <span style="cursor: pointer" :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }" @click="handleOrganize"
+          <span
+            style="cursor: pointer"
+            :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }"
+            @click="handleOrganize"
             >开始整理</span
           >
         </template>
@@ -20,7 +27,12 @@
       />
       <div class="tree-new">
         <div class="title">排序文件</div>
-        <el-tree-v2 v-loading="newLoading" :data="newTreeData" :props="props" :height="450">
+        <el-tree-v2
+          v-loading="newLoading"
+          :data="newTreeData"
+          :props="props"
+          :height="450"
+        >
           <template #default="{ node }">
             <el-icon class="el-icon--left">
               <Document v-if="!node.data.is_file" />
@@ -42,10 +54,16 @@
       <div class="center-tools">{{ tips }}</div>
       <div class="right-tools">
         <div class="time">
-          文件耗时：<span>{{ (fileTreeRef?.fileConsumingTime || 0 / 1000).toFixed(2) }}s</span>
+          文件耗时：<span
+            >{{
+              (fileTreeRef?.fileConsumingTime || 0 / 1000).toFixed(2)
+            }}s</span
+          >
         </div>
         <div class="time">
-          整理耗时：<span>{{ (organizeConsumingTime / 1000).toFixed(2) }}s</span>
+          整理耗时：<span
+            >{{ (organizeConsumingTime / 1000).toFixed(2) }}s</span
+          >
         </div>
       </div>
       <!-- <el-button type="text" @click="handleCharTree">字符树</el-button>
@@ -165,7 +183,9 @@ const handleOrganize = async () => {
       }
     } else {
       const errorData = await response.json().catch(() => response.text()); // 更健壮的错误处理
-      throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData)}`);
+      throw new Error(
+        `API Error (${response.status}): ${JSON.stringify(errorData)}`
+      );
     }
   } catch (err: any) {
     // 这个 catch 会捕获网络错误或上面抛出的 API Error
@@ -187,13 +207,17 @@ const generateNewTree = (jsonArray: any) => {
         });
       }
       if (item.action === "move") {
-        const index = tempTree.findIndex((node: any) => node.path === item.path);
+        const index = tempTree.findIndex(
+          (node: any) => node.path === item.path
+        );
         if (index !== -1) {
           tempTree[index].path = item.targetPath;
         }
         if (item.targetPath) {
           let dir = item.targetPath.replace(`\\${fileName}`, "");
-          const targetIndex = tempTree.findIndex((node: any) => node.path === dir);
+          const targetIndex = tempTree.findIndex(
+            (node: any) => node.path === dir
+          );
           if (targetIndex !== -1) {
             tempTree[targetIndex].children.push(tempTree[index]);
             tempTree.splice(index, 1);
@@ -245,7 +269,7 @@ const handleSelectAiModel = () => {
   .file-path {
     flex: 1;
     height: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
     color: #333;
@@ -278,7 +302,7 @@ const handleSelectAiModel = () => {
 }
 .el-tree {
   width: 100%;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   border-radius: 4px;
   height: calc(100% - 30px);
   :deep(.el-vl__wrapper, .el-vl__window) {

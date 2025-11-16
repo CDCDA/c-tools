@@ -1,7 +1,11 @@
 <template>
   <div class="sortable">
     <div id="container" ref="sortableBoxRef">
-      <div v-for="(item, index) in internalList" :key="getItemKey(item, index)" class="list-item">
+      <div
+        v-for="(item, index) in internalList"
+        :key="getItemKey(item, index)"
+        class="list-item"
+      >
         <slot>
           <div class="drag-handle">⋮⋮</div>
           <div class="item-content">
@@ -107,7 +111,7 @@ onMounted(() => {
   padding: 0;
   margin: 0;
   height: 100%;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   background: white;
   /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 }
