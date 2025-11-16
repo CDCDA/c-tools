@@ -10,10 +10,16 @@
           <el-icon><DocumentAdd @click="handleSave" /></el-icon>
         </el-tooltip>
         <el-tooltip content="修改方案" placement="top">
-          <el-icon v-if="generator.id"><DocumentChecked @click="handleUpdate" /></el-icon>
+          <el-icon v-if="generator.id"
+            ><DocumentChecked @click="handleUpdate"
+          /></el-icon>
         </el-tooltip>
         <el-tooltip content="格式化" placement="top">
-          <svg-icon iconName="otherSvg-格式刷" style="cursor: pointer" @click="formate" />
+          <svg-icon
+            iconName="otherSvg-格式刷"
+            style="cursor: pointer"
+            @click="formate"
+          />
         </el-tooltip>
         <el-tooltip content="生成方案" placement="top">
           <el-icon><Memo @click="handleShowList" /></el-icon>
@@ -21,7 +27,12 @@
       </div>
     </div>
     <div class="generator-input">
-      <Editor class="editor" ref="editorRef" v-model="generator.content" language="javascript" />
+      <Editor
+        class="editor"
+        ref="editorRef"
+        v-model="generator.content"
+        language="javascript"
+      />
     </div>
     <GeneratePlanDrawer
       ref="generatePlanDrawerRef"
@@ -33,7 +44,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { DocumentAdd, DocumentChecked, QuestionFilled, Memo } from "@element-plus/icons-vue";
+import {
+  DocumentAdd,
+  DocumentChecked,
+  QuestionFilled,
+  Memo,
+} from "@element-plus/icons-vue";
 import Editor from "@/components/editor/index.vue";
 import { ElNotification, ElMessageBox } from "element-plus";
 import GeneratePlanDrawer from "./generatePlanDrawer.vue";
@@ -46,7 +62,8 @@ const props = defineProps({
     default: {
       id: null,
       title: "未命名",
-      content: "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
+      content:
+        "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
     },
   },
 });
@@ -112,12 +129,18 @@ function handleUpdate() {
     inputValue: generator.value.title,
     inputErrorMessage: "请输入生成方案名称",
   }).then(({ value }: any) => {
-    if (generatorList.value.find((item: any) => item.title === value && item.id !== generator.value.id)) {
+    if (
+      generatorList.value.find(
+        (item: any) => item.title === value && item.id !== generator.value.id
+      )
+    ) {
       ElNotification.error("生成方案名称已存在");
       return;
     }
     generator.value.title = value;
-    const index = generatorList.value.findIndex((item: any) => item.id === generator.value.id);
+    const index = generatorList.value.findIndex(
+      (item: any) => item.id === generator.value.id
+    );
     if (index === -1) {
       ElNotification.error("方案不存在,请先添加方案");
       return;
@@ -129,11 +152,13 @@ function handleUpdate() {
 }
 
 async function init() {
-  generatorList.value = (await getData("batchGenerator", "generatorList")) || [];
+  generatorList.value =
+    (await getData("batchGenerator", "generatorList")) || [];
   generator.value = (await getData("batchGenerator", "generator")) || {
     id: null,
     title: "未命名",
-    content: "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
+    content:
+      "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
   };
 }
 
@@ -158,7 +183,7 @@ defineExpose({
   }
   .editor {
     border-radius: 0 0 4px 4px;
-    padding: 8px 0px;
+    padding: 8px 0px 0px 0px;
   }
   .header {
     font-size: 14px;
@@ -182,6 +207,7 @@ defineExpose({
       align-items: center;
       padding: 0 15px 0 10px;
       color: black;
+      font-weight: bold;
       &::before {
         content: "";
         position: absolute;
@@ -194,7 +220,7 @@ defineExpose({
         color: black;
         z-index: -1;
         border-right: 1px solid #ccc;
-        transform: perspective(100px) rotateX(15deg) skew(18deg);
+        // transform: perspective(100px) rotateX(15deg) skew(18deg);
       }
     }
     .tools {
@@ -209,7 +235,7 @@ defineExpose({
       align-items: center;
       min-width: 28%;
       padding: 0 10px;
-      color: #fff;
+
       &::before {
         content: "";
         position: absolute;
@@ -217,11 +243,12 @@ defineExpose({
         right: -3px;
         width: 100%;
         height: 100%;
-        background: #00968c;
+        // background: #00968c;
         font-size: 14px;
+        border-left: 1px solid #ccc;
         color: #fff;
         z-index: -1;
-        transform: perspective(100px) rotateX(-15deg) skew(18deg);
+        // transform: perspective(100px) rotateX(-15deg) skew(18deg);
       }
       .el-icon {
         margin-left: 8px;

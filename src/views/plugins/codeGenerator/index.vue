@@ -12,7 +12,9 @@
     <div class="tools">
       <div class="left-tools">
         <div class="time">
-          生成耗时：<span>{{ (generateConsumingTime / 1000).toFixed(2) }}s</span>
+          生成耗时：<span
+            >{{ (generateConsumingTime / 1000).toFixed(2) }}s</span
+          >
         </div>
       </div>
       <div class="center-tools">{{ tips }}</div>
@@ -41,7 +43,7 @@ const generatePlanRef = ref(null) as any;
 const generatePlan = ref({}) as any;
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .page-main {
   .main-container {
     width: 100%;

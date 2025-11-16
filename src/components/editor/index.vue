@@ -11,7 +11,37 @@
     />
     <div class="code-editor-footer">
       <div class="code-editor-footer-left">
-        <el-button type="text" size="mini" @click="formatCode">格式化</el-button>
+        <el-tooltip content="格式化" placement="top">
+          <el-icon class="code-editor-footer-item"><QuestionFilled /></el-icon>
+        </el-tooltip>
+        <el-dropdown
+          class="code-editor-footer-item"
+          placement="top"
+          trigger="click"
+        >
+          <el-button type="text" size="mini" class="language-button">{{
+            aceLanguage
+          }}</el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="lang in languageList"
+                :key="lang"
+                @click="aceLanguage = lang"
+              >
+                {{ lang }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+      <div class="code-editor-footer-right">
+        <el-button type="text" size="mini" @click="formatCode"
+          >格式化
+        </el-button>
+        <div class="code-editor-footer-item">
+          {{ editorContent.length }} 个字符
+        </div>
       </div>
     </div>
   </div>
@@ -20,6 +50,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onUnmounted } from "vue";
 import { VAceEditor } from "vue3-ace-editor";
+import { QuestionFilled } from "@element-plus/icons-vue";
+
 import { ElNotification } from "element-plus";
 import { format } from "sql-formatter";
 import { js_beautify } from "js-beautify";
@@ -47,7 +79,10 @@ import "ace-builds/src-noconflict/worker-javascript";
 
 // 配置 worker 路径
 const aceConfig = ace.config;
-aceConfig.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/");
+aceConfig.set(
+  "basePath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/"
+);
 aceConfig.setModuleUrl(
   "ace/mode/javascript_worker",
   "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/worker-javascript.js"
@@ -79,11 +114,7 @@ onUnmounted(() => {
 });
 
 // 语言映射
-const languageMap = {
-  json: "json",
-  sql: "sql",
-  javascript: "javascript",
-} as any;
+const languageList = ["json", "sql", "javascript"] as any;
 
 // 主题映射
 const themeMap = {
@@ -91,7 +122,7 @@ const themeMap = {
   dark: "monokai",
 } as any;
 
-const aceLanguage = computed(() => languageMap[props.language] || "text") as any;
+const aceLanguage = ref(props.language);
 const aceTheme = computed(() => themeMap[props.theme] || "chrome") as any;
 
 // 编辑器配置
@@ -190,11 +221,16 @@ watch(
   () => props.language,
   () => {
     nextTick(() => {
+      aceLanguage.value = props.language;
+      console.log("Qa", aceLanguage.value);
       if (editorInstance.value) {
         const session = editorInstance.value.getSession();
         session.setMode(`ace/mode/${aceLanguage.value}`);
       }
     });
+  },
+  {
+    immediate: true,
   }
 );
 
@@ -300,7 +336,10 @@ function escapeSpecialChars() {
 
   try {
     const currentContent = editorInstance.value.getValue();
-    const escapedContent = currentContent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedContent = currentContent.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
     safeSetValue(escapedContent);
     debouncedEmit(escapedContent);
   } catch (error: any) {
@@ -315,7 +354,10 @@ function unescapeSpecialChars() {
 
   try {
     const currentContent = editorInstance.value.getValue();
-    const unescapedContent = currentContent.replace(/\\([.*+?^${}()|[\]\\])/g, "$1");
+    const unescapedContent = currentContent.replace(
+      /\\([.*+?^${}()|[\]\\])/g,
+      "$1"
+    );
     safeSetValue(unescapedContent);
     debouncedEmit(unescapedContent);
   } catch (error: any) {
@@ -364,29 +406,53 @@ defineExpose({
   height: 100%;
   width: 100%;
   overflow: hidden;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   background: white;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
+
   .code-editor-footer {
-    background: #00968c;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    width: calc(100% - 20px);
-    height: 20px;
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: space-between;
     padding: 0 10px;
+    border-top: 1px solid #ccc;
+    .code-editor-footer-left,
+    .code-editor-footer-right {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .code-editor-footer-item {
+      margin: 0 5px;
+      font-size: 14px;
+      color: var(--el-color-primary);
+      font-weight: bold;
+    }
+    .el-dropdown {
+      height: 100%;
+    }
     .el-button {
-      color: #fff;
+      color: var(--el-color-primary);
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      border: none !important;
+      outline: none !important;
+      cursor: pointer;
+      &:active {
+        background-color: #f8f9fa !important;
+      }
     }
   }
   // Ace Editor 会自动填充容器
   :deep(.vue-ace-editor) {
     height: calc(100% - 20px);
+    flex: 1;
     width: 100%;
   }
 }
@@ -396,7 +462,8 @@ defineExpose({
 // Ace Editor 全局样式调整
 .code-editor-wrapper {
   .ace_editor {
-    font-family: "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace !important;
+    font-family:
+      "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace !important;
     font-size: 14px !important;
     background: white !important;
 
