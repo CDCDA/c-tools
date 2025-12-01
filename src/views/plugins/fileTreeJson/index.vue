@@ -1,49 +1,28 @@
 <template>
-  <div class="page-main">
+  <div class="page-main file-tree-json">
     <div class="file-select">
       <el-input v-model="options.path">
-        <template #prepend
-          ><span style="cursor: pointer" @click="selectFile()"
-            >选择文件夹</span
-          ></template
-        >
-        <template #append
-          ><span style="cursor: pointer" @click="handleCopy"
-            >复制json</span
-          ></template
-        >
+        <template #prepend><span style="cursor: pointer" @click="selectFile()">选择文件夹</span></template>
+        <template #append><span style="cursor: pointer" @click="handleCopy">复制json</span></template>
       </el-input>
     </div>
     <div class="file-json">
-      <Editor
-        ref="jsonEditorRef"
-        v-model="fileJson"
-        language="json"
-        v-loading="loading"
-      />
+      <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading">
+        <template #footer-left-prepend>
+          <div class="code-editor-footer-item">
+            <span class="label">耗时:</span>
+            <span class="value">{{ (consumingTime / 1000).toFixed(2) }}s</span>
+          </div>
+        </template>
+        <template #footer-right-prepend>
+          <el-button type="text" class="code-editor-footer-item" @click="hanldeOpenConfig">文件查询配置</el-button>
+          <el-button type="text" class="code-editor-footer-item" @click="handleCharTree">字符树</el-button>
+          <el-button type="text" class="code-editor-footer-item" @click="handleJsonTree">json树</el-button>
+        </template>
+      </Editor>
     </div>
-    <div class="tools">
-      <div class="tools-left">
-        <div class="time">
-          耗时：<span>{{ (consumingTime / 1000).toFixed(2) }}s</span>
-        </div>
-        <div class="count">
-          字符数：<span>{{ fileJson.length }}</span>
-        </div>
-      </div>
-      <div class="tools-right">
-        <el-button type="text" @click="hanldeOpenConfig"
-          >文件查询配置</el-button
-        >
-        <el-button type="text" @click="handleCharTree">字符树</el-button>
-        <el-button type="text" @click="handleJsonTree">json树</el-button>
-        <el-button type="text" @click="handleFormat">格式化</el-button>
-      </div>
-    </div>
-    <file-config-drawer
-      ref="fileConfigDrawerRef"
-      @update:options="updateOptions"
-    />
+
+    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
   </div>
 </template>
 
@@ -97,10 +76,7 @@ const selectFile = async (path?: string) => {
   } else {
     options.value.path = path;
   }
-  window.localStorage.setItem(
-    "fileTreeJson-fileOptions",
-    JSON.stringify(options.value)
-  );
+  window.localStorage.setItem("fileTreeJson-fileOptions", JSON.stringify(options.value));
   loading.value = true;
   const startTime = new Date().getTime();
 
@@ -128,10 +104,6 @@ const handleCopy = async () => {
   }
 };
 
-const handleFormat = () => {
-  jsonEditorRef.value?.formatContent();
-};
-
 const handleCharTree = () => {
   tempFileJson.value = JSON.parse(JSON.stringify(fileJson.value));
   const charTree = JSON.parse(fileJson.value);
@@ -154,11 +126,7 @@ interface FileNode {
 
 const jsonToTreeString = (nodes: FileNode[], rootName?: string): string => {
   let output = rootName ? `${rootName}/\n` : "";
-  const buildNodeString = (
-    node: FileNode,
-    prefix: string,
-    isLast: boolean
-  ): string => {
+  const buildNodeString = (node: FileNode, prefix: string, isLast: boolean): string => {
     let line = prefix;
     line += isLast ? "└── " : "├── ";
     line += node.name;
@@ -200,10 +168,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.page-main {
-  padding-bottom: 0;
-  height: calc(100% - 20px);
-}
 .file-select {
   display: flex;
   align-items: center;
@@ -211,7 +175,7 @@ onMounted(async () => {
   .file-path {
     flex: 1;
     height: 100%;
-    border: 1px solid #ccc;
+    border: 1px solid #d5d7dd;
     border-radius: 4px;
     font-size: 14px;
     color: #333;

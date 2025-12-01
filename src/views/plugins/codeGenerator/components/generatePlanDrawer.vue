@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="open" title="生成方案" size="350px" direction="rtl" @close="close">
+  <el-drawer v-model="open" title="生成方案" size="50%" direction="rtl" @close="close">
     <div class="drawer-content">
       <div class="generator-list">
         <div class="tools">
@@ -9,27 +9,39 @@
           >
         </div>
         <el-table
-          :data="generatorList"
+          :data="generatePlanList"
           style="width: 100%"
           border
           @row-dblclick="handleClick"
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" align="center" />
-          <el-table-column prop="title" label="生成方案名称" width="auto" align="center">
+          <el-table-column prop="name" label="生成方案名称" width="auto" align="center">
             <template #default="scope">
-              {{ scope.row.title || "未命名" }}
+              {{ scope.row.name || "未命名" }}
             </template>
           </el-table-column>
           <el-table-column label="操作" width="100" align="center">
             <template #default="scope">
-              <el-button type="text" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+              <el-button type="text" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
               <el-button type="text" size="mini" @click="handleDelete(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
       </div>
     </div>
+    <el-dialog title="生成方案详情" v-model="dialogVisible" width="50%" @close="dialogVisible = false">
+      <div class="dialog-content">
+        <el-form :model="currentGeneratePlan" ref="formRef" :rules="rules" label-width="120px">
+          <el-form-item label="生成方案名称" prop="name">
+            <el-input v-model="currentGeneratePlan.name" placeholder="请输入生成方案名称" />
+          </el-form-item>
+          <el-form-item label="基础路径" prop="basePath">
+            <el-input v-model="currentGeneratePlan.basePath" placeholder="请输入基础路径" />
+          </el-form-item>
+        </el-form>
+      </div>
+    </el-dialog>
   </el-drawer>
 </template>
 
@@ -38,37 +50,47 @@ import { ElNotification, ElMessageBox } from "element-plus";
 import { ref } from "vue";
 
 const open = ref(false);
-const emit = defineEmits(["getGenerator", "update:generatorList"]);
+const emit = defineEmits(["getGeneratePlan", "update:generatePlanList"]);
 
 const close = () => {
   open.value = false;
 };
 
+const dialogVisible = ref(false);
+
+const currentGeneratePlan = ref({}) as any;
+
+const rules = ref({
+  name: [{ required: true, message: "请输入生成方案名称", trigger: ["blur"] }],
+  basePath: [{ required: true, message: "请输入公共路径", trigger: ["blur"] }],
+});
+
 const init = (params: any) => {
-  generatorList.value = params.generatorList;
+  generatePlanList.value = params.generatePlanList;
   open.value = true;
 };
 
-const generatorList = ref([]) as any;
+const generatePlanList = ref([]) as any;
 
 function handleClick(row: any) {
-  emit("getGenerator", row);
-  open.value = false;
+  emit("getGeneratePlan", row);
+  close();
 }
 
 function handleAdd() {
   const generator = {
     id: randomIntFromInterval(1, 1000000000),
-    title: "",
-    content: "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
+    name: "",
+    content: "",
+    filePlanList: [{}],
   };
-  emit("getGenerator", generator);
+  emit("getGeneratePlan", generator);
   open.value = false;
 }
 
-function handleUpdate(row: any) {
-  emit("getGenerator", row);
-  open.value = false;
+function handleEdit(row: any) {
+  currentGeneratePlan.value = row;
+  dialogVisible.value = true;
 }
 
 function randomIntFromInterval(min: number, max: number) {
@@ -88,12 +110,12 @@ function handleDelete(row?: any) {
     type: "warning",
   }).then(() => {
     if (row) {
-      generatorList.value = generatorList.value.filter((item: any) => item.id !== row.id);
+      generatePlanList.value = generatePlanList.value.filter((item: any) => item.id !== row.id);
     } else {
       const ids = selectedRows.value.map((item: any) => item.id);
-      generatorList.value = generatorList.value.filter((item: any) => !ids.includes(item.id));
+      generatePlanList.value = generatePlanList.value.filter((item: any) => !ids.includes(item.id));
     }
-    emit("update:generatorList", generatorList.value);
+    emit("update:generatePlanList", generatePlanList.value);
     ElNotification.success("删除成功");
   });
 }
@@ -105,6 +127,12 @@ defineExpose({
 
 <style scoped lang="scss">
 .drawer-content {
+  .generator-list {
+    height: calc(100% - 40px);
+    .el-table {
+      height: 100%;
+    }
+  }
   .tools {
     margin-bottom: 10px;
   }

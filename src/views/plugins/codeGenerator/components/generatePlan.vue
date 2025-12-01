@@ -1,101 +1,138 @@
 <template>
-  <div class="generator">
-    <div class="header">
-      <div class="title">{{ `生成方案[${generator.title || "未命名"}]` }}</div>
-      <div class="tools">
-        <el-tooltip :content="'格式化:shift+alt+f\n'" placement="top">
-          <el-icon><QuestionFilled /></el-icon>
+  <div class="generatePlan-plan part-container">
+    <div class="part-header">
+      <div class="part-title">
+        <el-button type="text" size="mini" style="margin-bottom: -2px" @click="handleShowList">{{
+          currentGeneratePlan.name || "未命名方案"
+        }}</el-button>
+      </div>
+      <div class="part-tools">
+        <el-tooltip content="新增生成方案" placement="top">
+          <el-icon @click="handleAdd"><Plus /></el-icon>
         </el-tooltip>
         <el-tooltip content="保存为新方案" placement="top">
           <el-icon><DocumentAdd @click="handleSave" /></el-icon>
         </el-tooltip>
         <el-tooltip content="修改方案" placement="top">
-          <el-icon v-if="generator.id"
-            ><DocumentChecked @click="handleUpdate"
-          /></el-icon>
-        </el-tooltip>
-        <el-tooltip content="格式化" placement="top">
-          <svg-icon
-            iconName="otherSvg-格式刷"
-            style="cursor: pointer"
-            @click="formate"
-          />
-        </el-tooltip>
-        <el-tooltip content="生成方案" placement="top">
-          <el-icon><Memo @click="handleShowList" /></el-icon>
+          <el-icon v-if="currentGeneratePlan.id"><DocumentChecked @click="handleUpdate" /></el-icon>
         </el-tooltip>
       </div>
     </div>
-    <div class="generator-input">
-      <Editor
-        class="editor"
-        ref="editorRef"
-        v-model="generator.content"
-        language="javascript"
-      />
+    <div class="part-main generatePlan-table">
+      <el-table
+        ref="tableRef"
+        border
+        :data="currentGeneratePlan.filePlanList"
+        style="width: 100%"
+        row-key="id"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" align="center" width="55" />
+        <!-- <el-table-column type="index" align="center" label="序号" width="55" /> -->
+        <el-table-column prop="planName" align="center" label="方案名称" width="150" />
+        <el-table-column prop="suffix" align="center" label="后缀" width="80" />
+        <el-table-column prop="language" align="center" label="语言" width="80" />
+        <el-table-column align="center" label="操作" fixed="right" width="150">
+          <template #default="scope">
+            <el-button
+              type="text"
+              v-loading="testLoading && currentFilePlan.id === scope.row.id"
+              size="mini"
+              @click="handleTest(scope.row)"
+              >测试</el-button
+            >
+            <el-button type="text" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="text" size="mini" style="color: #ff4d4f" @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+    <div class="part-footer">
+      <div class="part-footer-left">
+        <el-tooltip content="新增文件方案" placement="top">
+          <el-icon @click="handleAddFilePlan"><Plus /></el-icon>
+        </el-tooltip>
+        <!-- <div class="part-footer-item" style="color: #979797">编辑具体的生成方案</div> -->
+      </div>
+      <div class="part-footer-right">
+        <div class="part-footer-item">
+          <span>共</span>
+          <span :style="{ margin: '0px 5px 2px 5px', color: 'var(--el-color-primary)' }">{{
+            currentGeneratePlan.filePlanList?.length || 0
+          }}</span>
+          <span>条数据</span>
+        </div>
+      </div>
     </div>
     <GeneratePlanDrawer
       ref="generatePlanDrawerRef"
-      @getGenerator="handleGetGenerator"
-      @update:generatorList="updateGeneratorList"
+      @getGeneratePlan="handleGetGeneratePlan"
+      @update:generatePlanList="updateGeneratorList"
+    />
+    <FilePlanEditDrawer
+      ref="filePlanEditDrawerRef"
+      :currentFilePlan="currentFilePlan"
+      @update:currentFilePlan="handleUpdateFilePlan"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import {
-  DocumentAdd,
-  DocumentChecked,
-  QuestionFilled,
-  Memo,
-} from "@element-plus/icons-vue";
-import Editor from "@/components/editor/index.vue";
+import { DocumentAdd, DocumentChecked, Plus } from "@element-plus/icons-vue";
 import { ElNotification, ElMessageBox } from "element-plus";
 import GeneratePlanDrawer from "./generatePlanDrawer.vue";
-import { saveData, getData } from "@/utils/dataSave.ts";
+import FilePlanEditDrawer from "./filePlanEditDrawer.vue";
 
-const generatorList = ref([]) as any;
+const testLoading = ref(false);
+const generatePlanList = ref([]) as any;
 const props = defineProps({
-  modelValue: {
+  generatePlanList: {
+    type: Array,
+    default: [],
+  },
+  currentGeneratePlan: {
     type: Object,
-    default: {
-      id: null,
-      title: "未命名",
-      content:
-        "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
-    },
+    default: {},
+  },
+  selectedRows: {
+    type: Array,
+    default: [],
   },
 });
+// 当前选中的文件方案
+const currentFilePlan = ref({}) as any;
+// 当前选中的生成方案
+const currentGeneratePlan = ref({
+  id: null,
+  name: "未命名",
+  filePlanList: [],
+}) as any;
 
-const generator = ref(props.modelValue);
-const emit = defineEmits(["update:generator"]);
-const editorRef = ref(null) as any;
+const emit = defineEmits(["handleTest"]);
 
-const formate = () => {
-  editorRef.value?.format();
-};
+const filePlanEditDrawerRef = ref(null) as any;
 
-function handleGetGenerator(row: any) {
-  generator.value = row;
+const selectedRows = ref([]) as any;
+
+function handleSelectionChange(selection: any) {
+  selectedRows.value = selection;
+}
+
+function handleGetGeneratePlan(row: any) {
+  currentGeneratePlan.value = row;
 }
 
 const generatePlanDrawerRef = ref(null) as any;
 
 function handleShowList() {
   generatePlanDrawerRef.value?.init({
-    generatorList: generatorList.value,
+    generatePlanList: generatePlanList.value,
   });
 }
 
-const saveGenerator = () => {
-  saveData("batchGenerator", "generatorList", generatorList.value);
-  saveData("batchGenerator", "generator", generator.value);
-};
-
 function updateGeneratorList(val: any) {
-  generatorList.value = val;
-  saveGenerator();
+  generatePlanList.value = val;
 }
 
 // 保存为新方案
@@ -106,16 +143,13 @@ function handleSave() {
     inputPattern: /\S+/,
     inputErrorMessage: "请输入生成方案名称",
   }).then(({ value }: any) => {
-    if (generatorList.value.find((item: any) => item.title === value)) {
+    if (generatePlanList.value.find((item: any) => item.name === value)) {
       ElNotification.error("生成方案名称已存在");
       return;
     }
-    generatorList.value.push({
-      id: new Date().getTime(),
-      title: value,
-      content: generator.value.content,
-    });
-    saveGenerator();
+    currentGeneratePlan.value.id = new Date().getTime();
+    currentGeneratePlan.value.name = value;
+    generatePlanList.value.push(currentGeneratePlan.value);
     ElNotification.success("保存成功");
   });
 }
@@ -126,144 +160,168 @@ function handleUpdate() {
     confirmButtonText: "确认",
     cancelButtonText: "取消",
     inputPattern: /\S+/,
-    inputValue: generator.value.title,
+    inputValue: currentGeneratePlan.value.name,
     inputErrorMessage: "请输入生成方案名称",
   }).then(({ value }: any) => {
-    if (
-      generatorList.value.find(
-        (item: any) => item.title === value && item.id !== generator.value.id
-      )
-    ) {
+    if (generatePlanList.value.find((item: any) => item.name === value && item.id !== currentGeneratePlan.value.id)) {
       ElNotification.error("生成方案名称已存在");
       return;
     }
-    generator.value.title = value;
-    const index = generatorList.value.findIndex(
-      (item: any) => item.id === generator.value.id
-    );
+    currentGeneratePlan.value.name = value;
+    const index = generatePlanList.value.findIndex((item: any) => item.id === currentGeneratePlan.value.id);
     if (index === -1) {
       ElNotification.error("方案不存在,请先添加方案");
       return;
     }
-    generatorList.value[index] = generator.value;
-    saveGenerator();
+    generatePlanList.value[index] = currentGeneratePlan.value;
     ElNotification.success("修改成功");
   });
 }
 
+function handleEdit(row: any) {
+  currentFilePlan.value = row;
+  filePlanEditDrawerRef.value?.init({
+    filePlan: currentFilePlan.value,
+    basePath: currentGeneratePlan.value.basePath,
+  });
+}
+
+function handleUpdateFilePlan(val: any) {
+  currentFilePlan.value = val;
+  currentGeneratePlan.value.filePlanList.forEach((item: any) => {
+    if (item.id === currentFilePlan.value.id) {
+      item = currentFilePlan.value;
+    }
+  });
+  generatePlanList.value.forEach((item: any) => {
+    if (item.id === currentGeneratePlan.value.id) {
+      item = currentGeneratePlan.value;
+    }
+  });
+}
+const tableRef = ref(null) as any;
+
 async function init() {
-  generatorList.value =
-    (await getData("batchGenerator", "generatorList")) || [];
-  generator.value = (await getData("batchGenerator", "generator")) || {
-    id: null,
-    title: "未命名",
-    content:
-      "//fileData:文件字符数据\n(fileData) => {\n\n\n\n\n\n\n    return fileData\n}",
-  };
+  generatePlanList.value = props.generatePlanList;
+  currentGeneratePlan.value = props.currentGeneratePlan;
+  selectedRows.value = props.selectedRows;
+  selectedRows.value.forEach((item: any) => {
+    tableRef.value?.toggleRowSelection(item, true);
+  });
+}
+
+function handleAdd() {
+  ElMessageBox.confirm("新增方案会清空当前方案,请确认是否已保存当前方案?", "提示", {
+    confirmButtonText: "确认",
+    cancelButtonText: "取消",
+  }).then(() => {
+    currentGeneratePlan.value = {
+      filePlanList: [
+        {
+          id: new Date().getTime(),
+          planName: "文件1",
+          template: "",
+          suffix: "java",
+        },
+      ],
+    };
+  });
+}
+
+function handleDelete(row: any) {
+  ElMessageBox.confirm("确认删除该方案吗？", "提示", {
+    confirmButtonText: "确认",
+    cancelButtonText: "取消",
+    type: "warning",
+  }).then(() => {
+    const index = generatePlanList.value.findIndex((item: any) => item.id === row.id);
+    if (index === -1) {
+      ElNotification.error("方案不存在,请先添加方案");
+      return;
+    }
+    generatePlanList.value.splice(index, 1);
+    ElNotification.success("删除成功");
+  });
+}
+
+function handleAddFilePlan() {
+  if (!currentGeneratePlan.value.filePlanList) {
+    currentGeneratePlan.value.filePlanList = [];
+  }
+  currentGeneratePlan.value.filePlanList.push({
+    id: new Date().getTime(),
+    name: "",
+    fileName: "{{PascalCaseTableName}}",
+    template: "",
+    suffix: "java",
+    generatePath: currentGeneratePlan.value.basePath,
+  });
+}
+function validate() {
+  if (!currentGeneratePlan.value) {
+    ElNotification.error({
+      message: "请选择生成方案",
+    });
+    return false;
+  }
+  if (!currentGeneratePlan.value.filePlanList.length) {
+    ElNotification.error({
+      message: "请添加文件计划",
+    });
+    return false;
+  }
+  return true;
+}
+
+async function handleTest(row: any) {
+  testLoading.value = true;
+  emit("handleTest", row);
+}
+
+function setTestLoading(val: boolean) {
+  testLoading.value = val;
 }
 
 onMounted(() => {
-  init();
+  setTimeout(() => {
+    init();
+  }, 500);
 });
 
 defineExpose({
-  generator,
+  currentGeneratePlan,
+  generatePlanList,
+  validate,
+  setTestLoading,
+  selectedRows,
+  handleUpdateFilePlan,
 });
 </script>
 
 <style lang="scss" scoped>
-.generator {
-  width: calc(100%);
-  height: calc(100% - 20px);
-
+.generatePlan-plan {
   .el-icon,
   .svg-icon {
     margin-left: 5px;
     outline: unset;
+    cursor: pointer;
   }
   .editor {
     border-radius: 0 0 4px 4px;
-    padding: 8px 0px 0px 0px;
-  }
-  .header {
-    font-size: 14px;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: calc(100%);
-    padding: 0px;
-    height: 30px;
-    border-radius: 4px 4px 0 0;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    overflow: hidden;
-    .title {
-      height: calc(100% + 2px);
-      min-width: 28%;
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      padding: 0 15px 0 10px;
-      color: black;
-      font-weight: bold;
-      &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -3px;
-        width: 100%;
-        height: 100%;
-        // background: #00968c;
-        font-size: 14px;
-        color: black;
-        z-index: -1;
-        border-right: 1px solid #ccc;
-        // transform: perspective(100px) rotateX(15deg) skew(18deg);
-      }
-    }
-    .tools {
-      display: flex;
-      justify-content: end;
-      font-size: 18px;
-      height: calc(100% + 2px);
-      width: fit-content;
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      min-width: 28%;
-      padding: 0 10px;
-
-      &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: -3px;
-        width: 100%;
-        height: 100%;
-        // background: #00968c;
-        font-size: 14px;
-        border-left: 1px solid #ccc;
-        color: #fff;
-        z-index: -1;
-        // transform: perspective(100px) rotateX(-15deg) skew(18deg);
-      }
-      .el-icon {
-        margin-left: 8px;
-        cursor: pointer;
-      }
-      .el-icon:active {
-        transform: translateY(1px);
-      }
-    }
   }
 }
-.generator-input {
-  height: calc(100% - 30px);
+.generatePlan-input {
   :deep(.el-textarea__inner) {
     height: 100%;
+  }
+}
+.generatePlan-table {
+  flex: 1;
+  min-height: 0;
+  .el-table {
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
   }
 }
 </style>

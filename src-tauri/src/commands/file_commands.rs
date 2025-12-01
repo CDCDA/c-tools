@@ -1,5 +1,5 @@
 use crate::core::file::file_api::{
-    list_directory_recursive_jwalk, move_file_api, read, remove, write, FileNode,
+    list_directory_recursive_jwalk, move_file_api, open_folder_api, read, remove, write, FileNode,
 };
 use crate::core::file::file_hash::{calculate_hashes, HashResult};
 use anyhow::Result;
@@ -55,4 +55,10 @@ pub fn write_file(file_path: String, content: String) -> Result<(), String> {
 #[tauri::command]
 pub fn move_file(file_path: String, new_file_path: String) -> Result<(), String> {
     move_file_api(file_path, new_file_path).map_err(|e| e.to_string())
+}
+
+// 打开文件夹
+#[tauri::command]
+pub fn open_folder(file_path: String) -> Result<(), String> {
+    open_folder_api(file_path).map_err(|e| e.to_string())
 }

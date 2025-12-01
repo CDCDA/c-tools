@@ -1,8 +1,10 @@
 <template>
-  <div class="tree-container">
-    <div class="header">
-      <div class="title">{{ `文件树(${allFileKeys.length})` }}</div>
-      <div class="tools">
+  <div class="tree-container part-container">
+    <div class="part-header">
+      <div class="part-title">
+        {{ `文件树(${allFileKeys.length})` }}
+      </div>
+      <div class="part-tools">
         <el-tooltip content="全选" placement="top">
           <el-icon @click="handleSelectAll">
             <Check />
@@ -25,50 +27,42 @@
         </el-tooltip>
       </div>
     </div>
-    <el-tree-v2
-      v-loading="loading"
-      :data="treeData"
-      :props="defaultProps"
-      :show-checkbox="props.showCheckbox"
-      ref="treeRef"
-      :height="treeHeight"
-    >
-      <template #default="{ node }">
-        <div class="tree-node">
-          <div class="node-left">
-            <el-icon class="el-icon--left">
-              <Document v-if="node.data.is_file" />
-              <Folder v-else-if="!node.expanded" />
-              <FolderOpened v-else />
-            </el-icon>
-            <span>{{ node.label }}</span>
+    <div class="part-main">
+      <el-tree-v2
+        v-loading="loading"
+        :data="treeData"
+        :props="defaultProps"
+        :show-checkbox="props.showCheckbox"
+        ref="treeRef"
+        style="border-radius: 0 0 4px 4px; width: calc(100% - 2px); height: calc(100% - 2px)"
+        :height="treeHeight"
+      >
+        <template #default="{ node }">
+          <div class="tree-node">
+            <div class="node-left">
+              <el-icon class="el-icon--left">
+                <Document v-if="node.data.is_file" />
+                <Folder v-else-if="!node.expanded" />
+                <FolderOpened v-else />
+              </el-icon>
+              <span>{{ node.label }}</span>
+            </div>
+            <div class="node-right">
+              <el-icon class="el-icon--right" v-if="props.readFile">
+                <View @click="handleReadFile(node)" />
+              </el-icon>
+            </div>
           </div>
-          <div class="node-right">
-            <el-icon class="el-icon--right" v-if="props.readFile">
-              <View @click="handleReadFile(node)" />
-            </el-icon>
-          </div>
-        </div>
-      </template>
-    </el-tree-v2>
-    <file-config-drawer
-      ref="fileConfigDrawerRef"
-      @update:options="updateOptions"
-    />
+        </template>
+      </el-tree-v2>
+    </div>
+
+    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, onBeforeUnmount } from "vue";
-import {
-  Document,
-  Folder,
-  FolderOpened,
-  Setting,
-  Check,
-  Close,
-  View,
-  RefreshLeft,
-} from "@element-plus/icons-vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { Document, Folder, FolderOpened, Setting, Check, Close, View, RefreshLeft } from "@element-plus/icons-vue";
 import { list, read } from "@/utils/file.ts";
 import { ElNotification } from "element-plus";
 import fileConfigDrawer from "./fileConfigDrawer.vue";
@@ -182,10 +176,7 @@ function hanldeOpenConfig() {
 const getFileTree = async (path: string) => {
   if (!path) return ElNotification.error("请指定要遍历的文件夹");
   options.value.path = path;
-  window.localStorage.setItem(
-    `${props.key}-fileOptions`,
-    JSON.stringify(options.value)
-  );
+  window.localStorage.setItem(`${props.key}-fileOptions`, JSON.stringify(options.value));
   loading.value = true;
   const startTime = new Date().getTime();
   const files = await list(options.value);
@@ -251,9 +242,7 @@ const treeHeight = ref(400);
 // 计算树的高度
 const calculateTreeHeight = () => {
   nextTick(() => {
-    const treeContainer = document.querySelector(
-      ".el-vl__wrapper"
-    ) as HTMLElement;
+    const treeContainer = document.querySelector(".el-vl__wrapper") as HTMLElement;
     if (treeContainer) {
       const containerHeight = treeContainer.clientHeight;
       treeHeight.value = containerHeight;
@@ -351,7 +340,7 @@ defineExpose({
   }
   .el-tree {
     width: 100%;
-    border: 1px solid #ccc;
+    border: 1px solid #d5d7dd;
     border-radius: 4px;
     height: calc(100% - 30px);
     :deep(.el-vl__wrapper, .el-vl__window) {

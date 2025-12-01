@@ -1,5 +1,5 @@
 <template>
-  <div class="page-main">
+  <div class="page-main batch-regex">
     <div class="file-select">
       <el-input v-model="targetPath">
         <template #prepend><span style="cursor: pointer" @click="handleSelectFile()">选择文件夹</span></template>
@@ -10,35 +10,39 @@
         </template>
       </el-input>
     </div>
-    <div class="main-container">
-      <file-tree
-        ref="fileTreeRef"
-        style="width: 300px; margin-right: 15px"
-        showCheckbox
-        :readFile="true"
-        key="batchRegex"
-        @update:path="(val: any) => (targetPath = val)"
-        @update:fileData="(val: any) => ((inputValue = val.content), (mode = 'single'), (currentFile = val))"
-        v-if="mode === 'multi'"
-      />
-      <div class="editor-container" v-else>
-        <div class="editor-input">
-          <div class="header">
-            <div class="title">{{ "待处理文本" }}</div>
-            <div class="tools"></div>
+    <el-splitter>
+      <el-splitter-panel :min="200" size="35%">
+        <file-tree
+          ref="fileTreeRef"
+          style="width: calc(100% - 2px); height: calc(100%)"
+          showCheckbox
+          :readFile="true"
+          key="batchRegex"
+          @update:path="(val: any) => (targetPath = val)"
+          @update:fileData="(val: any) => ((inputValue = val.content), (mode = 'single'), (currentFile = val))"
+          v-if="mode === 'multi'"
+        />
+        <div class="editor-container" v-else style="width: calc(100% - 2px); height: calc(100%)">
+          <div class="editor-input">
+            <div class="header">
+              <div class="title">{{ "待处理文本" }}</div>
+              <div class="tools"></div>
+            </div>
+            <editor ref="editorInputRef" class="editor" v-model="inputValue" language="javascript" />
           </div>
-          <editor ref="editorInputRef" class="editor" v-model="inputValue" language="javascript" />
-        </div>
-        <div class="editor-input">
-          <div class="header">
-            <div class="title">{{ "处理结果" }}</div>
-            <div class="tools"></div>
+          <div class="editor-input">
+            <div class="header">
+              <div class="title">{{ "处理结果" }}</div>
+              <div class="tools"></div>
+            </div>
+            <editor ref="editorOutputRef" class="editor" v-model="outputValue" language="javascript" />
           </div>
-          <editor ref="editorOutputRef" class="editor" v-model="outputValue" language="javascript" />
         </div>
-      </div>
-      <regex ref="regexRef" />
-    </div>
+      </el-splitter-panel>
+      <el-splitter-panel :min="200" size="65%">
+        <regex ref="regexRef" />
+      </el-splitter-panel>
+    </el-splitter>
 
     <div class="tools">
       <div class="left-tools">
@@ -180,9 +184,13 @@ const handleMultiRegex = async () => {
 </script>
 
 <style lang="scss" scoped>
-.page-main {
+.page-main.batch-regex {
   padding-bottom: 0;
-  height: calc(100% - 20px);
+  height: calc(100% - 15px);
+  .el-splitter {
+    height: calc(100% - 80px);
+    margin-top: 15px;
+  }
   .el-icon {
     cursor: pointer;
     font-size: 16px;

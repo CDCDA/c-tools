@@ -8,6 +8,8 @@ import image from "./components/image/index.vue";
 import SvgIcon from "./components/svgIcon/index.vue";
 import "virtual:svg-icons-register";
 import pinia from "./store";
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+pinia.use(piniaPluginPersistedstate)
 
 const app = createApp(App);
 app.component("c-image", image);

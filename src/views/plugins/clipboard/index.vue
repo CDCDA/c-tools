@@ -18,7 +18,6 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
 import { ElMessage } from "element-plus";
 import { currentWindow } from "@/utils/window.ts";
-import { Command } from "@tauri-apps/plugin-shell";
 import { invoke } from "@tauri-apps/api/core";
 
 const textList = ref([]) as any;
@@ -41,7 +40,7 @@ const handleDoubleClick = async (content: any) => {
   try {
     await currentWindow.hide();
     try {
-      const result = await invoke("paste", { text: content });
+      await invoke("paste", { text: content });
     } catch (error: any) {
       console.error("插入失败:", error);
     }

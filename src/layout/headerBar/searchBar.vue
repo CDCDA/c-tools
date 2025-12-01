@@ -24,7 +24,7 @@ const emit = defineEmits(["pluginSearch", "changeMode"]);
 const searchText = ref("");
 // const currentWindow = ref() as any;
 import { setWindowSize } from "@/utils/window.ts";
-const avatarUrl = new URL("@/assets/images/feitu-bridge.jpg", import.meta.url).href;
+const avatarUrl = new URL("@/assets/images/avatar.gif", import.meta.url).href;
 onMounted(async () => {
   // currentWindow.value = getCurrentWindow();
   //
@@ -84,7 +84,7 @@ onMounted(() => {
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #d5d7dd;
   .header-bar-left {
     height: 100%;
     width: calc(100% - 60px);

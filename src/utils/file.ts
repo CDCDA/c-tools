@@ -27,6 +27,12 @@ async function remove(filePath: any) {
   await invoke("remove_file", { filePath });
 }
 
+async function openFolder(filePath: any) {
+  console.log("openFolder", filePath);
+  // 核心修改：左边的 key 必须写成 'file_path'，对应 Rust 的参数名
+  await invoke("open_folder", { filePath });
+}
+
 /**
  * 打开一个文件选择对话框，让用户选择一个或多个文件。
  * @param options - 对话框配置选项。
@@ -54,4 +60,4 @@ async function saveFileDialog(options?: SaveDialogOptions): Promise<string | nul
   }
 }
 
-export { openFileDialog, saveFileDialog, list, read, write, move, remove };
+export { openFileDialog, saveFileDialog, list, read, write, move, remove, openFolder };

@@ -136,7 +136,7 @@ defineExpose({
     }
     &:hover,
     &:active {
-      background: #ccc;
+      background: #d5d7dd;
     }
   }
   .best-match {

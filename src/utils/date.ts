@@ -1,7 +1,7 @@
 /*
  * @Author: chenyd
  * @Date: 2023-01-12 14:03:57
- * @LastEditTime: 2025-11-08 16:59:34
+ * @LastEditTime: 2025-11-22 09:37:24
  * @Description:日期处理方法合集
  */
 
@@ -41,7 +41,7 @@ export const sformatDate = (date: Date) => {
   let minutes = date.getMinutes().toString().padStart(2, "0");
   let seconds = date.getSeconds().toString().padStart(2, "0");
 
-  return `${year} 年 ${month} 月 ${day} 日  ${hours} : ${minutes}`;
+  return `${year} 年 ${month} 月 ${day} 日  ${hours} : ${minutes} : ${seconds}`;
 };
 
 /**

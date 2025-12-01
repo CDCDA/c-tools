@@ -4,13 +4,13 @@
       <el-tag class="plugin-name" effect="dark" round closable type="info" @close="close">{{ plugin.name }}</el-tag>
     </div>
     <div class="plugin-bar-center" data-tauri-drag-region>
-      <el-input
+      <!-- <el-input
         class="plugin-bar-search"
         data-tauri-drag-region
         v-model="searchText"
         v-prevent-drag
         placeholder="请输入关键字"
-      />
+      /> -->
     </div>
     <div class="plugin-bar-right" data-tauri-drag-region>
       <el-dropdown @command="handleCommand">
@@ -29,16 +29,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, Directive, watch } from "vue";
-// import { getCurrentWindow } from "@tauri-apps/api/window";
-// import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { ref, onMounted, watch } from "vue";
 import { Image } from "@tauri-apps/api/image";
-
+import { registerShortcut } from "@/utils/shortcut.ts";
+import { useSettingStore } from "@/store/modules/setting.ts";
 import Windows from "@/windows/index.js";
-import { listen } from "@tauri-apps/api/event";
 import { useRouter } from "vue-router";
 const router = useRouter();
-// const currentWindow = getCurrentWindow();
 import { Setting } from "@element-plus/icons-vue";
 const props = defineProps({
   plugin: {
@@ -57,18 +54,6 @@ watch(
   }
 );
 
-const preventDrag: Directive = {
-  mounted(el) {
-    el.addEventListener("mousedown", () => {
-      const inputElement = el.querySelector(".el-input__inner");
-      if (inputElement) {
-        inputElement.focus();
-      }
-    });
-  },
-};
-const vPreventDrag = preventDrag;
-
 const close = () => {
   emit("pluginClose");
 };
@@ -76,13 +61,22 @@ const close = () => {
 const handleCommand = async (command: string) => {
   if (command === "window") {
     const newWindow = new Windows();
-    const win = await newWindow.createWin({
-      label: props.plugin.key,
-      title: props.plugin.name,
-      url: `/plugin/${props.plugin.key}`,
-      decorations: false,
-    });
+    const win = await newWindow.createWin(
+      {
+        label: "tool-" + props.plugin.key,
+        title: props.plugin.name,
+        decorations: false,
+        skipTaskbar: false,
+      },
+      {
+        routeName: props.plugin.key,
+      }
+    );
+
     win.once("tauri://created", async () => {
+      if (!props.plugin.ico) {
+        return;
+      }
       try {
         const image = await Image.fromPath(props.plugin.ico);
         // 2. 将加载后的图像对象设置为窗口图标
@@ -99,14 +93,16 @@ const handleCommand = async (command: string) => {
     // 退出
   }
 };
-
-onMounted(() => {
-  listen("tauri://blur", () => {
-    setTimeout(() => {
-      // currentWindow.value.hide();
-    }, 500);
+async function initRegisterShortcut() {
+  const settingStore = useSettingStore();
+  registerShortcut({
+    shortcut: settingStore.separateWindowShortCutKey,
+    event: () => {
+      handleCommand("window");
+    },
   });
-});
+}
+initRegisterShortcut();
 </script>
 
 <style lang="scss" scoped>
@@ -118,7 +114,7 @@ onMounted(() => {
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #d5d7dd;
   .plugin-bar-left {
     height: 100%;
     margin: 0 20px;
@@ -131,8 +127,9 @@ onMounted(() => {
       font-size: 18px;
       padding-right: 15px;
       padding-left: 20px;
-      background-color: #00968c;
+      background-color: var(--el-color-primary);
       color: #fff;
+      border: none;
       :deep(.el-tag__content) {
         margin-bottom: 4px;
       }

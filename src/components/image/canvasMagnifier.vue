@@ -2,13 +2,7 @@
 <template>
   <div class="pixel-magnifier-container" :style="gridOverlayStyle">
     <!-- 隐藏的全屏图像 -->
-    <img
-      v-if="fullScreenImage"
-      ref="fullScreenImageRef"
-      :src="fullScreenImage"
-      @load="onFullScreenImageLoad"
-      style="display: none"
-    />
+    <img v-if="fullScreenImage" ref="fullScreenImageRef" :src="fullScreenImage" @load="onFullScreenImageLoad" />
 
     <!-- 放大镜视图 -->
     <div class="pixel-magnifier-view" :style="magnifierViewStyle">

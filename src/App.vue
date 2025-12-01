@@ -1,51 +1,63 @@
 <template>
-  <div class="app-container" :style="{ background: settingStore.transparent ? 'transparent' : 'white' }">
+  <div class="app-container" :style="{ background: settingStore.transparent ? 'transparent' : 'white !important' }">
     <RouterView />
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted } from "vue";
-import { adjustWindowSize, setWindowSize } from "@/utils/window.ts";
-import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
+import { nextTick, onMounted, onBeforeUnmount } from "vue";
+import { adjustWindowSize } from "@/utils/window.ts";
 import { useRouter } from "vue-router";
-import { useSettingStore } from "@/store/modules/setting";
-const settingStore = useSettingStore();
-// import { readData } from "@/utils/dataSave";
-import { useUserStore } from "@/store/modules/user";
-const userStore = useUserStore();
-// import { listen } from "@tauri-apps/api/event";
-const router = useRouter();
+import { saveAllStore, loadAllStore } from "@/utils/storeManage.ts";
+import { listen } from "@tauri-apps/api/event";
+import { useSettingStore } from "@/store/modules/setting.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-const currentWindow = getCurrentWindow();
-const initRegister = async () => {
-  try {
-    await unregister("CommandOrControl+B");
-  } finally {
-    await register("CommandOrControl+B", () => {
-      currentWindow.hide();
-    });
-  }
-  try {
-    await unregister("CommandOrControl+1");
-  } finally {
-    await register("CommandOrControl+1", () => {
-      currentWindow.show();
-      currentWindow.setFocus();
-    });
-  }
-};
-// initRegister();
-if (currentWindow.label == "main") {
-  router.push({ name: "home" });
-} else {
-  adjustWindowSize(0, 0);
-  settingStore.transparent = true;
+import { useEventBusStore } from "@/store/modules/eventBus.ts";
+import Windows from "@/windows/index.js";
 
-  router.push({ name: currentWindow.label, query: { key: currentWindow.label } });
+const eventBusStore = useEventBusStore();
+
+const settingStore = useSettingStore();
+const router = useRouter();
+const currentWindow = getCurrentWindow();
+
+async function setupWindow() {
+  // console.log("当前窗口标签:", currentWindow.label);
+  if (currentWindow.label === "main") {
+    router.push({ name: "home" });
+    loadAllStore(true);
+    await listen(`create-window`, (event: any) => {
+      const newWindow = new Windows();
+      const { windowData, params } = event.payload;
+      newWindow.createWin(windowData, params);
+    });
+    return;
+  }
+  loadAllStore(false);
+
+  await listen(`init-data-${currentWindow.label}`, (event: any) => {
+    console.log("【成功】接收到的参数:", event.payload);
+    const params = event.payload;
+    if (params.minimize) {
+      currentWindow.hide();
+    } else {
+      currentWindow.show();
+    }
+    if (params.transparent) {
+      settingStore.transparent = true;
+    }
+    if (params.showHeader) {
+      settingStore.showHeader = true;
+    }
+    router.push({ name: params.routeName, query: { routeName: params.routeName } });
+    eventBusStore.set("image", params);
+  });
+
+  await currentWindow.emit(`window-ready-${currentWindow.label}`);
 }
 
 function init() {
+  setupWindow();
   nextTick(() => {
     adjustWindowSize();
   });
@@ -54,11 +66,10 @@ function init() {
 onMounted(() => {
   init();
 });
-// listen("tauri://blur", () => {
-//   setTimeout(() => {
-//     currentWindow.hide();
-//   }, 500);
-// });
+
+onBeforeUnmount(() => {
+  saveAllStore();
+});
 </script>
 
 <style>
@@ -71,16 +82,19 @@ onMounted(() => {
   --el-color-primary-light-3: #4db6ac !important;
   --el-button-active-bg-color: #00968c !important;
   --el-button-hover-bg-color: #00968c !important;
+  /* --el-table-border-color: #d5d7dd !important;
+  --el-border-color-lighter: #d5d7dd !important; */
 }
 body {
   overflow: hidden;
   margin: 0;
+  transition: all 0.4s ease-in-out;
 }
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  background: transparent;
+  background: transparent !important;
 }
 </style>

@@ -2,8 +2,8 @@ use jwalk::{DirEntry, WalkDir};
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
-use walkdir::DirEntry as WalkDirEntry;
-
+use std::process::Command;
+// use walkdir::DirEntry as WalkDirEntry;
 #[derive(Debug, Serialize)]
 pub struct FileNode {
     name: String,
@@ -25,18 +25,18 @@ impl FileNode {
             children: Vec::new(),
         }
     }
-    fn new_normal(entry: &WalkDirEntry) -> Self {
-        let path = entry.path().to_path_buf();
-        let name = entry.file_name().to_string_lossy().into_owned();
-        let is_file = entry.file_type().is_file();
+    // fn new_normal(entry: &WalkDirEntry) -> Self {
+    //     let path = entry.path().to_path_buf();
+    //     let name = entry.file_name().to_string_lossy().into_owned();
+    //     let is_file = entry.file_type().is_file();
 
-        FileNode {
-            name,
-            path,
-            is_file,
-            children: Vec::new(),
-        }
-    }
+    //     FileNode {
+    //         name,
+    //         path,
+    //         is_file,
+    //         children: Vec::new(),
+    //     }
+    // }
 }
 
 // fn is_not_hidden(entry: &WalkDirEntry) -> bool {
@@ -323,23 +323,51 @@ fn ensure_directory_exists(file_path: &Path) -> Result<(), String> {
 }
 
 // 创建目录（包括多级目录）
-pub fn create_directory(dir_path: String) -> Result<(), String> {
-    let path = Path::new(&dir_path);
-    fs::create_dir_all(path).map_err(|e| format!("创建目录 '{}' 失败: {}", dir_path, e))?;
-    Ok(())
-}
+// pub fn create_directory(dir_path: String) -> Result<(), String> {
+//     let path = Path::new(&dir_path);
+//     fs::create_dir_all(path).map_err(|e| format!("创建目录 '{}' 失败: {}", dir_path, e))?;
+//     Ok(())
+// }
 
 // 检查文件或目录是否存在
-pub fn exists(path: String) -> bool {
-    Path::new(&path).exists()
-}
+// pub fn exists(path: String) -> bool {
+//     Path::new(&path).exists()
+// }
 
-// 检查是否是目录
-pub fn is_directory(path: String) -> bool {
-    Path::new(&path).is_dir()
-}
+// // 检查是否是目录
+// pub fn is_directory(path: String) -> bool {
+//     Path::new(&path).is_dir()
+// }
 
-// 检查是否是文件
-pub fn is_file(path: String) -> bool {
-    Path::new(&path).is_file()
+// // 检查是否是文件
+// pub fn is_file(path: String) -> bool {
+//     Path::new(&path).is_file()
+// }
+
+pub fn open_folder_api(file_path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("explorer")
+            .args(["/select,", &file_path]) // 会选中指定文件或文件夹
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .args(["-R", &path]) // -R 参数会打开并选中
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }

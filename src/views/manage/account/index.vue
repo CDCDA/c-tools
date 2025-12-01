@@ -28,11 +28,11 @@
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
-import { useUserStore } from "@/store/modules/user";
+import { useUserStore } from "@/store/modules/user.ts";
 import { ArrowRight } from "@element-plus/icons-vue";
 import LoginDialog from "./loginDialog.vue";
-import { getTimeDiff } from "@/utils/date";
-const loginDialogRef = ref<LoginDialog>(null);
+import { getTimeDiff } from "@/utils/date.ts";
+const loginDialogRef = ref(null) as any;
 
 const userStore = useUserStore();
 // 登录弹窗初始化

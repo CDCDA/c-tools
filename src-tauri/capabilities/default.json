@@ -4,16 +4,8 @@
   "description": "Capability for the main window",
   "windows": [
     "main",
-    "jsonEditor",
-    "clipboard",
-    "fileHasher",
-    "sqlConverter",
-    "systemInfo",
-    "fileTreeJson",
-    "fileOrganizer",
-    "batchRegex",
-    "codeGenerator",
-    "colorExtraction"
+    "tool-*",
+    "tip"
   ],
   "permissions": [
     "core:window:allow-set-position",

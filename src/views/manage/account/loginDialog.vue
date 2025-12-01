@@ -34,12 +34,12 @@
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { ArrowRight, ChatDotRound, Message, UserFilled } from "@element-plus/icons-vue";
+import { ChatDotRound, Message, UserFilled } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElNotification } from "element-plus";
-import { login } from "@/api/auth";
-import { useUserStore } from "@/store/modules/user";
-import { saveData } from "@/utils/dataSave";
+import { login } from "@/api/auth.ts";
+import { useUserStore } from "@/store/modules/user.ts";
+import { saveData } from "@/utils/dataSave.ts";
 const userStore = useUserStore();
 
 // 控制登录弹窗显示
@@ -102,7 +102,7 @@ const handleLogin = async () => {
 // 处理弹窗关闭
 const handleClose = (done: () => void) => {
   // 可以添加确认关闭的逻辑
-  if (loginForm.userName || loginForm.password) {
+  if (loginForm.value.userName || loginForm.value.password) {
     // 如果有输入内容，可以提示用户
     ElNotification.info("登录信息未保存");
   }

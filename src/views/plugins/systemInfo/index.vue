@@ -188,7 +188,7 @@ onMounted(async () => {
         justify-content: space-between;
         align-items: center;
         flex: 1;
-        border-right: 1px solid #ccc;
+        border-right: 1px solid #d5d7dd;
         padding: 10px;
         .disks-item-img {
           width: 60px;
@@ -247,15 +247,15 @@ onMounted(async () => {
       border-radius: 4px;
       display: flex;
       flex-wrap: wrap;
-      border-left: 1px solid #ccc;
-      border-top: 1px solid #ccc;
+      border-left: 1px solid #d5d7dd;
+      border-top: 1px solid #d5d7dd;
       .cpu-item {
         width: calc(50% - 11px);
         padding: 0 5px;
         display: flex;
         height: calc(12.5% - 1px);
-        border-right: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
+        border-right: 1px solid #d5d7dd;
+        border-bottom: 1px solid #d5d7dd;
         .cpu-item-icon {
           width: 40%;
           .svg-icon {

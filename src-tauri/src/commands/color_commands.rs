@@ -1,8 +1,7 @@
 use base64::{engine::general_purpose, Engine as _};
-use image::{ImageBuffer, ImageFormat, Rgb, RgbaImage};
+use image::{ImageBuffer, Rgb};
 use screenshots::Screen;
 use serde::{Deserialize, Serialize};
-use std::io::Cursor;
 use std::mem;
 use windows::Win32::Foundation::{COLORREF, HWND}; // 移除 RECT
 use windows::Win32::Graphics::Gdi::{
@@ -250,4 +249,85 @@ pub fn capture_magnifier_area(
             None
         }
     }
+}
+// 使用 screenshots crate 的备选实现（更简单）
+#[tauri::command]
+pub fn capture_area(x: i32, y: i32, width: u32, height: u32) -> Option<String> {
+    // println!("使用 screenshots crate 截取区域: ({}, {}) {}x{}", x, y, width, height);
+
+    // 参数验证
+    if width == 0 || height == 0 {
+        eprintln!("截图区域尺寸无效: {}x{}", width, height);
+        return None;
+    }
+
+    let screens = match Screen::all() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("获取屏幕信息失败: {}", e);
+            return None;
+        }
+    };
+
+    if screens.is_empty() {
+        eprintln!("未检测到任何屏幕");
+        return None;
+    }
+
+    // 找到包含指定坐标的屏幕
+    let target_screen = screens.iter().find(|screen| {
+        let info = &screen.display_info;
+        x >= info.x
+            && x < info.x + info.width as i32
+            && y >= info.y
+            && y < info.y + info.height as i32
+    });
+
+    let screen = match target_screen {
+        Some(s) => s,
+        None => {
+            eprintln!("未找到包含坐标 ({}, {}) 的屏幕", x, y);
+            return None;
+        }
+    };
+
+    // 计算在屏幕内的相对坐标
+    let screen_x = (x - screen.display_info.x).max(0) as u32;
+    let screen_y = (y - screen.display_info.y).max(0) as u32;
+
+    // 确保截图区域不超出屏幕边界
+    let actual_width = width.min(screen.display_info.width - screen_x);
+    let actual_height = height.min(screen.display_info.height - screen_y);
+
+    if actual_width == 0 || actual_height == 0 {
+        eprintln!("截图区域超出屏幕边界");
+        return None;
+    }
+
+    let screenshot_image = match screen.capture_area(
+        screen_x as i32,
+        screen_y as i32,
+        actual_width,
+        actual_height,
+    ) {
+        Ok(img) => img,
+        Err(e) => {
+            eprintln!("捕获区域失败: {}", e);
+            return None;
+        }
+    };
+
+    // 编码为 PNG
+    let png_bytes = match screenshot_image.to_png() {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            eprintln!("PNG 编码失败: {}", e);
+            return None;
+        }
+    };
+
+    let base64_string = general_purpose::STANDARD.encode(&png_bytes);
+
+    // println!("区域截图成功，Base64 长度: {}", base64_string.len());
+    Some(format!("data:image/png;base64,{}", base64_string))
 }

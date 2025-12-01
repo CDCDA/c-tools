@@ -1,9 +1,10 @@
 <template>
-  <div class="code-editor-wrapper">
+  <div :class="['code-editor-wrapper', { fullscreen: editorOptions.fullScreen }]">
+    <div class="header" data-tauri-drag-region v-if="editorOptions.fullScreen">编辑器</div>
     <VAceEditor
       ref="aceEditorRef"
       v-model:value="editorContent"
-      :lang="aceLanguage"
+      :lang="currentLanguage"
       :theme="aceTheme"
       :options="editorOptions"
       :style="editorStyle"
@@ -11,47 +12,46 @@
     />
     <div class="code-editor-footer">
       <div class="code-editor-footer-left">
-        <el-tooltip content="格式化" placement="top">
-          <el-icon class="code-editor-footer-item"><QuestionFilled /></el-icon>
-        </el-tooltip>
-        <el-dropdown
-          class="code-editor-footer-item"
-          placement="top"
-          trigger="click"
-        >
-          <el-button type="text" size="mini" class="language-button">{{
-            aceLanguage
-          }}</el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item
-                v-for="lang in languageList"
-                :key="lang"
-                @click="aceLanguage = lang"
-              >
-                {{ lang }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <slot name="footer-left-prepend"></slot>
+        <slot name="footer-left">
+          <div class="code-editor-footer-item">
+            <span class="label">字数:</span>
+            <span class="value">{{ editorContent.length }}</span>
+          </div>
+        </slot>
+        <slot name="footer-left-append"></slot>
       </div>
       <div class="code-editor-footer-right">
-        <el-button type="text" size="mini" @click="formatCode"
-          >格式化
-        </el-button>
-        <div class="code-editor-footer-item">
-          {{ editorContent.length }} 个字符
-        </div>
+        <slot name="footer-right-prepend"></slot>
+
+        <slot name="footer-right">
+          <el-dropdown class="code-editor-footer-item" placement="top" trigger="click">
+            <el-button type="text" size="mini" style="margin-bottom: 2px" class="language-button">
+              {{ currentLanguage }}
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="lang in languageList" :key="lang" @click="currentLanguage = lang">
+                  {{ lang }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-button type="text" size="mini" class="code-editor-footer-item" @click="fullScreen">
+            {{ editorOptions.fullScreen ? "退出全屏" : "全屏" }}
+          </el-button>
+
+          <el-button type="text" size="mini" class="code-editor-footer-item" @click="formatContent"> 格式化 </el-button>
+        </slot>
+        <slot name="footer-right-append"></slot>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, onUnmounted, reactive } from "vue";
 import { VAceEditor } from "vue3-ace-editor";
-import { QuestionFilled } from "@element-plus/icons-vue";
-
 import { ElNotification } from "element-plus";
 import { format } from "sql-formatter";
 import { js_beautify } from "js-beautify";
@@ -61,6 +61,7 @@ import { debounce } from "lodash";
 import ace from "ace-builds/src-noconflict/ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/mode-sql";
+import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-text";
 import "ace-builds/src-noconflict/theme-chrome";
@@ -79,10 +80,7 @@ import "ace-builds/src-noconflict/worker-javascript";
 
 // 配置 worker 路径
 const aceConfig = ace.config;
-aceConfig.set(
-  "basePath",
-  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/"
-);
+aceConfig.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/");
 aceConfig.setModuleUrl(
   "ace/mode/javascript_worker",
   "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/worker-javascript.js"
@@ -99,6 +97,7 @@ const props = defineProps({
   // 新增防抖延迟配置
   debounceDelay: { type: Number, default: 300 },
 });
+
 const emit = defineEmits(["update:modelValue"]);
 
 const aceEditorRef = ref();
@@ -112,9 +111,12 @@ let debouncedEmit = debounce((value: string) => {
 onUnmounted(() => {
   debouncedEmit.cancel();
 });
-
+function fullScreen() {
+  if (!editorInstance.value) return;
+  editorOptions.fullScreen = !editorOptions.fullScreen;
+}
 // 语言映射
-const languageList = ["json", "sql", "javascript"] as any;
+const languageList = ["json", "sql", "javascript", "java"] as any;
 
 // 主题映射
 const themeMap = {
@@ -122,11 +124,11 @@ const themeMap = {
   dark: "monokai",
 } as any;
 
-const aceLanguage = ref(props.language);
+const currentLanguage = ref(props.language);
 const aceTheme = computed(() => themeMap[props.theme] || "chrome") as any;
 
 // 编辑器配置
-const editorOptions = {
+const editorOptions = reactive({
   fontSize: 14,
   showPrintMargin: false,
   wrap: true,
@@ -139,8 +141,9 @@ const editorOptions = {
   enableSnippets: true,
   showLineNumbers: true,
   behavioursEnabled: true,
+  fullScreen: false,
   useWorker: true, // 启用语法检查工作线程
-};
+});
 
 // 编辑器样式
 const editorStyle = {
@@ -221,11 +224,10 @@ watch(
   () => props.language,
   () => {
     nextTick(() => {
-      aceLanguage.value = props.language;
-      console.log("Qa", aceLanguage.value);
+      currentLanguage.value = props.language;
       if (editorInstance.value) {
         const session = editorInstance.value.getSession();
-        session.setMode(`ace/mode/${aceLanguage.value}`);
+        session.setMode(`ace/mode/${currentLanguage.value}`);
       }
     });
   },
@@ -320,7 +322,31 @@ function uniqueArray() {
       return;
     }
 
-    const uniqueArray = Array.from(new Set(value));
+    // 深度去重函数
+    const getUniqueKey = (item: any) => {
+      if (item === null) return "null";
+      if (typeof item === "object") {
+        // 对对象按键排序后字符串化，确保顺序不影响比较
+        const sortedObj = Object.keys(item)
+          .sort()
+          .reduce((acc: any, key: any) => {
+            acc[key] = item[key];
+            return acc;
+          }, {});
+        return JSON.stringify(sortedObj);
+      }
+      return item;
+    };
+
+    const seen = new Set();
+    const uniqueArray = value.filter((item: any) => {
+      const key = getUniqueKey(item);
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
     const result = JSON.stringify(uniqueArray, null, 2);
     safeSetValue(result);
     debouncedEmit(result);
@@ -336,10 +362,7 @@ function escapeSpecialChars() {
 
   try {
     const currentContent = editorInstance.value.getValue();
-    const escapedContent = currentContent.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
-    );
+    const escapedContent = currentContent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     safeSetValue(escapedContent);
     debouncedEmit(escapedContent);
   } catch (error: any) {
@@ -354,10 +377,7 @@ function unescapeSpecialChars() {
 
   try {
     const currentContent = editorInstance.value.getValue();
-    const unescapedContent = currentContent.replace(
-      /\\([.*+?^${}()|[\]\\])/g,
-      "$1"
-    );
+    const unescapedContent = currentContent.replace(/\\([.*+?^${}()|[\]\\])/g, "$1");
     safeSetValue(unescapedContent);
     debouncedEmit(unescapedContent);
   } catch (error: any) {
@@ -403,22 +423,25 @@ defineExpose({
 <style lang="scss" scoped>
 .code-editor-wrapper {
   position: relative;
-  height: 100%;
-  width: 100%;
+  height: calc(100% - 10px);
+  width: calc(100% - 2px);
   overflow: hidden;
-  border: 1px solid #ccc;
+  border: 1px solid #d5d7dd;
   background: white;
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding: 8px 0px 0px 0px;
 
   .code-editor-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 10px;
-    border-top: 1px solid #ccc;
+    padding: 0 5px;
+    height: 30px;
+    border-top: 1px solid #d5d7dd;
+
     .code-editor-footer-left,
     .code-editor-footer-right {
       height: 100%;
@@ -426,29 +449,47 @@ defineExpose({
       align-items: center;
       justify-content: center;
     }
-    .code-editor-footer-item {
-      margin: 0 5px;
-      font-size: 14px;
-      color: var(--el-color-primary);
-      font-weight: bold;
+
+    .code-editor-footer-left {
+      .code-editor-footer-item {
+        margin-right: 10px;
+      }
     }
+
+    .code-editor-footer-right {
+      .code-editor-footer-item {
+        margin-left: 10px;
+      }
+    }
+
+    .code-editor-footer-item {
+      font-size: 14px !important;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      span {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 2px;
+      }
+    }
+
     .el-dropdown {
       height: 100%;
     }
-    .el-button {
-      color: var(--el-color-primary);
-      display: flex;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-      border: none !important;
-      outline: none !important;
-      cursor: pointer;
-      &:active {
-        background-color: #f8f9fa !important;
-      }
-    }
   }
+  .header {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #d5d7dd;
+  }
+
   // Ace Editor 会自动填充容器
   :deep(.vue-ace-editor) {
     height: calc(100% - 20px);
@@ -462,8 +503,7 @@ defineExpose({
 // Ace Editor 全局样式调整
 .code-editor-wrapper {
   .ace_editor {
-    font-family:
-      "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace !important;
+    font-family: "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace !important;
     font-size: 14px !important;
     background: white !important;
 
@@ -479,5 +519,14 @@ defineExpose({
       background-color: #0b66b533 !important;
     }
   }
+}
+.fullscreen {
+  height: 100% !important;
+  width: 100% !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 9999 !important;
+  padding: 0 !important;
 }
 </style>

@@ -1,12 +1,10 @@
 <template>
   <div class="page-main nginx">
-    <Editor class="nginx-editor" ref="nginxEditorRef" v-model="nginxStr" language="nginx" />
-    <div class="tools">
-      <el-button type="text" @click="handleFormat">格式化</el-button>
-      <!-- <el-button type="text" @click="handleDuplicateRemoval">数组去重</el-button>
-      <el-button type="text">转义</el-button>
-      <el-button type="text">去转义</el-button> -->
-    </div>
+    <Editor class="nginx-editor" ref="nginxEditorRef" v-model="nginxStr" language="nginx">
+      <template #footer-right>
+        <el-button type="text" class="code-editor-footer-item" size="mini" @click="handleFormat">格式化</el-button>
+      </template>
+    </Editor>
   </div>
 </template>
 
@@ -67,10 +65,6 @@ const handleFormat = () => {
 </script>
 
 <style lang="scss" scoped>
-.page-main.nginx {
-  padding-bottom: 0;
-  height: calc(100% - 20px);
-}
 .nginx-editor {
   border-radius: 4px;
   height: calc(100% - 12px);

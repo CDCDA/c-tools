@@ -1,10 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod commands;
 mod core;
-use commands::color_commands::{capture_full_screen, capture_magnifier_area, get_color_at_cursor};
+use commands::color_commands::{capture_full_screen, capture_magnifier_area, get_color_at_cursor,capture_area};
+use commands::db_command::{get_all_tables, get_table_columns, test_db_connection};
 use commands::file_commands::{
-    calculate_file_hash, list_directory_recursively_jwalk, move_file, read_file, remove_file,
-    write_file,
+    calculate_file_hash, list_directory_recursively_jwalk, move_file, open_folder, read_file,
+    remove_file, write_file,
 };
 use commands::mouse_commands::{
     get_mouse_position,
@@ -50,6 +51,7 @@ fn main() {
             write_file,
             move_file,
             remove_file,
+            open_folder,
             paste,
             get_color_at_cursor,
             capture_magnifier_area,
@@ -57,7 +59,11 @@ fn main() {
             start_color_picking,
             stop_color_picking,
             capture_full_screen,
-            set_app_fullscreen
+            set_app_fullscreen,
+            test_db_connection,
+            get_all_tables,
+            get_table_columns,
+            capture_area
         ])
         .setup(|app| {
             let menu = MenuBuilder::new(app)

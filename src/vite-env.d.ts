@@ -16,4 +16,5 @@ declare module "sortablejs";
 declare module "@/components/editor/useCodeMirror.js";
 declare module "@/windows/index.js";
 declare module "@/store/modules/*.ts";
+declare module "@/router/*.ts";
 declare module "@/utils/*.ts";

@@ -8,8 +8,16 @@ export const sendMessage = async (messages: any, options: any) => {
     temperature: options.temperature || 0.2,
     max_tokens: 4096,
   };
-  // console.log("options", options);
-  return await fetch(options.baseUrl, {
+  console.log("options", {
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/x-ndjson",
+      Authorization: `Bearer ${options.apiKey}`,
+    },
+    method: "POST",
+    body: JSON.stringify(requestBody),
+  });
+  return await fetch(`${options.baseUrl}/chat/completions`, {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/x-ndjson",

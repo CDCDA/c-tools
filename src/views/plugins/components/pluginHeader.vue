@@ -5,13 +5,13 @@
       <div>{{ props.plugin.name }}</div>
     </div>
     <div class="plugin-header-center" data-tauri-drag-region>
-      <el-input
+      <!-- <el-input
         class="plugin-header-search"
         data-tauri-drag-region
         v-model="searchText"
         v-prevent-drag
         placeholder="请输入关键字"
-      />
+      /> -->
     </div>
     <div class="plugin-header-right" data-tauri-drag-region>
       <svg-icon iconName="otherSvg-缩小" @click="lessen" />
@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, Directive, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 const currentWindow = getCurrentWindow();
 const emit = defineEmits(["handleSearch"]);
@@ -42,18 +42,6 @@ watch(
     emit("handleSearch", val);
   }
 );
-
-const preventDrag: Directive = {
-  mounted(el) {
-    el.addEventListener("mousedown", () => {
-      const inputElement = el.querySelector(".el-input__inner");
-      if (inputElement) {
-        inputElement.focus();
-      }
-    });
-  },
-};
-const vPreventDrag = preventDrag;
 
 const lessen = () => {
   currentWindow.minimize();
@@ -75,7 +63,7 @@ const close = () => {
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #d5d7dd;
   .svg-icon {
     margin-right: 5px;
   }

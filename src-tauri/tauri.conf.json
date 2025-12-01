@@ -17,7 +17,8 @@
         "height": 200,
         "label": "main",
         "minimizable": true,
-        "decorations": false
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {

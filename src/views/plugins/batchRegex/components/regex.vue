@@ -1,34 +1,30 @@
 <template>
-  <div class="regex">
-    <div class="header">
-      <div class="title">{{ `正则方案[${regex.title || "未命名"}]` }}</div>
-      <div class="tools">
-        <el-tooltip :content="'格式化:shift+alt+f\n'" placement="top">
-          <el-icon><QuestionFilled /></el-icon>
-        </el-tooltip>
+  <div class="regex part-container">
+    <div class="part-header">
+      <div class="part-title" @click="handleShowList">
+        <el-button type="text" size="mini" style="margin-bottom: -2px">
+          {{ `正则方案[${regex.title || "未命名"}]` }}
+        </el-button>
+      </div>
+      <div class="part-tools">
         <el-tooltip content="保存为新方案" placement="top">
           <el-icon><DocumentAdd @click="handleSave" /></el-icon>
         </el-tooltip>
         <el-tooltip content="修改方案" placement="top">
           <el-icon v-if="regex.id"><DocumentChecked @click="handleUpdate" /></el-icon>
         </el-tooltip>
-        <el-tooltip content="格式化" placement="top">
-          <svg-icon iconName="otherSvg-格式刷" style="cursor: pointer" @click="formate" />
-        </el-tooltip>
-        <el-tooltip content="正则方案" placement="top">
-          <el-icon><Memo @click="handleShowList" /></el-icon>
-        </el-tooltip>
       </div>
     </div>
-    <div class="regex-input">
-      <Editor ref="editorRef" v-model="regex.content" language="javascript" />
+    <div class="part-main">
+      <Editor ref="editorRef" style="border-radius: 0 0 4px 4px" v-model="regex.content" language="javascript" />
     </div>
+
     <RegexDrawer ref="regexDrawerRef" @getRegex="handleGetRegex" @update:regexList="updateRegexList" />
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { DocumentAdd, DocumentChecked, QuestionFilled, Memo } from "@element-plus/icons-vue";
+import { DocumentAdd, DocumentChecked } from "@element-plus/icons-vue";
 import Editor from "@/components/editor/index.vue";
 import { ElNotification, ElMessageBox } from "element-plus";
 import RegexDrawer from "./regexDrawer.vue";
@@ -48,17 +44,10 @@ const regex = ref(props.modelValue);
 const emit = defineEmits(["update:regex"]);
 const editorRef = ref(null) as any;
 
-const formate = () => {
-  editorRef.value?.format();
-};
-
 function handleGetRegex(row: any) {
   regex.value = row;
 }
 
-// function updateRegex() {
-//   emit("update:regex", regex.value);
-// }
 const regexDrawerRef = ref(null) as any;
 
 function handleShowList() {
@@ -145,7 +134,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .regex {
-  width: calc(100% - 314px);
+  width: 100%;
   height: 100%;
 
   .el-icon,

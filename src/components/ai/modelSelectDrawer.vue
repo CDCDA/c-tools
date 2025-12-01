@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { useAiStore } from "@/store/modules/ai";
+import { useAiStore } from "@/store/modules/ai.ts";
 const aiStore = useAiStore();
 const rules = ref({
   modelName: [{ required: true, message: "请选择模型名称", trigger: ["blur"] }],

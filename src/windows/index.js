@@ -19,17 +19,21 @@ export const windowConfig = {
   url: '',                // 路由地址url
   width: 800,            // 窗口宽度
   height: 600,            // 窗口高度
-  // minWidth: null,         // 窗口最小宽度
-  // minHeight: null,        // 窗口最小高度
+  minWidth: null,         // 窗口最小宽度
+  minHeight: null,        // 窗口最小高度
+  skipTaskbar: true,      // 是否跳过任务栏
   // x: null,                // 窗口相对于屏幕左侧坐标
   // y: null,                // 窗口相对于屏幕顶端坐标
   // center: true,           // 窗口居中显示
   // resizable: true,        // 是否支持缩放
-  // maximized: false,       // 最大化窗口
-  decorations: false,     // 窗口是否装饰边框及导航条
+  // maximizable: true,      // 是否支持最大化
+  // minimizable: true,      // 是否支持最小化
+  // transparent: false,     // 窗口是否透明
+  // fullscreen: false,      // 窗口是否全屏
+  // decorations: false,     // 窗口是否装饰边框及导航条
   // alwaysOnTop: false,     // 置顶窗口
   // dragDropEnabled: false, // 禁止系统拖放
-  // visible: false,         // 隐藏窗口
+  visible: false,         // 隐藏窗口
 
   // // ...
 }
@@ -40,36 +44,36 @@ class Windows {
   }
 
   // 创建新窗口
-  async createWin(options) {
-    console.log('createWin', options)
+  async createWin(options, params) {
     const args = Object.assign({}, windowConfig, options)
-
     // 判断窗口是否存在
     const existWin = await this.getWin(args.label)
     if (existWin) {
-      console.log('窗口已存在>>', existWin)
+      console.log("新窗口存在:", args.label)
+      await existWin.close()
     }
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(null)
+      }, 300)
+    })
     // 创建窗口对象
     const win = new WebviewWindow(args.label, args)
 
     // 窗口创建完毕/失败
     win.once('tauri://created', async () => {
-      console.log('tauri://created')
-      // 是否主窗口
-      if (args.label.indexOf('main') > -1) {
-        // ...
-      }
-
-      // 是否最大化
-      if (args.maximized && args.resizable) {
-        console.log('is-maximized')
-        await win.maximize()
-      }
-      win.show()
+      win.hide()
     })
 
+    win.once(`window-ready-${args.label}`, async () => {
+      console.log(`收到窗口 ${args.label} 就绪信号，正在发送数据...`);
+      // 收到就绪信号后，再发送数据
+      await emit(`init-data-${args.label}`, params);
+    });
+
     win.once('tauri://error', async (error) => {
-      console.log('window create error!', error)
+      // 窗口创建失败
+      console.log('窗口创建失败>>', error)
     })
     return win
   }

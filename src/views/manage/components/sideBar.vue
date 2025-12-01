@@ -43,12 +43,12 @@ onMounted(() => {
 <style lang="scss" scoped>
 .sidebar {
   width: 250px;
-  border-right: 1px solid #ccc;
+  border-right: 1px solid #d5d7dd;
 }
 .sidebar-menu {
   height: 100vh;
   padding: 10px 6px;
-  background: #f5f5f5;
+  background: #f5f7fa;
   .sub-menu-item,
   .menu-item-label {
     height: 45px;

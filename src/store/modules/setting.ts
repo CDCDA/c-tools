@@ -4,15 +4,69 @@
 
 import { defineStore } from "pinia";
 import { ref } from "vue";
-export const useSettingStore = defineStore("setting", () => {
-  const dataSavePath = ref("D:/c-tools-data");
-  const transparent = ref(false);
-  const visible = ref(true);
-  return {
-    dataSavePath,
-    transparent,
-    visible,
-  };
-});
+import { registerShortcut } from "@/utils/shortcut.ts";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { saveStoreData, getStoreData } from "@/utils/localSave.ts";
+export const useSettingStore = defineStore(
+  "setting",
+  () => {
+    // 数据保存路径
+    const savePath = ref("D:\\c-tools-data");
+    // 备份路径
+    const backupPath = ref("D:\\c-tools-data-backup");
+    // 快捷键
+    const shortCutKey = ref("Alt+Space");
+    // 开机启动
+    const autoStart = ref(true);
+    // 分离为独立窗口快捷键
+    const separateWindowShortCutKey = ref("Ctrl+Shift+Space");
+    // 透明
+    const transparent = ref(true);
+    // 可见
+    const visible = ref(true);
+    const saveStore = () => {
+      saveStoreData("setting", {
+        transparent: transparent.value,
+        visible: visible.value,
+        backupPath: backupPath.value,
+        shortCutKey: shortCutKey.value,
+        autoStart: autoStart.value,
+        separateWindowShortCutKey: separateWindowShortCutKey.value,
+      });
+    };
+    const loadStore = async () => {
+      const data = (await getStoreData("setting")) as any;
+      if (data) {
+        transparent.value = data.transparent;
+        visible.value = data.visible;
+        backupPath.value = data.backupPath;
+        shortCutKey.value = data.shortCutKey;
+        autoStart.value = data.autoStart;
+        separateWindowShortCutKey.value = data.separateWindowShortCutKey;
+      }
+      await registerShortcut({
+        shortcut: shortCutKey.value,
+        event: () => {
+          getCurrentWindow().show();
+          getCurrentWindow().setFocus();
+        },
+      });
+    };
+    return {
+      savePath,
+      transparent,
+      visible,
+      backupPath,
+      shortCutKey,
+      autoStart,
+      separateWindowShortCutKey,
+      saveStore,
+      loadStore,
+    };
+  },
+  {
+    persist: true, // 开启持久化
+  }
+);
 
 export default useSettingStore;
