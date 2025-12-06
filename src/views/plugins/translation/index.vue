@@ -1,292 +1,385 @@
 <template>
-  <div class="page-main">
-    <div class="file-select">
-      <el-input v-model="targetPath">
-        <template #prepend><span style="cursor: pointer" @click="handleSelectFile()">选择文件夹</span></template>
-        <template #append>
-          <span style="cursor: pointer" :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }" @click="handleOrganize"
-            >开始整理</span
-          >
-        </template>
-      </el-input>
-    </div>
+  <div class="page-main translation">
     <el-splitter>
       <el-splitter-panel :min="200" size="50%">
-        <file-tree
-          ref="fileTreeRef"
-          style="width: calc(100% - 2px)"
-          key="fileOrganizer"
-          :defaultOptions="{ excludeFiles: '.git,node_modules,target' }"
-          @update:path="(val: any) => (targetPath = val)"
-        />
-      </el-splitter-panel>
-      <el-splitter-panel :min="200" size="50%">
-        <div class="tree-new part-container">
+        <div class="translate-wait part-container">
           <div class="part-header">
-            <div class="part-title">排序文件</div>
-            <div class="part-tools"></div>
+            <div class="part-title">待翻译文本</div>
+            <div class="part-tools">
+              <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
+                <el-button type="text" size="mini" style="margin-bottom: -2px">
+                  {{ sourceLangList.find((lang) => lang.value === options.sourceLang)?.label || options.sourceLang }}
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      v-for="lang in sourceLangList"
+                      :key="lang.value"
+                      @click="options.sourceLang = lang.value"
+                    >
+                      {{ lang.label }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-icon style="margin-right: 6px"><Switch /></el-icon>
+              <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
+                <el-button type="text" size="mini" style="margin-bottom: -2px">
+                  {{ targetLangList.find((lang) => lang.value === options.targetLang)?.label || options.targetLang }}
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      v-for="lang in targetLangList"
+                      :key="lang.value"
+                      @click="options.targetLang = lang.value"
+                    >
+                      {{ lang.label }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </div>
           <div class="part-main">
-            <el-tree-v2
-              v-loading="newLoading"
-              :data="newTreeData"
-              :props="props"
-              style="border-radius: 0 0 4px 4px; width: calc(100% - 2px); height: calc(100% - 2px)"
-            >
-              <template #default="{ node }">
-                <el-icon class="el-icon--left">
-                  <Document v-if="!node.data.is_file" />
-                  <Folder v-else-if="!node.expanded" />
-                  <FolderOpened v-else />
-                </el-icon>
-                <span>{{ node.label }}</span>
-              </template>
-            </el-tree-v2>
+            <el-input
+              type="textarea"
+              v-model="originalText"
+              @input="debouncedTranslate"
+              placeholder="请输入待翻译文本"
+            />
+          </div>
+          <div class="part-footer">
+            <div class="part-footer-left">
+              <div class="part-footer-item">
+                <el-checkbox v-model="options.autoReadClipboard" style="margin-bottom: 2px">
+                  自动读取剪贴板
+                </el-checkbox>
+              </div>
+            </div>
+            <div class="part-footer-right">
+              <div class="part-footer-item">
+                <span class="pre-text">
+                  <el-tooltip content="自动读取剪贴板时，如果剪贴板内容小于限制字符数，将自动翻译" placement="bottom">
+                    <el-icon style="margin-top: 1px"><QuestionFilled /></el-icon>
+                  </el-tooltip>
+                  限制字符数
+                </span>
+
+                <el-input
+                  class="linit-number-input"
+                  v-model="options.limitNumber"
+                  placeholder="限制字符数"
+                  style="box-shadow: none; width: 60px; border: none"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-splitter-panel>
+      <el-splitter-panel :min="200" size="50%">
+        <div class="translate-result part-container">
+          <div class="part-header">
+            <div class="part-title">翻译结果</div>
+            <div class="part-tools">
+              <span class="pre-text">自动转为</span>
+              <el-dropdown class="code-editor-footer-item" placement="top" trigger="click">
+                <el-button type="text" size="mini" style="margin-bottom: -2px">
+                  {{
+                    formatList.find((format) => format.value === options.autoFormatType)?.label ||
+                    options.autoFormatType
+                  }}
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      v-for="format in formatList"
+                      :disabled="format.value === options.autoFormatType"
+                      :key="format.value"
+                      @click="options.autoFormatType = format.value"
+                    >
+                      {{ format.label }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </div>
+          <div class="part-main">
+            <el-input type="textarea" v-model="translateText" placeholder="请输入待翻译文本" />
+          </div>
+          <div class="part-footer">
+            <div class="part-footer-right">
+              <div class="part-footer-item">
+                <el-checkbox v-model="options.autoCopy" style="margin-bottom: 2px"> 自动复制 </el-checkbox>
+              </div>
+            </div>
+            <div class="part-footer-right">
+              <div class="part-footer-item">
+                <span class="pre-text">切换为</span>
+                <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
+                  <el-button type="text" size="mini" style="margin-bottom: -2px">
+                    {{ formatList.find((format) => format.value === options.formatType)?.label || options.formatType }}
+                  </el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item
+                        v-for="format in formatList"
+                        :disabled="format.value === options.formatType"
+                        :key="format.value"
+                        @click="handleFormatType(format)"
+                      >
+                        {{ format.label }}
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+            </div>
           </div>
         </div>
       </el-splitter-panel>
     </el-splitter>
-    <div class="tools">
-      <div class="left-tools">
-        <div class="ai-model">AI模型：</div>
-        <el-button type="text" @click="handleSelectAiModel"
-          >{{ `${aiModel.modelName}(${aiModel.modelId})` }}
-        </el-button>
-      </div>
-      <div class="center-tools">{{ tips }}</div>
-      <div class="right-tools">
-        <div class="time">
-          文件耗时：<span>{{ (fileTreeRef?.fileConsumingTime || 0 / 1000).toFixed(2) }}s</span>
-        </div>
-        <div class="time">
-          整理耗时：<span>{{ (organizeConsumingTime / 1000).toFixed(2) }}s</span>
-        </div>
-      </div>
-      <!-- <el-button type="text" @click="handleCharTree">字符树</el-button>
-      <el-button type="text" @click="handleJsonTree">json树</el-button>
-      <el-button type="text" @click="handleFormat">格式化</el-button> -->
-    </div>
-    <model-select-drawer
-      ref="modelSelectDrawerRef"
-      v-model:isOpen="isOpen"
-      :selectedModel="aiModel"
-      @setModel="setModel"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { Document, Folder, FolderOpened } from "@element-plus/icons-vue";
-import { openFileDialog } from "@/utils/file.ts";
-import { ElNotification } from "element-plus";
-import { sendMessage } from "@/api/ai.ts";
-import fileTree from "@/components/file/fileTree.vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { Switch } from "@element-plus/icons-vue";
+import { translate } from "@/api/translation.ts";
+import { debounce } from "lodash";
+import { QuestionFilled } from "@element-plus/icons-vue";
+import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
+import { savePluginData, getPluginData } from "@/utils/localSave.ts";
 
-import ModelSelectDrawer from "@/components/ai/modelSelectDrawer.vue";
-const targetPath = ref("");
-const newLoading = ref(false);
-const tips = ref("");
-const jsonFormat = [
+// 待翻译文本
+const originalText = ref("");
+// 翻译结果
+const translateText = ref("");
+
+const sourceLangList = [
   {
-    action: "add",
-    targetPath: "C:\\Users\\cit\\Desktop\\新增分类",
+    label: "自动",
+    value: "auto",
   },
   {
-    action: "move",
-    path: "C:\\Users\\cit\\Desktop\\NetAssist",
-    targetPath: "C:\\Users\\cit\\Desktop\\新增分类\\NetAssist",
+    label: "简体中文",
+    value: "zh",
+  },
+  {
+    label: "英文",
+    value: "en",
+  },
+  {
+    label: "繁体中文",
+    value: "zh-TW",
+  },
+  {
+    label: "日文",
+    value: "ja",
+  },
+  {
+    label: "俄语",
+    value: "ru",
+  },
+  {
+    label: "马来语",
+    value: "ms",
   },
 ];
-const aiModel = ref({
-  apiKey: import.meta.env.API_KEY,
-  baseUrl: "https://api.moonshot.cn/v1/chat/completions",
-  modelName: "KIMI",
-  stream: false,
-  temperature: 0.6,
-  modelId: "moonshot-v1-8k",
-  message: `整理这个文件树JSON,允许新增分类文件夹,分类文件夹的名称由你决定即可,最后仅返回操作JSON,格式为${JSON.stringify(jsonFormat)},务必保证json完整`,
+
+const targetLangList = [
+  {
+    label: "简体中文",
+    value: "zh",
+  },
+  {
+    label: "繁体中文",
+    value: "zh-TW",
+  },
+  {
+    label: "英文",
+    value: "en",
+  },
+  {
+    label: "日文",
+    value: "ja",
+  },
+  {
+    label: "俄语",
+    value: "ru",
+  },
+  {
+    label: "马来语",
+    value: "ms",
+  },
+];
+
+const formatList = ref([
+  {
+    label: "大驼峰",
+    value: "upperCamelCase",
+  },
+  {
+    label: "小驼峰",
+    value: "lowerCamelCase",
+  },
+  {
+    label: "下划线",
+    value: "underline",
+  },
+  {
+    label: "短横线",
+    value: "kebab-case",
+  },
+  {
+    label: "常量",
+    value: "constant",
+  },
+  {
+    label: "句子",
+    value: "sentence",
+  },
+  {
+    label: "标题",
+    value: "title",
+  },
+]);
+
+const tempText = ref("");
+
+const options = ref({
+  autoCopy: true,
+  formatType: "lowerCamelCase",
+  autoFormatType: "lowerCamelCase",
+  sourceLang: "zh",
+  targetLang: "en",
+  autoReadClipboard: true,
+  limitNumber: 100,
 });
-const isOpen = ref(false);
-const organizeConsumingTime = ref(0);
 
-const treeData = ref([]) as any;
-const newTreeData = ref([]) as any;
-const props = {
-  value: "path",
-  children: "children",
-  label: "name",
-};
+const debouncedTranslate = debounce(() => {
+  handleTranslate();
+}, 500);
 
-const setModel = (model: any) => {
-  aiModel.value = model;
-};
-
-const handleOrganize = async () => {
-  const startTime = new Date().getTime();
-  newLoading.value = true;
-  tips.value = "AI正在整理中,请耐心等待";
-  const messages = [
-    {
-      role: "system",
-      content: "你是 Kimi，由 Moonshot AI 提供的人工智能助手",
-    },
-    {
-      role: "user",
-      content: `${JSON.stringify(fileTreeRef.value?.treeData || [])} ${aiModel.value.message}`,
-    },
-  ];
-
-  // 移除外层的 try...catch，让错误在顶层被捕获
-  // 或者像下面这样进行更精细的控制
-
-  try {
-    const response = await sendMessage(messages, aiModel.value);
-    if (response.ok) {
-      try {
-        const data = await response.json();
-        const answer = data.choices[0].message.content;
-        tips.value = "提取文件操作数组...";
-        // 提取answer中的JSON数组
-        try {
-          const jsonMatch = answer.match(/\[\s*\{.*?\}\s*\]/s);
-          if (jsonMatch && jsonMatch[0]) {
-            const jsonArray = JSON.parse(jsonMatch[0]);
-            console.log("操作数组", jsonArray);
-            if (jsonArray.length > 0) {
-              tips.value = "正在生成新的文件树...";
-              await generateNewTree(jsonArray);
-              const endTime = new Date().getTime();
-              organizeConsumingTime.value = endTime - startTime;
-            }
-            // console.log("提取到的JSON数组:", jsonArray);
-            // ElNotification.success(`成功提取到 ${jsonArray.length} 个操作项`);
-          } else {
-            // 尝试直接解析整个answer，可能AI直接返回了JSON而没有其他内容
-            // const jsonArray = JSON.parse(answer);
-            // console.log("直接解析到的JSON数组:", jsonArray);
-            // ElNotification.success(`成功提取到 ${jsonArray.length} 个操作项`);
-          }
-        } catch (jsonExtractError) {
-          console.error("提取JSON数组失败!", jsonExtractError);
-          ElNotification.error("无法从AI响应中提取有效的JSON数组");
-        } finally {
-          newLoading.value = false;
-        }
-      } catch (jsonError: any) {
-        console.error("解析JSON失败!", jsonError);
-        ElNotification.error(`解析响应失败: ${jsonError.message}`);
-      }
-    } else {
-      const errorData = await response.json().catch(() => response.text()); // 更健壮的错误处理
-      throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData)}`);
-    }
-  } catch (err: any) {
-    // 这个 catch 会捕获网络错误或上面抛出的 API Error
-    console.error("请求或处理过程中发生错误:", err);
-    ElNotification.error(`整理失败: ${err.message}`);
+const handleTranslate = async () => {
+  console.log("开始翻译", originalText.value);
+  if (!originalText.value) {
+    return;
+  }
+  const res = await translate({
+    text: originalText.value,
+    source: "zh",
+    target: "en",
+  });
+  tempText.value = JSON.parse(JSON.stringify(res));
+  translateText.value = formatText(res, options.value.autoFormatType);
+  if (options.value.autoCopy) {
+    writeText(translateText.value);
   }
 };
 
-const generateNewTree = (jsonArray: any) => {
-  try {
-    const tempTree = JSON.parse(JSON.stringify(treeData.value));
-    jsonArray.forEach((item: any) => {
-      let fileName = item.targetPath.split("\\").pop();
-      if (item.action === "add") {
-        tempTree.push({
-          name: fileName,
-          path: item.targetPath,
-          children: [],
-        });
-      }
-      if (item.action === "move") {
-        const index = tempTree.findIndex((node: any) => node.path === item.path);
-        if (index !== -1) {
-          tempTree[index].path = item.targetPath;
-        }
-        if (item.targetPath) {
-          let dir = item.targetPath.replace(`\\${fileName}`, "");
-          const targetIndex = tempTree.findIndex((node: any) => node.path === dir);
-          if (targetIndex !== -1) {
-            tempTree[targetIndex].children.push(tempTree[index]);
-            tempTree.splice(index, 1);
-          }
-        }
+const handleFormatType = (type: any) => {
+  options.value.formatType = type.value;
+  translateText.value = formatText(tempText.value, options.value.formatType);
+  if (options.value.autoCopy) {
+    writeText(translateText.value);
+  }
+};
+
+function formatText(text: string, type: string): string {
+  // 先处理输入文本，移除多余空格，标准化分隔符
+  const normalized = text
+    .trim()
+    .replace(/[_\s]+/g, " ") // 将下划线和多个空格统一为单个空格
+    .toLowerCase();
+
+  switch (type) {
+    case "upperCamelCase": // PascalCase
+      return normalized
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join("");
+
+    case "lowerCamelCase": // camelCase
+      return normalized
+        .split(" ")
+        .map((word, index) => (index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1)))
+        .join("");
+
+    case "underline": // snake_case
+      return normalized.replace(/\s+/g, "_");
+
+    case "kebab-case": // 新增：短横线连接
+      return normalized.replace(/\s+/g, "-");
+
+    case "constant": // CONSTANT_CASE
+      return normalized.replace(/\s+/g, "_").toUpperCase();
+
+    case "sentence": // Sentence case
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
+    case "title": // Title Case
+      return normalized
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+    default:
+      return tempText.value;
+  }
+}
+
+onMounted(async () => {
+  const optionsData = await getPluginData("translation");
+  optionsData ? (options.value = optionsData) : null;
+
+  if (options.value.autoReadClipboard) {
+    readText().then((text) => {
+      originalText.value = text;
+      if (originalText.value.length <= options.value.limitNumber) {
+        handleTranslate();
       }
     });
-    newTreeData.value = tempTree;
-    console.log("新的文件树", newTreeData.value);
-    newLoading.value = false;
-    tips.value = "生成新的文件树成功";
-  } catch (err: any) {
-    console.log("生成新的文件树失败", err);
-    ElNotification.error(`生成新的文件树失败: ${err.message}`);
-    tips.value = "生成新的文件树失败";
   }
-};
-const fileTreeRef = ref<any>();
+});
 
-/**
- * 选择文件夹
- */
-const handleSelectFile = async (path?: string) => {
-  if (!path) {
-    const selectPath = await openFileDialog({ directory: true });
-    if (!selectPath) {
-      ElNotification.error("未获取到文件夹");
-      return;
-    }
-    targetPath.value = selectPath;
-  }
-  fileTreeRef.value?.getFileTree(targetPath.value);
-};
-
-const handleSelectAiModel = () => {
-  isOpen.value = true;
-};
+onBeforeUnmount(() => {
+  savePluginData("translation", options.value);
+});
 </script>
 
 <style lang="scss" scoped>
-.page-main {
-  padding-bottom: 0;
-  height: calc(100% - 20px);
-}
-.file-select {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  .file-path {
-    flex: 1;
-    height: 100%;
-    border: 1px solid #d5d7dd;
-    border-radius: 4px;
-    font-size: 14px;
-    color: #333;
-    background: white;
-    margin: 0 5px;
+.page-main.translation {
+  .translate-wait {
+    .el-textarea {
+      border-radius: 0 0 4px 4px;
+      height: 100%;
+      :deep(.el-textarea__inner) {
+        border-radius: 0 0 4px 4px;
+        box-shadow: none;
+        height: 100%;
+        border: 1px solid #d5d7dd;
+      }
+    }
   }
-  //margin-bottom: 10px;
-}
-.file-option {
-  display: flex;
-  // margin-bottom: 10px;
-  .file-option-item:nth-child(1) {
-    margin-right: 10px;
+  .translate-result {
+    .el-textarea {
+      border-radius: 0;
+      height: 100%;
+      :deep(.el-textarea__inner) {
+        border-radius: 0;
+        box-shadow: none;
+        height: 100%;
+        border: 1px solid #d5d7dd;
+      }
+    }
   }
 }
-.el-splitter {
-  margin-top: 15px;
-  height: calc(100% - 80px);
-}
-
-.el-tree {
-  width: 100%;
-  border: 1px solid #d5d7dd;
-  border-radius: 4px;
-  height: calc(100% - 30px);
-  :deep(.el-vl__wrapper, .el-vl__window) {
-    height: 100%;
+.linit-number-input {
+  :deep(.el-input__wrapper) {
+    box-shadow: none !important;
+    height: 25px !important;
   }
 }
 </style>

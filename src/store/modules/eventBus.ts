@@ -9,6 +9,7 @@ const useEventBusStore = defineStore(
   () => {
     const data = ref({}) as any;
     const currentPlugin = ref({}) as any;
+    const pluginLoading = ref(false);
     const set = (key: string, value: any) => {
       data.value[key] = value;
     };
@@ -34,6 +35,7 @@ const useEventBusStore = defineStore(
       clear,
       setCurrentPlugin,
       getCurrentPlugin,
+      pluginLoading,
     };
   },
   {

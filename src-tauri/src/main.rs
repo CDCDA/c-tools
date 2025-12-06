@@ -1,7 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod commands;
 mod core;
-use commands::color_commands::{capture_full_screen, capture_magnifier_area, get_color_at_cursor,capture_area};
+use commands::color_commands::{
+    capture_area, capture_full_screen, capture_magnifier_area, get_color_at_cursor,
+};
 use commands::db_command::{get_all_tables, get_table_columns, test_db_connection};
 use commands::file_commands::{
     calculate_file_hash, list_directory_recursively_jwalk, move_file, open_folder, read_file,
@@ -15,6 +17,7 @@ use commands::mouse_commands::{
 };
 use commands::simulation_operation_commands::paste;
 use commands::system_commands::{get_system_info, set_app_fullscreen};
+use commands::translate_commands::translate_text;
 use core::system::tray::create_tray;
 
 use enigo::Mouse;
@@ -63,7 +66,8 @@ fn main() {
             test_db_connection,
             get_all_tables,
             get_table_columns,
-            capture_area
+            capture_area,
+            translate_text
         ])
         .setup(|app| {
             let menu = MenuBuilder::new(app)

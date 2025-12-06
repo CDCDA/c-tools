@@ -1,12 +1,11 @@
 /*
  * @Description:AI模型数据
  */
-import { pluginData, getPluginByKey } from "../../views/plugins/plugins.ts";
+import { pluginData, selectPlugin } from "@/utils/plugin.ts";
 import { saveStoreData, getStoreData } from "@/utils/localSave.ts";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { registerShortcut } from "@/utils/shortcut.ts";
-import { useEventBusStore } from "@/store/modules/eventBus.ts";
+import { registerShortcut, unRegisterShortcut } from "@/utils/shortcut.ts";
 
 const useShortcutStore = defineStore(
   "shortcut",
@@ -38,33 +37,29 @@ const useShortcutStore = defineStore(
     };
 
     const updatePluginShortcut = (pluginShortcut: any) => {
-      const index = pluginShortcutList.value.findIndex((item: any) => item.id === pluginShortcut.id);
+      const index = pluginShortcutList.value.findIndex((item: any) => item.name === pluginShortcut.name);
       if (index !== -1) {
         pluginShortcutList.value[index] = pluginShortcut;
       }
     };
     const updateCommandShortcut = (commandShortcut: any) => {
-      const index = commandShortcutList.value.findIndex((item: any) => item.id === commandShortcut.id);
+      const index = commandShortcutList.value.findIndex((item: any) => item.name === commandShortcut.name);
       if (index !== -1) {
         commandShortcutList.value[index] = commandShortcut;
       }
     };
     const updateGlobalShortcut = (globalShortcut: any) => {
-      const index = globalShortcutList.value.findIndex((item: any) => item.id === globalShortcut.id);
+      const index = globalShortcutList.value.findIndex((item: any) => item.name === globalShortcut.name);
       if (index !== -1) {
         globalShortcutList.value[index] = globalShortcut;
       }
     };
 
-    const resetPluginShortcuts = () => {
+    const resetPluginShortcuts = (router: any) => {
       // 初始化插件快捷键列表
-      pluginShortcutList.value = pluginData.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        key: item.key,
-        shortcut: item.defaultShortcut || "",
-      }));
-      initRegister();
+      pluginShortcutList.value = pluginData;
+      saveStore();
+      registerAll(router);
     };
 
     const saveStore = () => {
@@ -75,35 +70,30 @@ const useShortcutStore = defineStore(
       });
     };
 
-    const loadStore = async () => {
+    const loadStore = async (router: any) => {
       const storeData = (await getStoreData("shortcut")) || {};
       pluginShortcutList.value = storeData.pluginShortcutList || [];
       globalShortcutList.value = storeData.globalShortcutList || [];
       commandShortcutList.value = storeData.commandShortcutList || [];
       if (pluginShortcutList.value.length === 0) {
         // 初始化插件快捷键列表
-        pluginShortcutList.value = pluginData.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          key: item.key,
-          shortcut: item.defaultShortcut || "",
-        }));
+        pluginShortcutList.value = [...pluginData];
       }
-      initRegister();
+      registerAll(router);
     };
 
-    const initRegister = async () => {
+    const registerAll = async (router: any) => {
       console.log("开始注册快捷键", pluginShortcutList.value);
-      const eventBusStore = useEventBusStore();
       for (const item of pluginShortcutList.value) {
-        item.event = async () => {
-          eventBusStore.setCurrentPlugin(null);
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          console.log("触发插件快捷键", item.key);
-          const currentPlugin = getPluginByKey(item.key);
-          eventBusStore.setCurrentPlugin(currentPlugin);
+        item.event = () => {
+          selectPlugin(item, router);
         };
-        await registerShortcut(item);
+        registerShortcut(item);
+      }
+    };
+    const unRegisterAll = async () => {
+      for (const item of pluginShortcutList.value) {
+        unRegisterShortcut(item);
       }
     };
 
@@ -122,7 +112,8 @@ const useShortcutStore = defineStore(
       updateCommandShortcut,
       saveStore,
       loadStore,
-      initRegister,
+      registerAll,
+      unRegisterAll,
       resetPluginShortcuts,
     };
   },

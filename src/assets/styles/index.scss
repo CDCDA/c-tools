@@ -198,6 +198,7 @@
   height: calc(100% - 0px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   .part-header {
     font-size: 14px;
     display: flex;
@@ -210,6 +211,12 @@
     border: 1px solid #d5d7dd;
     border-bottom: none;
     overflow: hidden;
+    span {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      margin-bottom: 3px;
+    }
     .part-title {
       height: calc(100% + 2px);
       min-width: 30%;
@@ -224,7 +231,7 @@
     .part-tools {
       display: flex;
       justify-content: end;
-      font-size: 18px;
+      font-size: 14px;
       height: calc(100% + 2px);
       width: fit-content;
       position: relative;
@@ -283,7 +290,7 @@
       align-items: center;
       justify-content: center;
 
-      span {
+      .pre-text {
         height: 100%;
         display: flex;
         align-items: center;

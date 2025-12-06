@@ -6,12 +6,15 @@
         <el-button type="primary" size="mini" @click="handleRegisterAll" style="margin-bottom: 15px">
           注册所有快捷键
         </el-button>
+        <el-button type="primary" size="mini" @click="handleUnRegisterAll" style="margin-bottom: 15px">
+          卸载所有快捷键
+        </el-button>
         <el-button type="danger" size="mini" @click="handleResetPlugin" style="margin-bottom: 15px">
           重置为默认
         </el-button>
         <el-table border :data="pluginShortcutList" style="width: 100%">
           <el-table-column type="index" label="序号" align="center" width="55" />
-          <el-table-column prop="name" label="插件名称" align="center" />
+          <el-table-column prop="label" label="插件名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
               <ShortcutInput
@@ -32,7 +35,7 @@
       <el-tab-pane label="全局" name="global">
         <el-table border :data="globalShortcutList" style="width: 100%">
           <el-table-column type="index" label="序号" align="center" width="55" />
-          <el-table-column prop="name" label="功能名称" align="center" />
+          <el-table-column prop="label" label="功能名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
               <ShortcutInput
@@ -56,7 +59,7 @@
       <el-tab-pane label="指令" name="command">
         <el-table border :data="commandShortcutList" style="width: 100%">
           <el-table-column type="index" label="序号" align="center" width="55" />
-          <el-table-column prop="name" label="指令名称" align="center" />
+          <el-table-column prop="label" label="指令名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
               <ShortcutInput
@@ -90,9 +93,11 @@ import { ref, computed } from "vue";
 import { ElNotification } from "element-plus";
 import ShortcutInput from "@/components/shortcut/shortcutInput.vue";
 import { useShortcutStore } from "@/store/modules/shortcut.ts";
+import { useRouter } from "vue-router";
 
 const activeTab = ref("plugin");
 const shortcutStore = useShortcutStore();
+const router = useRouter();
 
 // 计算属性
 const pluginShortcutList = computed(() => shortcutStore.pluginShortcutList);
@@ -105,7 +110,11 @@ function checkShortcutDuplicate(shortcut: string, currentItem: any): boolean {
 
   const allItems = [...pluginShortcutList.value, ...globalShortcutList.value, ...commandShortcutList.value];
 
-  return allItems.some((item) => item.id !== currentItem.id && item.shortcut === shortcut);
+  const isDuplicate = allItems.some((item) => item.id !== currentItem.id && item.shortcut === shortcut);
+  if (isDuplicate) {
+    ElNotification.error("快捷键已存在");
+  }
+  return isDuplicate;
 }
 
 // 处理快捷键变化
@@ -116,15 +125,25 @@ function handleShortcutChange(item: any, type: string) {
 // 注册所有快捷键
 async function handleRegisterAll() {
   try {
-    await shortcutStore.initRegister();
+    await shortcutStore.registerAll();
     ElNotification.success("所有快捷键已注册");
   } catch (error) {
     ElNotification.error("注册快捷键时出错");
   }
 }
 
+// 卸载所有快捷键
+async function handleUnRegisterAll() {
+  try {
+    await shortcutStore.unRegisterAll();
+    ElNotification.success("所有快捷键已卸载");
+  } catch (error) {
+    ElNotification.error("卸载快捷键时出错");
+  }
+}
+
 function handleResetPlugin() {
-  shortcutStore.resetPluginShortcuts();
+  shortcutStore.resetPluginShortcuts(router);
   ElNotification.success("所有快捷键已重置为默认");
 }
 
@@ -149,7 +168,7 @@ function saveShortcut(item: any, type: string) {
 
 // 重置快捷键
 function handleResetClick(item: any, type: string) {
-  item.shortcut = item.defaultShortcut || "";
+  item.shortcut = "";
   saveShortcut(item, type);
 }
 

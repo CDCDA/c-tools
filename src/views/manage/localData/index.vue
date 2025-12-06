@@ -27,7 +27,7 @@
 import { ref } from "vue";
 import { list, openFolder, remove } from "@/utils/file.ts";
 import { useSettingStore } from "@/store/modules/setting.ts";
-import { getPluginByKey } from "../../plugins/plugins.ts";
+import { getPluginByName } from "@/utils/plugin.ts";
 const settingStore = useSettingStore();
 const localDataList = ref([]) as any;
 async function getLocalDataList() {
@@ -43,7 +43,7 @@ async function getLocalDataList() {
   localDataList.value = res;
   const pluginList = res.find((item: any) => item.name === "plugins").children;
   pluginList.forEach((item: any) => {
-    const plugin = getPluginByKey(item.name) as any;
+    const plugin = getPluginByName(item.name) as any;
     localDataList.value.push({
       icon: plugin.icon,
       name: plugin.name,
