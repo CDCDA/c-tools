@@ -36,7 +36,7 @@ function menuClick(item: any) {
 
 onMounted(() => {
   menuList.value = (router.options.routes as any).find((x: any) => x.name == "manage").children;
-  console.log(menuList.value);
+  console.log("11", menuList.value);
   defaultActive.value = menuList.value[0].name;
 });
 </script>

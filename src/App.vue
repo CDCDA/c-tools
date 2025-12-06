@@ -22,10 +22,13 @@ const router = useRouter();
 const currentWindow = getCurrentWindow();
 
 async function setupWindow() {
-  // console.log("当前窗口标签:", currentWindow.label);
   if (currentWindow.label === "main") {
-    router.push({ name: "home" });
+    settingStore.transparent = false;
+    // 初始化所有store(包括快捷键)
+    router.push({ name: "pluginSearch" });
     loadAllStore(true);
+
+    // 监听创建窗口事件
     await listen(`create-window`, (event: any) => {
       const newWindow = new Windows();
       const { windowData, params } = event.payload;
@@ -33,8 +36,8 @@ async function setupWindow() {
     });
     return;
   }
+  // 不初始化快捷键（其他窗口）
   loadAllStore(false);
-
   await listen(`init-data-${currentWindow.label}`, (event: any) => {
     console.log("【成功】接收到的参数:", event.payload);
     const params = event.payload;
@@ -68,6 +71,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  console.log("【成功】关闭窗口:", currentWindow.label);
   saveAllStore();
 });
 </script>

@@ -21,7 +21,7 @@ export const useSettingStore = defineStore(
     // 分离为独立窗口快捷键
     const separateWindowShortCutKey = ref("Ctrl+Shift+Space");
     // 透明
-    const transparent = ref(true);
+    const transparent = ref(false);
     // 可见
     const visible = ref(true);
     const saveStore = () => {

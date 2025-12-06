@@ -46,6 +46,7 @@ class Windows {
   // 创建新窗口
   async createWin(options, params) {
     const args = Object.assign({}, windowConfig, options)
+    console.log("创建窗口参数:", options, args)
     // 判断窗口是否存在
     const existWin = await this.getWin(args.label)
     if (existWin) {

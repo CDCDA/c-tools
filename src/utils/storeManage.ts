@@ -3,7 +3,7 @@ import { useDatabaseStore } from "@/store/modules/database.ts";
 import { useAiStore } from "@/store/modules/ai.ts";
 import { useShortcutStore } from "@/store/modules/shortcut.ts";
 import { useSettingStore } from "@/store/modules/setting.ts";
-
+import { useRouter } from "vue-router";
 export const useStoreManage = () => {
   const userStore = useUserStore();
   const databaseStore = useDatabaseStore();
@@ -34,5 +34,5 @@ export const loadAllStore = (initShortCut: boolean) => {
   databaseStore.loadStore();
   aiStore.loadStore();
   settingStore.loadStore();
-  initShortCut ? shortcutStore.loadStore() : null;
+  initShortCut ? shortcutStore.loadStore(useRouter()) : null;
 };

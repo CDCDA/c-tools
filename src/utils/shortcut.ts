@@ -9,7 +9,7 @@ const keyMap = {
 
 export const registerShortcut = async (item: any) => {
   try {
-    await unregisterShortcut(item);
+    await unRegisterShortcut(item);
     await register(
       item.shortcut.replace(/Ctrl|Alt|Shift|Meta/g, (match: any) => keyMap[match]),
       item.event
@@ -20,7 +20,7 @@ export const registerShortcut = async (item: any) => {
   }
 };
 
-export const unregisterShortcut = async (item: any) => {
+export const unRegisterShortcut = async (item: any) => {
   try {
     await unregister(item.shortcut.replace(/Ctrl|Alt|Shift|Meta/g, (match: any) => keyMap[match]));
   } catch (error) {

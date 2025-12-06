@@ -2,7 +2,7 @@
   <div class="plugin-header" data-tauri-drag-region v-if="props.plugin.showHeader">
     <div class="plugin-header-left" data-tauri-drag-region>
       <svg-icon :iconName="props.plugin.icon"></svg-icon>
-      <div>{{ props.plugin.name }}</div>
+      <div>{{ props.plugin.label }}</div>
     </div>
     <div class="plugin-header-center" data-tauri-drag-region>
       <!-- <el-input
@@ -56,7 +56,7 @@ const close = () => {
 
 <style lang="scss" scoped>
 .plugin-header {
-  height: 50px;
+  height: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -1,24 +1,47 @@
 <template>
   <div class="plugin-container">
-    <PluginHeader :plugin="plugin" />
-    <div class="plugin-main">
+    <!-- 独立窗口 头部 -->
+    <PluginHeader :plugin="plugin" v-if="headerType === 'window' && plugin?.showHeader" />
+    <!-- 主应用 头部 -->
+    <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginSearch="pluginSearch" />
+    <div class="plugin-main" :class="loading ? 'loading' : ''">
       <router-view />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
-import { getPluginByKey } from "./plugins.js";
+import { getPluginByName } from "@/utils/plugin.ts";
+import PluginBar from "./components/pluginBar.vue";
 import PluginHeader from "./components/pluginHeader.vue";
+import { useEventBusStore } from "@/store/modules/eventBus.ts";
+const eventBusStore = useEventBusStore();
+const loading = computed(() => eventBusStore.pluginLoading);
 const route = useRoute();
-// 获取路由query参数
-const queryParams = route.query;
-console.log("路由query参数:", queryParams);
 const plugin = ref({}) as any;
-if (queryParams.routeName) {
-  plugin.value = getPluginByKey(queryParams.routeName);
+const headerType = ref("") as any;
+watch(
+  () => route,
+  () => {
+    console.log("新路由query参数:", route);
+    plugin.value = getPluginByName(route.name);
+    const { type } = route.query;
+    if (type === "main") {
+      headerType.value = "main";
+    } else {
+      headerType.value = "window";
+    }
+  },
+  {
+    deep: true,
+    immediate: true,
+  }
+);
+
+function pluginSearch(val: string) {
+  console.log("搜索:", val);
 }
 </script>
 
@@ -28,7 +51,11 @@ if (queryParams.routeName) {
   flex-direction: column;
   height: 100%;
   .plugin-main {
-    height: calc(100% - 50px);
+    flex: 1;
+    overflow: auto;
+  }
+  .loading {
+    height: 0 !important;
   }
 }
 </style>

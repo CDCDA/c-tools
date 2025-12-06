@@ -1,7 +1,7 @@
 <template>
   <div class="plugin-bar" data-tauri-drag-region>
     <div class="plugin-bar-left" data-tauri-drag-region>
-      <el-tag class="plugin-name" effect="dark" round closable type="info" @close="close">{{ plugin.name }}</el-tag>
+      <el-tag class="plugin-name" effect="dark" round closable type="info" @close="close">{{ plugin.label }}</el-tag>
     </div>
     <div class="plugin-bar-center" data-tauri-drag-region>
       <!-- <el-input
@@ -29,11 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { Image } from "@tauri-apps/api/image";
 import { registerShortcut } from "@/utils/shortcut.ts";
 import { useSettingStore } from "@/store/modules/setting.ts";
-import Windows from "@/windows/index.js";
+import { createNewWindow } from "@/utils/plugin.ts";
 import { useRouter } from "vue-router";
 const router = useRouter();
 import { Setting } from "@element-plus/icons-vue";
@@ -43,56 +41,24 @@ const props = defineProps({
     default: () => ({}),
   },
 });
-const emit = defineEmits(["handleSearch", "pluginClose"]);
-const searchText = ref("");
-onMounted(async () => {});
-
-watch(
-  () => searchText.value,
-  (val) => {
-    emit("handleSearch", val);
-  }
-);
+const emit = defineEmits(["handleSearch"]);
+// const searchText = ref("");
 
 const close = () => {
-  emit("pluginClose");
+  router.push({ name: "pluginSearch" });
 };
 
 const handleCommand = async (command: string) => {
-  if (command === "window") {
-    const newWindow = new Windows();
-    const win = await newWindow.createWin(
-      {
-        label: "tool-" + props.plugin.key,
-        title: props.plugin.name,
-        decorations: false,
-        skipTaskbar: false,
-      },
-      {
-        routeName: props.plugin.key,
-      }
-    );
-
-    win.once("tauri://created", async () => {
-      if (!props.plugin.ico) {
-        return;
-      }
-      try {
-        const image = await Image.fromPath(props.plugin.ico);
-        // 2. 将加载后的图像对象设置为窗口图标
-        await win.setIcon(image);
-      } catch (error: any) {
-        console.error("设置图标失败:", error);
-      }
-    });
-
-    close();
-    // currentWindow.hide();
-  } else if (command === "exit") {
-    router.push({ name: "home" });
-    // 退出
+  switch (command) {
+    case "window":
+      await createNewWindow(props.plugin);
+      break;
+    case "exit":
+      router.push({ name: "pluginSearch" });
+      break;
   }
 };
+
 async function initRegisterShortcut() {
   const settingStore = useSettingStore();
   registerShortcut({
@@ -107,7 +73,7 @@ initRegisterShortcut();
 
 <style lang="scss" scoped>
 .plugin-bar {
-  height: 50px;
+  height: 45px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -115,6 +81,9 @@ initRegisterShortcut();
   z-index: 999;
   user-select: none;
   border-bottom: 1px solid #d5d7dd;
+  i {
+    outline: none !important;
+  }
   .plugin-bar-left {
     height: 100%;
     margin: 0 20px;
