@@ -3,7 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { setWindowSize } from "@/utils/window.ts";
 import Windows from "@/windows/index.js";
 import { useEventBusStore } from "@/store/modules/eventBus.ts";
-
+import { Image } from "@tauri-apps/api/image";
 const currentWindow = getCurrentWindow();
 // 工具插件
 export const pluginData = getPluginData().filter((item) => item.type === "tool");
@@ -33,14 +33,14 @@ export const getPluginByName = (name: string) => {
 
 // 选择插件并执行
 export const selectPlugin = async (plugin: any, router: any) => {
+  plugin = getPluginByName(plugin.name);
   const eventBusStore = useEventBusStore();
   eventBusStore.currentPlugin = plugin;
   console.log("选择插件", plugin);
 
   if (plugin.newWindow) {
-    createNewWindow(plugin);
+    createNewWindow(plugin, router);
   } else {
-    eventBusStore.pluginLoading = true;
     setWindowSize(800, 25);
     await router.push({
       name: plugin.name,
@@ -50,13 +50,14 @@ export const selectPlugin = async (plugin: any, router: any) => {
     });
     setWindowSize(plugin.width, plugin.height);
     eventBusStore.pluginLoading = false;
-    // currentWindow.hide();
     currentWindow.show();
-    currentWindow.unminimize();
+    currentWindow.setFocus();
   }
 };
 
-export async function createNewWindow(plugin: any) {
+export async function createNewWindow(plugin: any, router: any) {
+  setWindowSize(800, 220);
+  router.push({ name: "pluginSearch" });
   const newWindow = new Windows();
   console.log("创建新窗口参数:", plugin);
   const win = await newWindow.createWin(

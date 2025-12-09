@@ -28,6 +28,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .image-container {
+  display: flex;
   &:hover {
     .close-btn {
       visibility: visible !important;
@@ -36,6 +37,7 @@ onMounted(async () => {
   img {
     width: 100%;
     height: 100%;
+    background-size: 100% 100%;
     object-fit: cover;
   }
   .close-btn {

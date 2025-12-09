@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router";
+import { useEventBusStore } from "@/store/modules/eventBus.ts";
 
 const routes: Array<any> = [
   {
@@ -18,21 +19,22 @@ const routes: Array<any> = [
     name: "plugin",
     meta: { name: "插件应用(独立窗口)" },
     component: () => import("@/views/plugins/index.vue"),
-    redirect: "/clipboard",
+    redirect: "/memo",
     children: [
       {
-        path: "/clipboard",
-        name: "clipboard",
+        path: "/memo",
+        name: "memo",
         meta: {
           id: 1,
-          label: "剪贴板",
+          label: "备忘录",
           description: "获取和管理剪贴板内容",
-          icon: "pluginIcons-剪贴板",
+          icon: "pluginIcons-备忘录",
+          ico: "icons/备忘录.ico",
           shortcut: "Ctrl+1",
           type: "tool",
           showHeader: true,
         },
-        component: () => import("@/views/plugins/clipboard/index.vue"),
+        component: () => import("@/views/plugins/memo/index.vue"),
       },
       {
         path: "/fileHasher",
@@ -196,6 +198,7 @@ const routes: Array<any> = [
           label: "截图",
           description: "截图",
           icon: "pluginIcons-截图",
+          ico: "icons/截图.ico",
           shortcut: "Ctrl+W",
           showHeader: false,
           transparent: true,
@@ -216,6 +219,7 @@ const routes: Array<any> = [
           label: "截图并悬浮",
           description: "截图并悬浮",
           icon: "pluginIcons-截图并悬浮",
+          ico: "icons/截图并悬浮.ico",
           shortcut: "Ctrl+Q",
           showHeader: false,
           transparent: true,
@@ -236,6 +240,7 @@ const routes: Array<any> = [
           label: "翻译",
           description: "翻译",
           icon: "pluginIcons-翻译",
+          ico: "icons/翻译.ico",
           shortcut: "Ctrl+E",
           showHeader: true,
           transparent: false,
@@ -244,7 +249,7 @@ const routes: Array<any> = [
           alwaysOnTop: false,
           newWindow: false,
           width: 800,
-          height: 250,
+          height: 500,
         },
         component: () => import("@/views/plugins/translation/index.vue"),
       },
@@ -367,6 +372,17 @@ const routes: Array<any> = [
 const router = createRouter({
   history: createWebHashHistory("/"),
   routes,
+});
+
+router.beforeEach((to: any, from: any, next: any) => {
+  const eventBusStore = useEventBusStore();
+  eventBusStore.pluginLoading = true;
+  next();
+});
+
+router.afterEach(() => {
+  const eventBusStore = useEventBusStore();
+  eventBusStore.pluginLoading = false;
 });
 
 export default router;
