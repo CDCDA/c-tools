@@ -12,7 +12,7 @@
           placeholder="请输入命令/应用"
         />
         <el-tag style="margin-left: 20px" v-else class="plugin-name" effect="dark" round type="info">{{
-          currentPlugin.label
+          currentPlugin?.label
         }}</el-tag>
       </div>
       <div class="plugin-search-header-bar-right" data-tauri-drag-region>
@@ -62,6 +62,9 @@ const currentWindow = getCurrentWindow();
 const searchText = ref("");
 
 function handleAvatarClick() {
+  eventBusStore.currentPlugin = {
+    label: "个人中心",
+  };
   router.push({ name: "account" });
   setWindowSize();
 }

@@ -51,7 +51,7 @@ const close = () => {
 const handleCommand = async (command: string) => {
   switch (command) {
     case "window":
-      await createNewWindow(props.plugin);
+      await createNewWindow(props.plugin, router);
       break;
     case "exit":
       router.push({ name: "pluginSearch" });
