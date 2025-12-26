@@ -14,6 +14,7 @@ declare module 'vue' {
     Editor: typeof import('./src/components/editor/index.vue')['default']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCollapse: typeof import('element-plus/es')['ElCollapse']
     ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
@@ -58,6 +59,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ShortcutInput: typeof import('./src/components/shortcut/shortcutInput.vue')['default']
     SvgIcon: typeof import('./src/components/svgIcon/index.vue')['default']
+    WangEditor: typeof import('./src/components/wangEditor/index.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
