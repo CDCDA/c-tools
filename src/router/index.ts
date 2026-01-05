@@ -374,7 +374,7 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to: any, from: any, next: any) => {
+router.beforeEach((next: any) => {
   const eventBusStore = useEventBusStore();
   eventBusStore.pluginLoading = true;
   next();

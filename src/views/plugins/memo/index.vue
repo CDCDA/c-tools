@@ -49,7 +49,7 @@ function addType(type) {
   typeList.value.push(type);
 }
 
-const addMemo = (memo) => {
+const addMemo = (memo: any) => {
   totalMemoList.value.push(memo);
   if (memo.type === activeType.value || activeType.value === "all") {
     memoList.value.push(memo);
