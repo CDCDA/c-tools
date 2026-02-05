@@ -186,7 +186,7 @@ export const setWindowPosition = async (x: number, y: number, useLogicalPosition
 };
 
 // 获取屏幕尺寸（逻辑尺寸）
-const getScreenSize = async (): Promise<{ width: number; height: number }> => {
+export const getScreenSize = async (): Promise<{ width: number; height: number }> => {
   try {
     const monitor = await primaryMonitor();
     if (!monitor) {

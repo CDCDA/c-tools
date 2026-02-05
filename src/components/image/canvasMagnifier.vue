@@ -1,33 +1,32 @@
 <!-- PixelPerfectMagnifier.vue -->
 <template>
-  <div class="pixel-magnifier-container" :style="gridOverlayStyle">
+  <div class="pixel-magnifier-container" :style="rootStyle">
     <!-- 隐藏的全屏图像 -->
-    <img v-if="fullScreenImage" ref="fullScreenImageRef" :src="fullScreenImage" @load="onFullScreenImageLoad" />
+    <img
+      v-if="fullScreenImage"
+      ref="fullScreenImageRef"
+      :src="fullScreenImage"
+      @load="onFullScreenImageLoad"
+      style="display: none"
+    />
 
     <!-- 放大镜视图 -->
     <div class="pixel-magnifier-view" :style="magnifierViewStyle">
-      <!-- 放大后的像素视图 -->
-      <canvas ref="canvasRef" :width="viewSize" :height="viewSize" class="pixel-canvas"></canvas>
-      <!-- 网格 -->
-      <div class="pixel-grid-overlay">
-        <div
-          v-for="i in gridSize"
-          :key="'h' + i"
-          class="grid-line horizontal"
-          :style="{ top: (100 / gridSize) * i + '%' }"
-        />
-        <div
-          v-for="i in gridSize"
-          :key="'v' + i"
-          class="grid-line vertical"
-          :style="{ left: (100 / gridSize) * i + '%' }"
-        />
-        <div class="center-indicator" :style="centerIndicatorStyle" />
+      <!-- 像素视图层 -->
+      <div class="canvas-wrapper" :style="canvasWrapperStyle">
+        <canvas ref="canvasRef" :width="actualViewSize" :height="actualViewSize" class="pixel-canvas"></canvas>
+
+        <!-- 网格层：使用 CSS 绘制，确保绝对对齐 -->
+        <div class="pixel-grid-overlay"></div>
+
+        <!-- 中心指示器 -->
+        <div class="center-indicator"></div>
       </div>
 
-      <!-- 像素信息 -->
-      <div class="pixel-detail-info">
-        <div>{{ currentPixelColor.hex }}</div>
+      <!-- 像素信息底栏 -->
+      <div class="pixel-detail-info flex-center">
+        {{ currentPixelColor.hex.toUpperCase() }}
+        <!-- <span class="pos-info">({{ mousePosition.x }}, {{ mousePosition.y }})</span> -->
       </div>
     </div>
   </div>
@@ -36,262 +35,141 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch, onUnmounted } from "vue";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-// import { ElNotification } from "element-plus";
 
 const props = defineProps({
-  fullScreenImage: {
-    type: String,
-    required: true,
-  },
-  mousePosition: {
-    type: Object,
-    required: true,
-  },
-  magnification: {
-    type: Number,
-    default: 10,
-  },
-  gridSize: {
-    type: Number,
-    default: 9, // 9×9网格
-  },
-  viewSize: {
-    type: Number,
-    default: 300,
-  },
+  fullScreenImage: { type: String, required: true },
+  mousePosition: { type: Object, required: true },
+  gridSize: { type: Number, default: 9 }, // 建议设为奇数，这样中心点正好是一个像素
+  cellSize: { type: Number, default: 14 }, // 每个像素显示的实际物理大小（建议设为整数）
 });
 
 const emits = defineEmits(["pixel-change", "color-picked"]);
 
-// Refs
 const fullScreenImageRef = ref(null);
 const canvasRef = ref(null);
-
-// 状态
-const showMagnifier = ref(false);
-const canvasReady = ref(false);
 const fullScreenDimensions = reactive({ width: 0, height: 0 });
-
-// 当前像素信息
-const currentPixel = reactive({ x: 0, y: 0 });
 const currentPixelColor = reactive({ r: 0, g: 0, b: 0, hex: "#000000" });
-const dominantColor = reactive({ r: 255, g: 255, b: 255 }); // 默认白色
+const dominantBrightness = ref(255);
 
-// 计算属性
-const cellSize = computed(() => props.viewSize / props.gridSize);
+// --- 计算属性 ---
 
-// 计算对比色（确保网格可见）
-const contrastingColor = computed(() => {
-  const { r, g, b } = dominantColor;
-  // 计算亮度 (使用相对亮度公式)
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  // 如果背景较亮，使用深色网格；如果背景较暗，使用浅色网格
-  return brightness > 128 ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.8)";
+// 实际视口大小 = 网格数量 * 每个格子的大小
+const actualViewSize = computed(() => props.gridSize * props.cellSize);
+
+// 计算对比色
+const contrastColor = computed(() => {
+  return dominantBrightness.value > 128 ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.4)";
 });
 
-// 计算中心指示器颜色（与网格颜色形成对比）
-const centerIndicatorColor = computed(() => {
-  const { r, g, b } = dominantColor;
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 128 ? "#e74c3c" : "#f39c12"; // 暗背景用橙色，亮背景用红色
-});
-
-// 网格叠加层样式
-const gridOverlayStyle = computed(() => ({
-  "--grid-color": contrastingColor.value,
+const rootStyle = computed(() => ({
+  "--cell-size": `${props.cellSize}px`,
+  "--grid-color": contrastColor.value,
+  "--indicator-color": dominantBrightness.value > 128 ? "#ff4757" : "#eccc68",
 }));
 
-// 中心指示器样式
-const centerIndicatorStyle = computed(() => ({
-  borderColor: centerIndicatorColor.value,
-  width: `${cellSize.value + 2}px`,
-  height: `${cellSize.value + 2}px`,
-  left: `calc(50% - ${cellSize.value / 2 + 0.5}px)`,
-  top: `calc(50% - ${cellSize.value / 2 + 0.5}px)`,
+const canvasWrapperStyle = computed(() => ({
+  width: `${actualViewSize.value}px`,
+  height: `${actualViewSize.value}px`,
+  borderColor: rootStyle.value["--grid-color"],
 }));
 
-// 放大视图样式
 const magnifierViewStyle = computed(() => {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
+  const offset = 20;
+  let left = props.mousePosition.x + offset;
+  let top = props.mousePosition.y + offset;
 
-  let left = props.mousePosition.x + 20;
-  let top = props.mousePosition.y + 20;
-
-  if (left + props.viewSize > viewportWidth) {
-    left = props.mousePosition.x - props.viewSize - 20;
+  // 边界检查：防止放大镜超出屏幕
+  if (left + actualViewSize.value > viewportWidth) {
+    left = props.mousePosition.x - actualViewSize.value - offset;
   }
-
-  if (top + props.viewSize > viewportHeight) {
-    top = props.mousePosition.y - props.viewSize - 20;
+  if (top + actualViewSize.value + 30 > viewportHeight) {
+    top = props.mousePosition.y - actualViewSize.value - offset - 30;
   }
 
   return {
-    width: `${props.viewSize + 2}px`,
-    height: `${props.viewSize + 30}px`,
     left: `${left}px`,
     top: `${top}px`,
   };
 });
 
-// 加载全屏图像
+// --- 逻辑处理 ---
+
 const onFullScreenImageLoad = () => {
-  const img = fullScreenImageRef.value;
-  if (!img) return;
-
-  fullScreenDimensions.width = img.naturalWidth;
-  fullScreenDimensions.height = img.naturalHeight;
-  canvasReady.value = true;
-
-  console.log("全屏图像加载完成:", fullScreenDimensions);
-};
-
-// 计算放大区域的主体色
-const calculateDominantColor = async (startX, startY, width, height) => {
   if (!fullScreenImageRef.value) return;
-
-  const tempCanvas = document.createElement("canvas");
-  const tempCtx = tempCanvas.getContext("2d");
-
-  tempCanvas.width = width;
-  tempCanvas.height = height;
-
-  // 绘制区域到临时canvas
-  tempCtx.drawImage(fullScreenImageRef.value, startX, startY, width, height, 0, 0, width, height);
-
-  // 获取图像数据
-  const imageData = tempCtx.getImageData(0, 0, width, height);
-  const data = imageData.data;
-
-  // 计算平均颜色
-  let r = 0,
-    g = 0,
-    b = 0;
-  const pixelCount = width * height;
-
-  for (let i = 0; i < data.length; i += 4) {
-    r += data[i];
-    g += data[i + 1];
-    b += data[i + 2];
-  }
-
-  dominantColor.r = Math.round(r / pixelCount);
-  dominantColor.g = Math.round(g / pixelCount);
-  dominantColor.b = Math.round(b / pixelCount);
+  fullScreenDimensions.width = fullScreenImageRef.value.naturalWidth;
+  fullScreenDimensions.height = fullScreenImageRef.value.naturalHeight;
+  updatePixelView();
 };
 
-// 更新像素视图
-const updatePixelView = async () => {
-  if (!canvasRef.value || !fullScreenImageRef.value || !canvasReady.value) return;
+const updatePixelView = () => {
+  if (!canvasRef.value || !fullScreenImageRef.value) return;
 
-  const canvas = canvasRef.value;
-  const ctx = canvas.getContext("2d");
-  const fullScreenImg = fullScreenImageRef.value;
+  const ctx = canvasRef.value.getContext("2d");
+  const img = fullScreenImageRef.value;
 
-  // 清除画布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // 1. 计算裁剪区域
+  // 目标是让 mousePosition 处于 gridSize 的正中心
+  const halfGrid = Math.floor(props.gridSize / 2);
+  const sx = props.mousePosition.x - halfGrid;
+  const sy = props.mousePosition.y - halfGrid;
 
-  // 设置当前像素坐标
-  currentPixel.x = props.mousePosition.x;
-  currentPixel.y = props.mousePosition.y;
+  // 2. 清除画布并绘制
+  ctx.clearRect(0, 0, actualViewSize.value, actualViewSize.value);
 
-  // 计算要显示的区域
-  const startX = Math.max(0, props.mousePosition.x - Math.floor(props.gridSize / 2));
-  const startY = Math.max(0, props.mousePosition.y - Math.floor(props.gridSize / 2));
-  const endX = Math.min(fullScreenDimensions.width, startX + props.gridSize + 2);
-  const endY = Math.min(fullScreenDimensions.height, startY + props.gridSize + 2);
+  // 关闭抗锯齿，这是像素对齐的关键
+  ctx.imageSmoothingEnabled = false;
 
-  const sourceWidth = endX - startX;
-  const sourceHeight = endY - startY;
+  // 3. 绘制图像 (将 1:1 的像素区域放大到 actualViewSize)
+  // 注意：这里即便 sx, sy 是负数或超出范围，drawImage 也会自动处理或不画，
+  // 但为了背景色统一，可以先填黑底
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, actualViewSize.value, actualViewSize.value);
 
-  if (sourceWidth > 0 && sourceHeight > 0) {
-    // 计算主体色
-    await calculateDominantColor(startX, startY, sourceWidth, sourceHeight);
+  ctx.drawImage(
+    img,
+    sx,
+    sy,
+    props.gridSize,
+    props.gridSize, // 源代码区域
+    0,
+    0,
+    actualViewSize.value,
+    actualViewSize.value // 目标绘制区域
+  );
 
-    // 使用 canvas 绘制放大后的像素
-    ctx.imageSmoothingEnabled = false;
-
-    // 直接绘制源图像区域到放大视图
-    ctx.drawImage(fullScreenImg, startX, startY, sourceWidth, sourceHeight, 0, 0, props.viewSize, props.viewSize);
-
-    // 获取中心像素颜色
-    await getPixelColor(props.mousePosition.x, props.mousePosition.y);
-  }
-
-  showMagnifier.value = true;
+  // 4. 获取中心像素颜色和亮度
+  updateCurrentColor(ctx);
 };
 
-// 获取精确像素颜色
-const getPixelColor = async (x, y) => {
-  if (
-    !fullScreenImageRef.value ||
-    x < 0 ||
-    y < 0 ||
-    x >= fullScreenDimensions.width ||
-    y >= fullScreenDimensions.height
-  ) {
-    return;
-  }
+const updateCurrentColor = (ctx) => {
+  // 从画布中心取样（因为我们已经把目标像素移到中心了）
+  const centerCoord = Math.floor(props.gridSize / 2) * props.cellSize + props.cellSize / 2;
+  const pixelData = ctx.getImageData(centerCoord, centerCoord, 1, 1).data;
 
-  const tempCanvas = document.createElement("canvas");
-  const tempCtx = tempCanvas.getContext("2d");
-
-  tempCanvas.width = 1;
-  tempCanvas.height = 1;
-
-  tempCtx.drawImage(fullScreenImageRef.value, x, y, 1, 1, 0, 0, 1, 1);
-
-  const imageData = tempCtx.getImageData(0, 0, 1, 1);
-  const [r, g, b] = imageData.data;
-
+  const [r, g, b] = pixelData;
   currentPixelColor.r = r;
   currentPixelColor.g = g;
   currentPixelColor.b = b;
   currentPixelColor.hex = rgbToHex(r, g, b);
 
-  emits("pixel-change", {
-    x,
-    y,
-    color: { r, g, b, hex: currentPixelColor.hex },
-  });
+  // 计算感知亮度 (Rec. 709)
+  dominantBrightness.value = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+  emits("pixel-change", { x: props.mousePosition.x, y: props.mousePosition.y, color: { ...currentPixelColor } });
 };
 
-// RGB 转 HEX
-const rgbToHex = (r, g, b) => {
-  return (
-    "#" +
-    [r, g, b]
-      .map((x) => {
-        const hex = x.toString(16).padStart(2, "0");
-        return hex;
-      })
-      .join("")
-  );
-};
+const rgbToHex = (r, g, b) => "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 
-// 监听鼠标位置变化
-watch(
-  () => props.mousePosition,
-  () => {
-    updatePixelView();
-  },
-  { deep: true }
-);
-
-// 鼠标点击事件处理
 const handleMouseDown = (event) => {
   if (event.button === 0) {
-    // 左键
-    event.preventDefault();
-    event.stopPropagation();
     writeText(currentPixelColor.hex);
-    // ElNotification({
-    //   message: "已复制到剪贴板",
-    //   type: "success",
-    // });
     emits("color-picked", currentPixelColor.hex);
   }
 };
+
+watch(() => props.mousePosition, updatePixelView, { deep: true });
 
 onMounted(() => {
   document.addEventListener("mousedown", handleMouseDown);
@@ -299,11 +177,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("mousedown", handleMouseDown);
-});
-
-// 暴露方法给父组件
-defineExpose({
-  getCurrentColor: () => ({ ...currentPixelColor }),
 });
 </script>
 
@@ -318,79 +191,141 @@ defineExpose({
   z-index: 9999;
 }
 
-/* 像素级放大视图 */
 .pixel-magnifier-view {
   position: fixed;
-  background: transparent;
-  z-index: 10001;
-  overflow: auto;
+  background: #1e1e1e;
+  /* border: 2px solid #444; */
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas-wrapper {
+  position: relative;
+  background-size: var(--cell-size) var(--cell-size);
+  overflow: hidden;
 }
 
 .pixel-canvas {
   display: block;
-  border-radius: 4px;
-  border: 1px solid var(--grid-color);
+  /* 确保渲染出来的像素没有模糊 */
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
-/* 网格叠加层 */
+/* 关键：使用 CSS Grid Overlay 确保对齐 */
+.pixel-grid-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 绘制 1px 的网格线 */
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--cell-size) var(--cell-size);
+  pointer-events: none;
+}
+
+/* 中心指示器：确保正好框住中心像素 */
+.center-indicator {
+  position: absolute;
+  /* 计算中心位置 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border: 2px solid var(--indicator-color);
+  box-sizing: border-box;
+  z-index: 10;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.pixel-detail-info {
+  height: 28px;
+  background: #000;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-top: 1px solid #333;
+}
+
+.pos-info {
+  color: #888;
+}
+
+.canvas-wrapper {
+  position: relative;
+  /* 移除这里的 background-size，由 overlay 统一处理 */
+  overflow: hidden;
+  /* 确保容器尺寸精确 */
+  box-sizing: content-box;
+}
+
+.pixel-canvas {
+  display: block;
+  image-rendering: pixelated;
+  /* 防止 canvas 产生微小的位移 */
+  vertical-align: middle;
+}
+
+/* 修正后的网格层 */
 .pixel-grid-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  pointer-events: none;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.pixel-grid-overlay .grid-line {
-  position: absolute;
-  background: var(--grid-color, rgba(0, 0, 0, 0.4));
-}
-
-.pixel-grid-overlay .grid-line.horizontal {
-  width: 100%;
-  height: 1px;
-}
-
-.pixel-grid-overlay .grid-line.vertical {
-  width: 1px;
   height: 100%;
+
+  /* 1. 内部线条：左侧和上方 */
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--cell-size) var(--cell-size);
+
+  /* 2. 外部线条：补全右侧和下方 */
+  /* 使用 border 补全最后一行/一列的缺失线条 */
+  border-right: 1px solid var(--grid-color);
+  border-bottom: 1px solid var(--grid-color);
+
+  /* 3. 必须设置为 border-box，否则 border 会撑大容器导致对齐失效 */
+  box-sizing: border-box;
+
+  pointer-events: none;
+  z-index: 5;
 }
+
+/* 如果你希望最左侧和最上方也有明显的深色边框，可以把 border 全开 */
+/*
+.pixel-grid-overlay {
+  ...
+  border: 1px solid var(--grid-color);
+  box-sizing: border-box;
+}
+*/
 
 .center-indicator {
   position: absolute;
-  border: 2px solid;
-  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--cell-size);
+  height: var(--cell-size);
+  /* 增加层级，确保在网格线上方 */
+  z-index: 10;
+  border: 2px solid var(--indicator-color);
   box-sizing: border-box;
-  z-index: 9999;
-}
-
-/* 像素信息 */
-.pixel-detail-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-  width: calc(100% - 0px);
-  font-size: 12px;
-  font-family: "Courier New", monospace;
-  line-height: 20px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.9);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.pixel-detail-info div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* 让中心指示器略微突出，避免被网格线完全遮挡 */
+  outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 </style>

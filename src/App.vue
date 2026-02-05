@@ -14,7 +14,8 @@ import { useSettingStore } from "@/store/modules/setting.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEventBusStore } from "@/store/modules/eventBus.ts";
 import Windows from "@/windows/index.js";
-
+import { createNotificationWindow } from "@/utils/notification.ts";
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 const eventBusStore = useEventBusStore();
 
 const settingStore = useSettingStore();
@@ -22,6 +23,7 @@ const router = useRouter();
 const currentWindow = getCurrentWindow();
 
 async function setupWindow() {
+  console.log('当前窗口', currentWindow)
   if (currentWindow.label === "main") {
     settingStore.transparent = false;
     // 初始化所有store(包括快捷键)
@@ -29,31 +31,56 @@ async function setupWindow() {
     loadAllStore(true);
 
     // 监听创建窗口事件
-    await listen(`create-window`, (event: any) => {
+    await listen(`create-window`, async (event: any) => {
       const newWindow = new Windows();
       const { windowData, params } = event.payload;
-      newWindow.createWin(windowData, params);
+      const win = await newWindow.createWin(windowData, params);
+      console.log("params:", params);
+      if (params.duration) {
+        setTimeout(() => {
+          win.close();
+        }, params.duration);
+      }
     });
     return;
+  }
+  if (currentWindow.label = "tool-screenshot") {
+    console.log("初始化")
+    router.push({ name: "screenshot" })
+    currentWindow.show();
+    return
   }
   // 不初始化快捷键（其他窗口）
   loadAllStore(false);
   await listen(`init-data-${currentWindow.label}`, (event: any) => {
     console.log("【成功】接收到的参数:", event.payload);
     const params = event.payload;
-    if (params.minimize) {
-      currentWindow.hide();
-    } else {
-      currentWindow.show();
-    }
     if (params.transparent) {
       settingStore.transparent = true;
+    } else {
+      settingStore.transparent = false;
     }
     if (params.showHeader) {
       settingStore.showHeader = true;
+    } else {
+      settingStore.showHeader = false;
     }
     router.push({ name: params.routeName, query: { routeName: params.routeName } });
-    eventBusStore.set("image", params);
+    switch (params.routeName) {
+      case "notification":
+        eventBusStore.set("notification", params);
+        break;
+      case "image":
+        eventBusStore.set("image", params);
+        break;
+      case "screenshot":
+        eventBusStore.set("fullScreenImage", params.fullScreenImage);
+        break;
+      case "screenshotAndSuspended":
+        eventBusStore.set("fullScreenImage", params.fullScreenImage);
+        break;
+    }
+    currentWindow.show()
   });
 
   await currentWindow.emit(`window-ready-${currentWindow.label}`);
@@ -65,13 +92,10 @@ function init() {
     adjustWindowSize();
   });
 }
-
-onMounted(() => {
-  init();
-});
+init();
 
 onBeforeUnmount(() => {
-  console.log("【成功】关闭窗口:", currentWindow.label);
+  // console.log("【成功】关闭窗口:", currentWindow.label);
   saveAllStore();
 });
 </script>
@@ -89,11 +113,13 @@ onBeforeUnmount(() => {
   /* --el-table-border-color: #d5d7dd !important;
   --el-border-color-lighter: #d5d7dd !important; */
 }
+
 body {
   overflow: hidden;
   margin: 0;
   transition: all 0.4s ease-in-out;
 }
+
 .app-container {
   display: flex;
   flex-direction: column;

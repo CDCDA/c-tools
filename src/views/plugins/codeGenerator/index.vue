@@ -234,7 +234,7 @@ const handleGenerate = async () => {
 
 const data = ref({}) as any;
 
-async function readLocalData() {
+async function loadLocalData() {
   Object.assign(data.value, await getPluginData("codeGenerator"));
   console.log(data.value);
 }
@@ -243,7 +243,7 @@ async function handleOpenFile() {
   await openFolder(generatePlanRef.value?.currentGeneratePlan.basePath);
 }
 
-readLocalData();
+loadLocalData();
 window.addEventListener("beforeunload", saveLocalData);
 
 onBeforeUnmount(() => {

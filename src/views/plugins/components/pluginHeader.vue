@@ -18,13 +18,15 @@
       <!-- <svg-icon iconName="otherSvg-刷新" @click="changeDialogType" /> -->
       <!-- <svg-icon iconName="otherSvg-缩小窗口" @click="blowUp" v-if="isFull" /> -->
       <svg-icon iconName="otherSvg-放大窗口" @click="blowUp" />
+      <svg-icon iconName="otherSvg-未固定" style="font-size: 22px;" @click="fixed" v-if="!isFixed" />
+      <svg-icon iconName="otherSvg-已固定" style="font-size: 22px;" @click="fixed" v-else />
       <svg-icon iconName="otherSvg-关闭" @click="close" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 const currentWindow = getCurrentWindow();
 const emit = defineEmits(["handleSearch"]);
@@ -34,8 +36,13 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const isFixed = ref(false)
+
 const searchText = ref("");
-onMounted(async () => {});
+onMounted(async () => {
+  isFixed.value = currentWindow.isAlwaysOnTop();
+});
 watch(
   () => searchText.value,
   (val) => {
@@ -52,6 +59,11 @@ const blowUp = () => {
 const close = () => {
   currentWindow.close();
 };
+
+const fixed = () => {
+  isFixed.value = !isFixed.value;
+  currentWindow.setAlwaysOnTop(isFixed.value);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -64,9 +76,11 @@ const close = () => {
   z-index: 999;
   user-select: none;
   border-bottom: 1px solid #d5d7dd;
+
   .svg-icon {
     margin-right: 5px;
   }
+
   .plugin-header-left {
     height: 100%;
     margin: 0 20px;
@@ -78,9 +92,11 @@ const close = () => {
     font-weight: bold;
     font-size: 20px;
   }
+
   .plugin-header-center {
     flex: 1;
   }
+
   .plugin-header-right {
     height: 100%;
     width: 150px;
@@ -88,19 +104,23 @@ const close = () => {
     align-items: center;
     justify-content: end;
     padding-right: 15px;
+
     .svg-icon {
       font-size: 25px;
-      margin-left: 10px;
+      margin-left: 3px;
       cursor: pointer;
       color: rgb(99, 99, 99);
     }
   }
+
   .plugin-header-search {
     height: 100%;
+
     :deep(.el-input__wrapper) {
       padding-left: 22px;
       border-radius: 0 !important;
       box-shadow: none;
+
       .el-input__inner {
         font-size: 20px !important;
       }

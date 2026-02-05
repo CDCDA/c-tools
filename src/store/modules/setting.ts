@@ -37,7 +37,7 @@ export const useSettingStore = defineStore(
     const loadStore = async () => {
       const data = (await getStoreData("setting")) as any;
       if (data) {
-        transparent.value = data.transparent;
+        transparent.value = false;
         visible.value = data.visible;
         backupPath.value = data.backupPath;
         shortCutKey.value = data.shortCutKey;

@@ -1,6 +1,8 @@
 use base64::{engine::general_purpose, Engine as _};
 use image::{ImageBuffer, Rgb};
+use mouse_position::mouse_position::Mouse;
 use screenshots::Screen;
+
 use serde::{Deserialize, Serialize};
 use std::mem;
 use windows::Win32::Foundation::{COLORREF, HWND, POINT};
@@ -9,9 +11,7 @@ use windows::Win32::Graphics::Gdi::{
     GetDeviceCaps, GetPixel, ReleaseDC, SelectObject, BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS,
     LOGPIXELSX, LOGPIXELSY, SRCCOPY,
 };
-use windows::Win32::UI::WindowsAndMessaging::{
-    GetCursorPos, GetDesktopWindow, GetWindowDpiAwarenessContext, GetWindowDpiHostingBehavior,
-};
+use windows::Win32::UI::WindowsAndMessaging::{GetCursorPos, GetDesktopWindow};
 
 // 定义一个结构体来表示RGB颜色
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -57,7 +57,7 @@ fn physical_to_logical_point(mut point: POINT) -> POINT {
         // 标准DPI是96
         point.x = (point.x as f64 * 96.0 / dpi_x) as i32;
         point.y = (point.y as f64 * 96.0 / dpi_y) as i32;
-        
+
         point
     }
 }
@@ -77,7 +77,7 @@ fn logical_to_physical_point(mut point: POINT) -> POINT {
         // 标准DPI是96
         point.x = (point.x as f64 * dpi_x / 96.0) as i32;
         point.y = (point.y as f64 * dpi_y / 96.0) as i32;
-        
+
         point
     }
 }
@@ -116,60 +116,57 @@ pub fn get_color_at_cursor() -> Option<RgbColor> {
 
 #[tauri::command]
 pub fn capture_full_screen() -> Option<String> {
-    let screens = match Screen::all() {
+    // 1. 获取鼠标当前所在的坐标
+    // 注意：这里使用的是 Mouse::get_position() 而不是 mouse_position()
+    let position = Mouse::get_mouse_position();
+
+    let (mouse_x, mouse_y) = match position {
+        Mouse::Position { x, y } => (x, y),
+        Mouse::Error => {
+            eprintln!("无法获取鼠标位置，尝试获取主屏幕");
+            // 如果获取不到鼠标位置，可以设为 (0,0) 或者后续逻辑处理
+            (0, 0)
+        }
+    };
+
+    // 2. 根据鼠标坐标获取对应的屏幕
+    let screen = match Screen::from_point(mouse_x, mouse_y) {
         Ok(s) => s,
+        Err(_) => {
+            // 如果坐标处没找到屏幕，尝试获取主屏幕
+            let all_screens = Screen::all().ok()?;
+            all_screens
+                .into_iter()
+                .find(|s| s.display_info.is_primary)
+                .unwrap_or_else(|| {
+                    // 如果连主屏都找不到，就取列表里的第一个
+                    Screen::all().unwrap()[0].clone()
+                })
+        }
+    };
+
+    // 3. 捕获该屏幕
+    let screenshot_image = match screen.capture() {
+        Ok(img) => img,
         Err(e) => {
-            eprintln!("获取屏幕信息失败: {}", e);
+            eprintln!("捕获屏幕失败: {}", e);
             return None;
         }
     };
 
-    if screens.is_empty() {
-        eprintln!("未检测到任何屏幕，无法截图。");
-        return None;
-    }
-
-    // 获取系统DPI缩放比例
-    let dpi_scale = get_system_dpi_scale();
-    
-    // 对于多显示器，我们需要合并所有显示器的区域
-    let mut combined_image = None;
-    
-    for screen in &screens {
-        let screenshot_image = match screen.capture() {
-            Ok(img) => img,
-            Err(e) => {
-                eprintln!("捕获屏幕失败: {}", e);
-                continue;
-            }
-        };
-
-        // 如果这是第一个屏幕，直接使用
-        if combined_image.is_none() {
-            combined_image = Some(screenshot_image);
-        } else {
-            // TODO: 对于多显示器，需要合并图像
-            // 这里简化为只返回主显示器截图
-            break;
-        }
-    }
-
-    let screenshot_image = combined_image?;
-
-    // 将图像编码为 PNG
+    // 4. 将图像编码为 PNG
     let png_bytes = match screenshot_image.to_png() {
         Ok(bytes) => bytes,
         Err(e) => {
-            eprintln!("将图像编码为 PNG 失败: {}", e);
+            eprintln!("编码 PNG 失败: {}", e);
             return None;
         }
     };
 
-    // 将 PNG 字节数据编码为 Base64 字符串
+    // 5. 编码为 Base64
     let base64_string = general_purpose::STANDARD.encode(&png_bytes);
 
     if base64_string.is_empty() {
-        eprintln!("生成的 Base64 字符串为空！");
         None
     } else {
         Some(format!("data:image/png;base64,{}", base64_string))
@@ -185,11 +182,14 @@ pub fn capture_magnifier_area(
 ) -> Option<String> {
     // 获取DPI缩放比例
     let dpi_scale = get_system_dpi_scale();
-    
+
     // 将逻辑坐标转换为物理坐标
-    let physical_center = logical_to_physical_point(POINT { x: center_x, y: center_y });
+    let physical_center = logical_to_physical_point(POINT {
+        x: center_x,
+        y: center_y,
+    });
     let physical_size = (capture_size as f64 * dpi_scale) as i32;
-    
+
     unsafe {
         let hdc_screen = GetDC(GetDesktopWindow());
         if hdc_screen.0 == 0 {
@@ -276,7 +276,7 @@ pub fn capture_magnifier_area(
 
             // 如果需要缩放回逻辑大小
             let output_size = capture_size as u32;
-            
+
             // 创建 image crate 的 ImageBuffer
             let mut img = if dpi_scale != 1.0 {
                 // 如果DPI缩放不等于1，需要缩放图像
@@ -306,7 +306,7 @@ pub fn capture_magnifier_area(
             } else {
                 // 不需要缩放，直接创建目标大小的图像
                 let mut img = ImageBuffer::<Rgb<u8>, Vec<u8>>::new(output_size, output_size);
-                
+
                 for y in 0..output_size {
                     for x in 0..output_size {
                         let buffer_idx = (y as usize * pitch) + (x as usize * 3);
@@ -316,7 +316,7 @@ pub fn capture_magnifier_area(
                         img.put_pixel(x, y, Rgb([r, g, b]));
                     }
                 }
-                
+
                 img
             };
 
@@ -376,8 +376,12 @@ pub fn capture_area(
     }
 
     // 获取DPI缩放比例
-    let dpi_scale = if ignore_dpi { 1.0 } else { get_system_dpi_scale() };
-    
+    let dpi_scale = if ignore_dpi {
+        1.0
+    } else {
+        get_system_dpi_scale()
+    };
+
     // 将逻辑坐标转换为物理坐标
     let physical_point = logical_to_physical_point(POINT { x, y });
     let physical_width = (width as f64 * dpi_scale).round() as u32;
@@ -434,20 +438,16 @@ pub fn capture_area(
             screenshot_image.height(),
             screenshot_image.to_png().ok()?,
         )?;
-        
+
         let resized = image::imageops::resize(
             &img_buffer,
             width,
             height,
             image::imageops::FilterType::Lanczos3,
         );
-        
+
         // 将缩放后的图像转换回 screenshots::Image
-        screenshots::Image::new(
-            resized.width(),
-            resized.height(),
-            resized.into_raw(),
-        )
+        screenshots::Image::new(resized.width(), resized.height(), resized.into_raw())
     } else {
         screenshot_image
     };
@@ -469,14 +469,14 @@ pub fn capture_area(
 #[tauri::command]
 pub fn get_system_dpi_info() -> serde_json::Value {
     let scale = get_system_dpi_scale();
-    
+
     serde_json::json!({
         "dpi_scale": scale,
         "is_high_dpi": scale > 1.0,
-        "description": if scale > 1.0 { 
-            format!("高DPI屏幕 (缩放比例: {:.2}x)", scale) 
-        } else { 
-            "标准DPI屏幕".to_string() 
+        "description": if scale > 1.0 {
+            format!("高DPI屏幕 (缩放比例: {:.2}x)", scale)
+        } else {
+            "标准DPI屏幕".to_string()
         }
     })
 }

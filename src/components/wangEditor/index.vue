@@ -2,14 +2,8 @@
  * @Description: 富文本编辑器组件
 -->
 <template>
-  <div class="c-editor-wrap">
-    <Toolbar
-      v-if="showToolBar"
-      class="c-editor-toolbar"
-      :editor="editorRef"
-      :defaultConfig="toolbarConfig"
-      :mode="mode"
-    />
+  <div class="c-editor-wrap" :class="showToolBar ? 'with-toolbar' : ''">
+    <Toolbar class="c-editor-toolbar" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
     <Editor
       class="c-editor"
       :class="showToolBar ? 'with-toolbar' : ''"
@@ -19,9 +13,6 @@
       @onCreated="handleCreated"
     />
   </div>
-
-  <!-- <el-button @click="getC" style="position: absolute">aaa</el-button> -->
-  <!-- </div> -->
 </template>
 <script setup lang="ts">
 import "@wangeditor/editor/dist/css/style.css"; // 引入 css
@@ -39,6 +30,14 @@ const editorConfig: Partial<IEditorConfig> = {
   //     emotions: '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 '.split(' ') // 数组
   //   }
   // }
+  MENU_CONF: {
+    // 配置上传图片
+    uploadImage: {
+      // 如果希望全部插入 base64 而不进行上传，设置一个极大的值
+      // 这里的单位是 Bytes，比如设置 5M = 5 * 1024 * 1024
+      base64LimitSize: 100 * 1024 * 1024, // 10MB 以内的图片都转为 base64
+    },
+  },
 };
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef() as any;
@@ -120,11 +119,19 @@ const handleCreated = (editor: any) => {
 };
 
 watch(
-  () => text,
+  () => props.modelValue,
+  (val: any) => {
+    text.value = val;
+  },
+  { deep: true },
+);
+
+watch(
+  () => text.value,
   (val: any) => {
     emit("update:modelValue", val);
   },
-  { deep: true }
+  { deep: true },
 );
 
 // 组件销毁时，也及时销毁编辑器
@@ -147,34 +154,25 @@ function insertText(text: String) {
 defineExpose({
   insertNode,
   insertText,
-});
-
-onMounted(() => {
-  text.value = props.modelValue;
-  // setTimeout(() => {
-  //   editorRef.value.insertNode({
-  //     type: 'image',
-  //     src: 'https://p5.itc.cn/q_70/images03/20231125/453f7f1783974a41aea9644da14e454c.gif',
-  //     style: {
-  //       width: '50px',
-  //       height: '50px'
-  //     },
-  //     children: [{ text: '' }]
-  //   });
-  // }, 2000);
+  getText() {
+    return editorRef.value?.getText();
+  },
 });
 </script>
 <style lang="scss" scoped>
 .c-editor-wrap {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 .c-editor {
-  height: 160px;
+  min-height: 160px;
   overflow: hidden;
-  border-bottom: 1px solid rgb(204, 204, 204);
-  border-left: 1px solid rgb(204, 204, 204);
-  border-right: 1px solid rgb(204, 204, 204);
+  border-top: 1px solid #dcdfe6;
+  border-bottom: 1px solid #dcdfe6;
+  border-left: 1px solid #dcdfe6;
+  border-right: 1px solid #dcdfe6;
+  border-radius: 0 0 4px 4px;
   :deep(.w-e-modal) {
     padding: 25px 15px 0;
   }
@@ -212,7 +210,9 @@ onMounted(() => {
   }
 }
 .with-toolbar {
-  border-radius: 0 0 6px 6px;
+  .c-editor {
+    border-radius: 0 0 6px 6px;
+  }
 }
 .c-editor-toolbar {
   border: none !important;
@@ -222,7 +222,8 @@ onMounted(() => {
   }
   :deep(.w-e-toolbar) {
     border-radius: 6px 6px 0 0;
-    border: 1px solid rgb(204, 204, 204);
+    border: 1px solid #dcdfe6;
+    border-bottom: none;
   }
 }
 </style>

@@ -8,32 +8,28 @@
             <div class="part-tools">
               <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
-                  {{ sourceLangList.find((lang) => lang.value === options.sourceLang)?.label || options.sourceLang }}
+                  {{sourceLangList.find((lang) => lang.value === options.sourceLang)?.label || options.sourceLang}}
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item
-                      v-for="lang in sourceLangList"
-                      :key="lang.value"
-                      @click="options.sourceLang = lang.value"
-                    >
+                    <el-dropdown-item v-for="lang in sourceLangList" :key="lang.value"
+                      @click="options.sourceLang = lang.value">
                       {{ lang.label }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-icon style="margin-right: 6px"><Switch /></el-icon>
+              <el-icon style="margin-right: 6px" @click="switchLang">
+                <Switch />
+              </el-icon>
               <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
-                  {{ targetLangList.find((lang) => lang.value === options.targetLang)?.label || options.targetLang }}
+                  {{targetLangList.find((lang) => lang.value === options.targetLang)?.label || options.targetLang}}
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item
-                      v-for="lang in targetLangList"
-                      :key="lang.value"
-                      @click="options.targetLang = lang.value"
-                    >
+                    <el-dropdown-item v-for="lang in targetLangList" :key="lang.value"
+                      @click="options.targetLang = lang.value">
                       {{ lang.label }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -42,12 +38,7 @@
             </div>
           </div>
           <div class="part-main">
-            <el-input
-              type="textarea"
-              v-model="originalText"
-              @input="debouncedTranslate"
-              placeholder="请输入待翻译文本"
-            />
+            <el-input type="textarea" v-model="originalText" @input="debouncedTranslate" placeholder="请输入待翻译文本" />
           </div>
           <div class="part-footer">
             <div class="part-footer-left">
@@ -61,17 +52,15 @@
               <div class="part-footer-item">
                 <span class="pre-text">
                   <el-tooltip content="自动读取剪贴板时，如果剪贴板内容小于限制字符数，将自动翻译" placement="bottom">
-                    <el-icon style="margin-top: 1px"><QuestionFilled /></el-icon>
+                    <el-icon style="margin-top: 1px">
+                      <QuestionFilled />
+                    </el-icon>
                   </el-tooltip>
                   限制字符数
                 </span>
 
-                <el-input
-                  class="linit-number-input"
-                  v-model="options.limitNumber"
-                  placeholder="限制字符数"
-                  style="box-shadow: none; width: 60px; border: none"
-                />
+                <el-input class="linit-number-input" v-model="options.limitNumber" placeholder="限制字符数"
+                  style="box-shadow: none; width: 60px; border: none" />
               </div>
             </div>
           </div>
@@ -92,12 +81,8 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item
-                      v-for="format in formatList"
-                      :disabled="format.value === options.autoFormatType"
-                      :key="format.value"
-                      @click="options.autoFormatType = format.value"
-                    >
+                    <el-dropdown-item v-for="format in formatList" :disabled="format.value === options.autoFormatType"
+                      :key="format.value" @click="options.autoFormatType = format.value">
                       {{ format.label }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -119,16 +104,12 @@
                 <span class="pre-text">切换为</span>
                 <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
                   <el-button type="text" size="mini" style="margin-bottom: -2px">
-                    {{ formatList.find((format) => format.value === options.formatType)?.label || options.formatType }}
+                    {{formatList.find((format) => format.value === options.formatType)?.label || options.formatType}}
                   </el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
-                      <el-dropdown-item
-                        v-for="format in formatList"
-                        :disabled="format.value === options.formatType"
-                        :key="format.value"
-                        @click="handleFormatType(format)"
-                      >
+                      <el-dropdown-item v-for="format in formatList" :disabled="format.value === options.formatType"
+                        :key="format.value" @click="handleFormatType(format)">
                         {{ format.label }}
                       </el-dropdown-item>
                     </el-dropdown-menu>
@@ -258,6 +239,15 @@ const options = ref({
   limitNumber: 100,
 });
 
+const switchLang = () => {
+  const temp = options.value.sourceLang;
+  options.value.sourceLang = options.value.targetLang;
+  options.value.targetLang = temp;
+  handleTranslate();
+}
+
+
+
 const debouncedTranslate = debounce(() => {
   handleTranslate();
 }, 500);
@@ -355,6 +345,7 @@ onBeforeUnmount(() => {
     .el-textarea {
       border-radius: 0 0 4px 4px;
       height: 100%;
+
       :deep(.el-textarea__inner) {
         border-radius: 0 0 4px 4px;
         box-shadow: none;
@@ -363,10 +354,12 @@ onBeforeUnmount(() => {
       }
     }
   }
+
   .translate-result {
     .el-textarea {
       border-radius: 0;
       height: 100%;
+
       :deep(.el-textarea__inner) {
         border-radius: 0;
         box-shadow: none;
@@ -376,6 +369,7 @@ onBeforeUnmount(() => {
     }
   }
 }
+
 .linit-number-input {
   :deep(.el-input__wrapper) {
     box-shadow: none !important;

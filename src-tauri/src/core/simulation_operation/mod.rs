@@ -1,6 +1,8 @@
 // src/core/text_input/mod.rs
 // pub mod clipboard;
 pub mod keyboard;
+pub mod shortcut;
+
 // pub mod text_manager;
 
 // use anyhow::Result;

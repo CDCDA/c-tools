@@ -4,6 +4,7 @@ mod core;
 use commands::color_commands::{
     capture_area, capture_full_screen, capture_magnifier_area, get_color_at_cursor,
 };
+
 use commands::db_command::{get_all_tables, get_table_columns, test_db_connection};
 use commands::file_commands::{
     calculate_file_hash, list_directory_recursively_jwalk, move_file, open_folder, read_file,
@@ -15,7 +16,7 @@ use commands::mouse_commands::{
     stop_color_picking,
     AppState, // 确保 AppState 可访问
 };
-use commands::simulation_operation_commands::paste;
+use commands::simulation_operation_commands::{paste, shortcut};
 use commands::system_commands::{get_system_info, set_app_fullscreen};
 use commands::translate_commands::translate_text;
 use core::system::tray::create_tray;
@@ -30,6 +31,7 @@ use tauri::Manager; // 确保 Emitter trait 导入
 #[cfg(desktop)]
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             let _ = app
@@ -56,6 +58,7 @@ fn main() {
             remove_file,
             open_folder,
             paste,
+            shortcut,
             get_color_at_cursor,
             capture_magnifier_area,
             get_mouse_position,
@@ -70,6 +73,19 @@ fn main() {
             translate_text
         ])
         .setup(|app| {
+            // 预创一个隐藏的截图窗口
+            let _screenshot_win = tauri::WebviewWindowBuilder::new(
+                app,
+                "tool-screenshot", // 给它一个固定的 label
+                tauri::WebviewUrl::App("http://localhost:1420/plugin/screenshot".into()), // 指向你的截图路由
+            )
+            .visible(false)
+            .fullscreen(true)
+            .always_on_top(false)
+            .transparent(true)
+            .decorations(false)
+            .skip_taskbar(true)
+            .build()?;
             let menu = MenuBuilder::new(app)
                 .text("open", "Open")
                 .text("close", "Close")

@@ -2,18 +2,11 @@
   <div class="plugin-search">
     <div class="plugin-search-header-bar" data-tauri-drag-region>
       <div class="plugin-search-header-bar-left" data-tauri-drag-region>
-        <el-input
-          v-if="!loading"
-          class="plugin-search-header-bar-search"
-          data-tauri-drag-region
-          v-model="searchText"
-          @input="handleSearch"
-          v-prevent-drag
-          placeholder="请输入命令/应用"
-        />
+        <el-input v-if="!loading" class="plugin-search-header-bar-search" data-tauri-drag-region v-model="searchText"
+          @input="handleSearch" v-prevent-drag placeholder="请输入命令/应用" />
         <el-tag style="margin-left: 20px" v-else class="plugin-name" effect="dark" round type="info">{{
           currentPlugin?.label
-        }}</el-tag>
+          }}</el-tag>
       </div>
       <div class="plugin-search-header-bar-right" data-tauri-drag-region>
         <c-image v-if="!loading" class="user-avatar" :src="avatarUrl" @click="handleAvatarClick"></c-image>
@@ -44,7 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, Directive, computed } from "vue";
+import { ref, nextTick, Directive, computed, onActivated } from "vue";
+import { vPreventDrag } from "@/directive/preventDrag.ts"
 import { pluginData, selectPlugin } from "@/utils/plugin.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { adjustWindowSize, setWindowSize } from "@/utils/window.ts";
@@ -71,17 +65,6 @@ function handleAvatarClick() {
 //插件数据
 const plugins = ref(pluginData);
 
-const preventDrag: Directive = {
-  mounted(el) {
-    el.addEventListener("mousedown", () => {
-      const inputElement = el.querySelector(".el-input__inner");
-      if (inputElement) {
-        inputElement.focus();
-      }
-    });
-  },
-};
-const vPreventDrag = preventDrag;
 
 const handleSearch = (query: any) => {
   searchText.value = query;
@@ -107,14 +90,18 @@ async function initWindow() {
   await currentWindow.setAlwaysOnTop(false);
   await new Promise((resolve) => setTimeout(resolve, 100));
   const appElement = document.getElementById("app");
-  if (appElement) {
-    appElement.style.borderRadius = "8px";
-  }
+  // if (appElement) {
+  //   appElement.style.borderRadius = "8px";
+  // }
   currentWindow.emit("theme-changed");
   await adjustWindowSize();
 }
 
 initWindow();
+
+onActivated(() => {
+  initWindow();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -128,6 +115,7 @@ initWindow();
   z-index: 999;
   user-select: none;
   border-bottom: 1px solid #d5d7dd;
+
   .plugin-search-header-bar-left {
     height: 100%;
     width: calc(100% - 60px);
@@ -135,6 +123,7 @@ initWindow();
     align-items: center;
     justify-content: start;
   }
+
   .plugin-search-header-bar-right {
     height: 100%;
     width: 60px;
@@ -142,34 +131,41 @@ initWindow();
     align-items: center;
     justify-content: end;
     padding-right: 15px;
+
     .user-avatar {
       width: 35px;
       height: 35px;
       border-radius: 35px;
       cursor: pointer;
     }
+
     .setting {
       font-size: 25px;
       cursor: pointer;
     }
   }
+
   .plugin-search-header-bar-search {
     height: 100%;
+
     :deep(.el-input__wrapper) {
       padding-left: 25px;
       border-radius: 0 !important;
       box-shadow: none;
+
       .el-input__inner {
         font-size: 20px !important;
       }
     }
   }
 }
+
 .plugin-list-container {
   display: flex;
   flex-direction: column;
   padding: 10px;
   height: fit-content;
+
   .plugin-wrap {
     .title {
       font-size: 18px;
@@ -177,6 +173,7 @@ initWindow();
       margin-bottom: 10px;
       padding-left: 12px;
     }
+
     .plugin-list {
       display: flex;
       justify-content: start;
@@ -184,6 +181,7 @@ initWindow();
       min-height: 90px;
     }
   }
+
   .plugin-item {
     width: 86px;
     height: 86px;
@@ -195,27 +193,33 @@ initWindow();
     justify-content: center;
     transition: all 0.3s linear;
     cursor: pointer;
+
     .svg-icon {
       font-size: 40px;
       margin-bottom: 8px;
     }
+
     .plugin-item-title {
       font-size: 14px;
     }
+
     &:hover,
     &:active {
       background: #d5d7dd;
     }
   }
+
   .best-match {
     display: flex;
     justify-content: start;
     flex-wrap: wrap;
   }
 }
+
 .loading {
   display: none !important;
 }
+
 .loading-spinner {
   height: 100%;
   aspect-ratio: 1/1;
@@ -223,6 +227,7 @@ initWindow();
   align-items: center;
   justify-content: center;
 }
+
 :deep(.el-loading-spinner) {
   height: 100%;
   right: 0px !important;
@@ -231,10 +236,12 @@ initWindow();
   align-items: center;
   justify-content: center;
 }
+
 :deep(.circular) {
   height: 37px;
   width: 37px;
 }
+
 .plugin-name {
   height: 32px;
   font-size: 18px;
@@ -243,15 +250,18 @@ initWindow();
   background-color: var(--el-color-primary);
   color: #fff;
   border: none;
+
   :deep(.el-tag__content) {
     margin-bottom: 4px;
   }
+
   :deep(.el-tag__close) {
     width: 20px;
     height: 20px;
     font-size: 20px;
     margin-bottom: 2px;
   }
+
   .plugin-close {
     margin-left: 5px;
     cursor: pointer;

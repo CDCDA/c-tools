@@ -18,11 +18,11 @@
         "label": "main",
         "minimizable": true,
         "decorations": false,
-        "transparent": true
+        "transparent": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost https://asset.localhost"
     }
   },
   "bundle": {

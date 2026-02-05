@@ -19,7 +19,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 rand = "0.8.3"
-tauri = { version = "2", features = ["tray-icon", "image-ico"] }
+tauri = { version = "2.1.1", features = [ "tray-icon", "image-ico"] }
 tauri-plugin-opener = "2"
 walkdir = "2"
 tauri-plugin-fs = "2"
@@ -46,11 +46,14 @@ image = "0.24.8" # 用于处理图像数据，例如转换为Base64
 base64 = "0.21.7" # 用于Base64编码
 once_cell = "1.19.0"
 screenshots = "0.6"
+mouse_position = "0.1.3"
 postgres = { version = "0.19", features = ["with-chrono-0_4"] }
 chrono = { version = "0.4", features = ["serde"] }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 hex = "0.4"
 hmac = "0.12"
+mysql_async = "0.32"
+sqlx = { version = "0.7", features = ["mysql", "runtime-tokio-native-tls"] }
 # Windows API 依赖
 windows = { version = "0.52.0", features = [
     "Win32_Foundation",
@@ -58,6 +61,7 @@ windows = { version = "0.52.0", features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_UI_Input_KeyboardAndMouse",
 ] }
+tauri-plugin-notification = "2"
 
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]

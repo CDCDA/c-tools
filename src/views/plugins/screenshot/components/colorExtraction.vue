@@ -1,16 +1,9 @@
 <template>
   <div class="color-extraction">
     <!-- 像素级放大镜 -->
-    <PixelPerfectMagnifier
-      v-if="isPicking && fullScreenImage"
-      :full-screen-image="fullScreenImage"
-      :mouse-position="mousePosition"
-      :magnification="10"
-      :grid-size="9"
-      :view-size="110"
-      @color-picked="onColorPicked"
-      ref="magnifierRef"
-    />
+    <PixelPerfectMagnifier v-if="isPicking && fullScreenImage" :full-screen-image="fullScreenImage"
+      :mouse-position="mousePosition" :magnification="10" :grid-size="9" :view-size="110" @color-picked="onColorPicked"
+      ref="magnifierRef" />
   </div>
 </template>
 
@@ -19,10 +12,18 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { logicalToPhysical, physicalToLogical } from "@/utils/window.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import { listen } from "@tauri-apps/api/event";
 import PixelPerfectMagnifier from "@/components/image/canvasMagnifier.vue";
-const emit = defineEmits(["plugin-close"]);
+const props = defineProps({
+  type: {
+    type: String,
+    default: 'screenshot',
+  },
+  fullScreenImage: {
+    type: String,
+    default: '',
+  },
+})
 interface RgbColor {
   r: number;
   g: number;
@@ -42,19 +43,7 @@ let cleanupFunctions: (() => void)[] = [];
 // 开始取色
 const startPicking = async () => {
   try {
-    // 1. 设置窗口为透明、无边框、覆盖全屏
-    const imageBase64 = await invoke<string>("capture_full_screen");
-    fullScreenImage.value = imageBase64;
     isPicking.value = true;
-
-    // await currentWindow.setAlwaysOnTop(true);
-    // const screenSize = await currentWindow.outerSize();
-    // await currentWindow.setSize(screenSize);
-    // await currentWindow.show();
-
-    // await currentWindow.setPosition(0, 0);
-    // 截取全屏
-
     await invoke("start_color_picking");
     // 监听鼠标移动
     const unlistenMouseMove = await listen<[number, number]>("mouse-moved", async (event) => {
@@ -65,9 +54,6 @@ const startPicking = async () => {
     });
     cleanupFunctions.push(unlistenMouseMove);
 
-    // 注册快捷键
-    await register("Escape", stopPicking);
-    // await register("Enter", confirmColor);
 
     console.log("✅ 像素级取色模式已启动");
   } catch (error) {
@@ -81,13 +67,10 @@ const stopPicking = async () => {
   try {
     invoke("stop_color_picking");
     isPicking.value = false;
-    fullScreenImage.value = "";
     cleanupFunctions.forEach((cleanup) => cleanup());
     cleanupFunctions = [];
-    unregister("Escape");
-    emit("plugin-close", true);
     console.log("🚫 取色模式已停止");
-    currentWindow.close();
+    currentWindow.hide();
   } catch (error) {
     console.error("停止取色模式失败:", error);
   }
@@ -100,12 +83,17 @@ const onColorPicked = (colorData: any) => {
   stopPicking();
 };
 
-onMounted(() => {
-  setTimeout(() => {
+// 键盘事件处理
+const handleKeyDown = (event) => {
+  if (event.key === "Escape" && isCapturing.value) {
+    stopPicking();
+  }
+};
+
+defineExpose({
+  start() {
+    document.addEventListener("keydown", handleKeyDown);
     startPicking();
-  }, 0);
-});
-onUnmounted(() => {
-  stopPicking();
-});
+  },
+})
 </script>

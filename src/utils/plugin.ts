@@ -1,9 +1,8 @@
 import { routes } from "@/router/index.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { setWindowSize } from "@/utils/window.ts";
-import Windows from "@/windows/index.js";
+import { invoke } from "@tauri-apps/api/core";
 import { useEventBusStore } from "@/store/modules/eventBus.ts";
-import { Image } from "@tauri-apps/api/image";
 const currentWindow = getCurrentWindow();
 // 工具插件
 export const pluginData = getPluginData().filter((item) => item.type === "tool");
@@ -31,15 +30,28 @@ export const getPluginByName = (name: string) => {
   return plugin;
 };
 
+const screenshotPlugins = ["screenshot", "screenshotAndSuspended", "colorExtraction"];
+
 // 选择插件并执行
 export const selectPlugin = async (plugin: any, router: any) => {
   plugin = getPluginByName(plugin.name);
   const eventBusStore = useEventBusStore();
   eventBusStore.currentPlugin = plugin;
-  console.log("选择插件", plugin);
+  eventBusStore.pluginLoading = true;
+  // 全屏截图相关插件
+  if (screenshotPlugins.includes(plugin.name)) {
+    await invoke("shortcut", { routePath: "screenshot" });
+    eventBusStore.pluginLoading = true;
+    currentWindow.hide();
 
+    return;
+  }
+  // 新窗口插件
   if (plugin.newWindow) {
-    createNewWindow(plugin, router);
+    router.push({
+      name: "pluginSearch",
+    });
+    createNewWindow(plugin);
   } else {
     setWindowSize(800, 25);
     await router.push({
@@ -55,13 +67,10 @@ export const selectPlugin = async (plugin: any, router: any) => {
   }
 };
 
-export async function createNewWindow(plugin: any, router: any) {
+export async function createNewWindow(plugin: any) {
   setWindowSize(800, 220);
-  router.push({ name: "pluginSearch" });
-  const newWindow = new Windows();
-  console.log("创建新窗口参数:", plugin);
-  const win = await newWindow.createWin(
-    {
+  currentWindow.emit(`create-window`, {
+    windowData: {
       label: `tool-${plugin.label}`,
       title: plugin.label,
       transparent: plugin.transparent,
@@ -72,23 +81,13 @@ export async function createNewWindow(plugin: any, router: any) {
       width: plugin.width,
       height: plugin.height,
     },
-    {
+    params: {
       routeName: plugin.name,
       minimize: false,
       transparent: plugin.transparent,
       showHeader: plugin.showHeader,
-    }
-  );
-  win.once("tauri://created", async () => {
-    if (!plugin.ico) {
-      return;
-    }
-    try {
-      const image = await (Image as any).fromPath(plugin.ico);
-      await win.setIcon(image);
-    } catch (error: any) {
-      console.error("设置图标失败:", error);
-    }
+      ico: plugin.ico,
+    },
   });
   currentWindow.hide();
 }

@@ -9,6 +9,9 @@ import { WebviewWindow, getAllWebviewWindows, getCurrentWebviewWindow } from '@t
 import { relaunch, exit } from '@tauri-apps/plugin-process'
 import { emit, listen } from '@tauri-apps/api/event'
 import { useRouter } from 'vue-router'
+import { invoke } from "@tauri-apps/api/core";
+import { Image } from "@tauri-apps/api/image";
+
 const router = useRouter()
 const appWindow = getCurrentWindow()
 
@@ -46,30 +49,47 @@ class Windows {
   // 创建新窗口
   async createWin(options, params) {
     const args = Object.assign({}, windowConfig, options)
-    console.log("创建窗口参数:", options, args)
+    // console.log("窗口参数", args)
+    let fullScreenImage = null;
+    if (options.label.includes("截图")) {
+      // let startTime = Date.now();
+      fullScreenImage = (await invoke("capture_full_screen"))
+      // console.log("截图耗时:", Date.now() - startTime);
+    }
+    console.log("fullScreenImage:", fullScreenImage);
     // 判断窗口是否存在
     const existWin = await this.getWin(args.label)
     if (existWin) {
-      console.log("新窗口存在:", args.label)
-      await existWin.close()
+      console.log("窗口已存在:", existWin)
+      params.fullScreenImage = fullScreenImage
+      await emit(`init-data-${args.label}`, params);
+      return existWin
     }
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(null)
-      }, 300)
-    })
     // 创建窗口对象
     const win = new WebviewWindow(args.label, args)
 
     // 窗口创建完毕/失败
     win.once('tauri://created', async () => {
       win.hide()
+      if (!params.ico) {
+        return;
+      }
+      try {
+        const image = await (Image).fromPath(params.ico);
+        await win.setIcon(image);
+      } catch (error) {
+        console.error("设置图标失败:", error);
+      }
     })
 
     win.once(`window-ready-${args.label}`, async () => {
-      console.log(`收到窗口 ${args.label} 就绪信号，正在发送数据...`);
-      // 收到就绪信号后，再发送数据
+      params.fullScreenImage = fullScreenImage
       await emit(`init-data-${args.label}`, params);
+      if (params.minimize) {
+        win.hide();
+      } else {
+        win.show();
+      }
     });
 
     win.once('tauri://error', async (error) => {
@@ -86,41 +106,40 @@ class Windows {
 
   // 获取全部窗口
   async getAllWin() {
-    //  return getAll()
     return await getAllWindows()
   }
 
   // 开启主进程监听事件
-  async listen() {
-    console.log('——+——+——+——+——+开始监听窗口')
+  // async listen() {
+  //   console.log('——+——+——+——+——+开始监听窗口')
 
-    // 创建新窗体
-    await listen('win-create', (event) => {
-      console.log(event)
-      this.createWin(event.payload)
-    })
+  //   // 创建新窗体
+  //   // await listen('win-create', (event) => {
+  //   //   console.log("创建窗口事件:", event)
+  //   //   this.createWin(event.payload)
+  //   // })
 
-    // 显示窗体
-    await listen('win-show', async (event) => {
-      if (appWindow.label.indexOf('main') == -1) return
-      await appWindow.show()
-      await appWindow.unminimize()
-      await appWindow.setFocus()
-    })
+  //   // 显示窗体
+  //   // await listen('win-show', async (event) => {
+  //   //   if (appWindow.label.indexOf('main') == -1) return
+  //   //   await appWindow.show()
+  //   //   await appWindow.unminimize()
+  //   //   await appWindow.setFocus()
+  //   // })
 
-    // 隐藏窗体
-    await listen('win-hide', async (event) => {
-      if (appWindow.label.indexOf('main') == -1) return
-      await appWindow.hide()
-    })
+  //   // 隐藏窗体
+  //   await listen('win-hide', async (event) => {
+  //     if (appWindow.label.indexOf('main') == -1) return
+  //     await appWindow.hide()
+  //   })
 
-    // 关闭窗体
-    await listen('win-close', async (event) => {
-      await appWindow.close()
-    })
+  //   // 关闭窗体
+  //   await listen('win-close', async (event) => {
+  //     await appWindow.close()
+  //   })
 
-    // ...
-  }
+  //   // ...
+  // }
 }
 
 export default Windows

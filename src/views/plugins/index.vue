@@ -5,7 +5,9 @@
     <!-- 主应用 头部 -->
     <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginSearch="pluginSearch" />
     <div class="plugin-main" :class="loading ? 'loading' : ''">
-      <router-view />
+      <router-view v-slot="{ Component }">
+      <component :is="Component" ref="currentRouteRef" />
+    </router-view>
     </div>
   </div>
 </template>
@@ -39,9 +41,10 @@ watch(
     immediate: true,
   }
 );
-
+const currentRouteRef = ref(null) as any
 function pluginSearch(val: string) {
   console.log("搜索:", val);
+  currentRouteRef.value?.handleSearch(val)
 }
 </script>
 

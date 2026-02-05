@@ -2,7 +2,7 @@
   <el-drawer v-model="open" title="数据库" size="50%" direction="rtl" @close="close">
     <div class="drawer-content">
       <el-form :model="database" ref="databaseForm" label-width="95px" :rules="rules">
-        <el-form-item label="连接名称" prop="title">
+        <el-form-item label="连接名称" prop="name">
           <el-input v-model="database.name" placeholder="请输入数据库名称" />
         </el-form-item>
         <el-form-item label="数据库类型" prop="type">
@@ -59,7 +59,7 @@ const databaseStore = useDatabaseStore();
 const open = ref(false);
 const emit = defineEmits(["update:database"]);
 const rules = reactive({
-  title: [{ required: true, message: "请输入连接名称", trigger: "blur" }],
+  name: [{ required: true, message: "请输入连接名称", trigger: "blur" }],
   type: [{ required: true, message: "请选择数据库类型", trigger: "change" }],
   connectType: [{ required: true, message: "请选择连接方式", trigger: "change" }],
   host: [{ required: true, message: "请输入数据库主机", trigger: "blur" }],
@@ -97,6 +97,7 @@ async function handleTestConnection() {
       ElNotification.success("连接成功");
     }
   } catch (error: any) {
+    console.error("连接失败:", error);
     ElNotification.error("连接失败:", error.message);
   }
 }
@@ -127,6 +128,7 @@ defineExpose({
     margin-bottom: 10px;
   }
 }
+
 .drawer-footer {
   display: flex;
   justify-content: space-between;

@@ -1,10 +1,13 @@
 <template>
+  <!-- 容器背景是全屏截图 -->
   <div class="screenshot-container" :style="{ backgroundImage: `url(${fullScreenImage})` }">
     <!-- 截图遮罩层 -->
-    <div v-if="isCapturing" class="capture-overlay" @mousedown="startSelection" @mousemove="updateSelection"
-      @mouseup="endSelection">
+    <div v-if="isCapturing" class="capture-overlay" :class="{ 'is-selecting': selection.active }"
+      @mousedown="startSelection" @mousemove="updateSelection" @mouseup="endSelection">
+      <!-- 初始未拖拽时的全局灰色遮罩（可选，见下方 CSS） -->
+      <div v-if="!selection.active" class="full-mask"></div>
       <!-- 选择区域框 -->
-      <div v-if="selection.active" class="selection-box" :style="{
+      <div v-show="selection.active" class="selection-box" :style="{
         left: selection.x + 'px',
         top: selection.y + 'px',
         width: selection.width + 'px',
@@ -17,25 +20,27 @@
       <!-- 坐标显示 -->
       <div class="coordinate-display">坐标: ({{ currentMouse.x }}, {{ currentMouse.y }})</div>
     </div>
-    <!-- 截图结果显示 -->
-    <!-- <div v-if="capturedImage" class="screenshot-result">
-      <img :src="capturedImage" data-tauri-drag-region alt="截图结果" />
-      <el-icon class="close-btn" @click="currentWindow.close()">
-        <Close />
-      </el-icon>
-    </div> -->
   </div>
 </template>
-
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { Close } from "@element-plus/icons-vue";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { setWindowSize, setWindowPosition, adjustWindowSize } from "@/utils/window.ts";
+import { ElNotification } from "element-plus";
+import { convertFileSrc } from '@tauri-apps/api/core';
+const props = defineProps({
+  type: {
+    type: String,
+    default: 'screenshot',
+  },
+  fullScreenImage: {
+    type: String,
+    default: '',
+  },
+})
+
 const currentWindow = getCurrentWindow();
-const emit = defineEmits(["pluginClose"]);
-const fullScreenImage = ref("");
+
 // 响应式数据
 const isCapturing = ref(false);
 const capturedImage = ref("");
@@ -51,16 +56,18 @@ const selection = ref({
 const currentMouse = ref({ x: 0, y: 0 });
 
 // 开始截图
-const startCapture = async () => {
+const startCapture = () => {
   isCapturing.value = true;
   selection.value.active = false;
   document.body.style.overflow = "hidden";
+  currentWindow.show()
+  currentWindow.setFocus()
 
 };
 
 // 开始选择区域
 const startSelection = (event) => {
-  selection.value.active = true;
+  selection.value.active = true; // 立即激活
   selection.value.startX = event.clientX;
   selection.value.startY = event.clientY;
   selection.value.x = event.clientX;
@@ -68,7 +75,6 @@ const startSelection = (event) => {
   selection.value.width = 0;
   selection.value.height = 0;
 };
-
 // 更新选择区域
 const updateSelection = (event) => {
   currentMouse.value.x = event.clientX;
@@ -89,6 +95,7 @@ const endSelection = async () => {
     selection.value.active = false;
     return;
   }
+  isCapturing.value = false;
 
   try {
     const area = {
@@ -98,17 +105,19 @@ const endSelection = async () => {
       height: Math.round(selection.value.height),
       ignoreDpi: false,
     };
-    isCapturing.value = false;
+
     // 调用 Rust 后端截图
     const result = await invoke("capture_area", area);
     if (result) {
       capturedImage.value = result;
     }
     await copyToClipboard();
-    await createNewImageWindow(area);
-    cleanup();
+
+    // currentWindow.close();
   } catch (error) {
     console.error("截图错误:", error);
+  } finally {
+    cleanup();
   }
 };
 
@@ -126,35 +135,11 @@ const copyToClipboard = async () => {
   }
 };
 
-async function createNewImageWindow(area) {
-  await currentWindow.emit(`create-window`, {
-    windowData: {
-      label: `tool-image-${Date.now()}`,
-      title: "截图结果",
-      transparent: true,
-      fullscreen: false, // 窗口是否全屏
-      decorations: false, // 窗口是否装饰边框及导航条
-      alwaysOnTop: true, // 置顶窗口
-      skipTaskbar: true, // 窗口是否从任务栏中排除
-      x: area.x,
-      y: area.y,
-      width: area.width,
-      height: area.height,
-    },
-    params: {
-      routeName: "image",
-      transparent: true,
-      showHeader: false,
-      imageData: capturedImage.value,
-    },
-  });
-}
-
 // 清理资源
 const cleanup = () => {
   isCapturing.value = false;
-  document.body.style.overflow = "";
-  currentWindow.close();
+  document.removeEventListener("keydown", handleKeyDown);
+  currentWindow.hide();
 };
 
 // 键盘事件处理
@@ -164,99 +149,76 @@ const handleKeyDown = (event) => {
   }
 };
 
-// 生命周期
-onMounted(() => {
-  document.addEventListener("keydown", handleKeyDown);
-  startCapture();
-});
 
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", handleKeyDown);
-});
+defineExpose({
+  start() {
+    document.addEventListener("keydown", handleKeyDown);
+    startCapture();
+  },
+})
 </script>
 
 <style scoped>
 .screenshot-container {
-  padding: 0;
-  z-index: -1;
-
-  &:hover {
-    .close-btn {
-      visibility: visible !important;
-    }
-  }
-}
-
-/* 截图遮罩层 */
-.capture-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100vw;
   height: 100vh;
-  background: transparent;
-  cursor: crosshair;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* 截图遮罩容器：不设背景色，由内部元素控制 */
+.capture-overlay {
+  position: fixed;
+  inset: 0;
   z-index: 9999;
+  cursor: crosshair;
+}
+
+/* 初始状态：全屏半透明灰色 */
+.full-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  /* 调整遮罩透明度 */
 }
 
 /* 选择区域框 */
 .selection-box {
   position: absolute;
-  border: 2px solid #007acc;
+  border: 2px solid white;
+  /* 蓝色边框 */
   background: transparent;
+  /* 内部透明，露出底层图片 */
   pointer-events: none;
+  /* 让鼠标事件穿透到父层 overlay */
+
+  /* 核心：利用巨大的 box-shadow 实现四周遮罩 */
+  /* 这里的 9999px 确保阴影覆盖整个屏幕 */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
 }
 
 .size-indicator {
   position: absolute;
-  top: -30px;
+  top: -25px;
   left: 0;
   background: #007acc;
   color: white;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 12px;
-  white-space: nowrap;
 }
 
 .coordinate-display {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.7);
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
   font-family: monospace;
-}
-
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  color: white;
-  z-index: 999;
-  transition: visibility 0.3s ease-in-out;
-
-  &:before {
-    content: "";
-    width: calc(100% + 4px);
-    height: calc(100% + 4px);
-    background: rgba(85, 85, 85, 0.7);
-    z-index: -1;
-    border-radius: 50%;
-    left: -2px;
-    top: -2px;
-    position: absolute;
-  }
-
-  visibility: hidden;
-}
-
-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  pointer-events: none;
 }
 </style>

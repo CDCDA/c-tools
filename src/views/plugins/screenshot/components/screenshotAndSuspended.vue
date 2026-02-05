@@ -1,10 +1,13 @@
 <template>
+  <!-- 容器背景是全屏截图 -->
   <div class="screenshot-container" :style="{ backgroundImage: `url(${fullScreenImage})` }">
     <!-- 截图遮罩层 -->
-    <div v-if="isCapturing" class="capture-overlay" @mousedown="startSelection" @mousemove="updateSelection"
-      @mouseup="endSelection">
+    <div v-if="isCapturing" class="capture-overlay" :class="{ 'is-selecting': selection.active }"
+      @mousedown="startSelection" @mousemove="updateSelection" @mouseup="endSelection">
+      <!-- 初始未拖拽时的全局灰色遮罩（可选，见下方 CSS） -->
+      <div v-if="!selection.active" class="full-mask"></div>
       <!-- 选择区域框 -->
-      <div v-if="selection.active" class="selection-box" :style="{
+      <div v-show="selection.active" class="selection-box" :style="{
         left: selection.x + 'px',
         top: selection.y + 'px',
         width: selection.width + 'px',
@@ -17,25 +20,28 @@
       <!-- 坐标显示 -->
       <div class="coordinate-display">坐标: ({{ currentMouse.x }}, {{ currentMouse.y }})</div>
     </div>
-    <!-- 截图结果显示 -->
-    <!-- <div v-if="capturedImage" class="screenshot-result">
-      <img :src="capturedImage" data-tauri-drag-region alt="截图结果" />
-      <el-icon class="close-btn" @click="currentWindow.close()">
-        <Close />
-      </el-icon>
-    </div> -->
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { Close } from "@element-plus/icons-vue";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { setWindowSize, setWindowPosition, adjustWindowSize } from "@/utils/window.ts";
+import { ElNotification } from "element-plus";
+import { convertFileSrc } from '@tauri-apps/api/core';
+const props = defineProps({
+  type: {
+    type: String,
+    default: 'screenshot',
+  },
+  fullScreenImage: {
+    type: String,
+    default: '',
+  },
+})
+
 const currentWindow = getCurrentWindow();
-const emit = defineEmits(["pluginClose"]);
-const fullScreenImage = ref("");
+
 // 响应式数据
 const isCapturing = ref(false);
 const capturedImage = ref("");
@@ -51,16 +57,18 @@ const selection = ref({
 const currentMouse = ref({ x: 0, y: 0 });
 
 // 开始截图
-const startCapture = async () => {
+const startCapture = () => {
   isCapturing.value = true;
   selection.value.active = false;
   document.body.style.overflow = "hidden";
-
+  // document.removeEventListener("keydown", handleKeyDown);
+  currentWindow.show()
+  currentWindow.setFocus()
 };
 
 // 开始选择区域
 const startSelection = (event) => {
-  selection.value.active = true;
+  selection.value.active = true; // 立即激活
   selection.value.startX = event.clientX;
   selection.value.startY = event.clientY;
   selection.value.x = event.clientX;
@@ -68,7 +76,6 @@ const startSelection = (event) => {
   selection.value.width = 0;
   selection.value.height = 0;
 };
-
 // 更新选择区域
 const updateSelection = (event) => {
   currentMouse.value.x = event.clientX;
@@ -153,8 +160,8 @@ async function createNewImageWindow(area) {
 // 清理资源
 const cleanup = () => {
   isCapturing.value = false;
-  document.body.style.overflow = "";
-  currentWindow.close();
+  document.removeEventListener("keydown", handleKeyDown);
+  currentWindow.hide();
 };
 
 // 键盘事件处理
@@ -164,15 +171,13 @@ const handleKeyDown = (event) => {
   }
 };
 
-// 生命周期
-onMounted(() => {
-  document.addEventListener("keydown", handleKeyDown);
-  startCapture();
-});
 
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", handleKeyDown);
-});
+defineExpose({
+  start() {
+    document.addEventListener("keydown", handleKeyDown);
+    startCapture();
+  },
+})
 </script>
 
 <style scoped>

@@ -39,25 +39,25 @@
 .el-drawer__header {
   margin-bottom: 0 !important;
 }
-// ::-webkit-scrollbar {
-//   width: 8px;
-//   height: 8px;
-// }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-// ::-webkit-scrollbar-track {
-//   background: #f1f1f1; /* 浅灰色轨道 */
-//   border-radius: 10px;
-// }
+::-webkit-scrollbar-track {
+  // background: #f1f1f1; /* 浅灰色轨道 */
+  border-radius: 10px;
+}
 
-// ::-webkit-scrollbar-thumb {
-//   background: #d5d7dd;
-//   border-radius: 10px;
-//   transition: background 0.3s ease-in-out;
-// }
+::-webkit-scrollbar-thumb {
+  background: #d5d7dd;
+  border-radius: 10px;
+  transition: background 0.3s ease-in-out;
+}
 
-// ::-webkit-scrollbar-thumb:hover {
-//   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* 添加一点阴影 */
-// }
+::-webkit-scrollbar-thumb:hover {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* 添加一点阴影 */
+}
 
 .el-notification {
   width: fit-content !important;
@@ -326,6 +326,10 @@
   }
 }
 
+.el-message-box__message p {
+  white-space: pre-line;
+}
+
 .code-editor-footer-item {
   font-size: 14px !important;
   height: 100%;
@@ -346,4 +350,27 @@
     justify-content: center;
     margin-bottom: 2px;
   }
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-start {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
 }

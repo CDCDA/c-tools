@@ -8,6 +8,8 @@
     "tip"
   ],
   "permissions": [
+    "notification:allow-request-permission",
+    "notification:default",
     "core:window:allow-set-position",
     "core:window:allow-set-fullscreen",
     "core:window:allow-set-decorations",

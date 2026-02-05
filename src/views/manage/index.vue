@@ -1,8 +1,9 @@
 <!--
  * @Description: 设置页
 -->
-<template>
-  <div class="manage-container flex-start">
+<template>112
+222
+  <div class="manage-container">
     <manage-bar></manage-bar>
     <div class="manage-main">
       <side-bar></side-bar>
@@ -29,6 +30,7 @@ import ManageBar from "./components/manageBar.vue";
   background: white;
   position: absolute;
   font-family: "shark";
+
   .manage-main {
     height: 100%;
     width: inherit;
@@ -36,16 +38,19 @@ import ManageBar from "./components/manageBar.vue";
     width: 100%;
     display: flex;
   }
+
   .router-main {
     width: 100%;
     height: calc(100% - 2.8rem);
     overflow: auto;
     display: flex;
+
     .essay-manage-editor {
       width: calc(100% - 60px);
       box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
       min-height: calc(100% - 60px);
     }
+
     .blog-manage-editor {
       width: calc(100% - 60px);
       box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);

@@ -111,7 +111,7 @@ const handleCharTree = () => {
 };
 
 const handleJsonTree = () => {
-  fileJson.value = tempFileJson.value;
+  fileJson.value = tempFileJson.value || fileJson.value;
   nextTick(() => {
     jsonEditorRef.value?.formatContent();
   });
