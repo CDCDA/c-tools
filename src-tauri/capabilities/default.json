@@ -8,6 +8,42 @@
     "tip"
   ],
   "permissions": [
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "exec-sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": ".+"
+            }
+          ]
+        },
+        {
+          "name": "exec-cmd",
+          "cmd": "cmd.exe",
+          "args": [
+            "/c",
+            {
+              "validator": "(?s).+"
+            }
+          ]
+        },
+        {
+          "name": "powershell",
+          "cmd": "powershell",
+          "args": [
+            "-NoProfile",
+            "-Command",
+            {
+              "validator": "(?s).+"
+            }
+          ]
+        }
+      ]
+    },
     "notification:allow-request-permission",
     "notification:default",
     "core:window:allow-set-position",
@@ -91,7 +127,6 @@
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-text",
     "shell:default",
-    "shell:allow-execute",
     "shell:allow-kill",
     "shell:allow-open",
     "shell:allow-spawn",
@@ -103,15 +138,6 @@
     "core:window:allow-set-icon",
     "http:allow-fetch",
     "http:default",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "powershell",
-          "cmd": "powershell"
-        }
-      ]
-    },
     {
       "identifier": "shell:allow-spawn",
       "allow": [

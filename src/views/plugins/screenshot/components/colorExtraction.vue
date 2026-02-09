@@ -17,7 +17,7 @@ import PixelPerfectMagnifier from "@/components/image/canvasMagnifier.vue";
 const props = defineProps({
   type: {
     type: String,
-    default: 'screenshot',
+    default: 'colorExtraction',
   },
   fullScreenImage: {
     type: String,
@@ -34,7 +34,6 @@ interface RgbColor {
 // 响应式状态
 const isPicking = ref(false);
 const currentColor = ref<RgbColor | null>(null);
-const fullScreenImage = ref("");
 const mousePosition = ref({ x: 0, y: 0 });
 
 const currentWindow = getCurrentWindow();
@@ -44,13 +43,16 @@ let cleanupFunctions: (() => void)[] = [];
 const startPicking = async () => {
   try {
     isPicking.value = true;
+    currentWindow.setFocus(true);
+    currentWindow.show();
+
     await invoke("start_color_picking");
     // 监听鼠标移动
     const unlistenMouseMove = await listen<[number, number]>("mouse-moved", async (event) => {
       const [x, y] = event.payload;
       const { width, height } = await physicalToLogical(x, y);
       mousePosition.value = { x: width, y: height };
-      console.log(mousePosition.value);
+      // console.log(mousePosition.value);
     });
     cleanupFunctions.push(unlistenMouseMove);
 
@@ -93,7 +95,14 @@ const handleKeyDown = (event) => {
 defineExpose({
   start() {
     document.addEventListener("keydown", handleKeyDown);
+    console.log("ASDAD", props.fullScreenImage)
     startPicking();
   },
 })
 </script>
+<style scoped>
+.color-extraction {
+  height: 100vh;
+  background: transparent;
+}
+</style>

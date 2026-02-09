@@ -48,7 +48,7 @@ const props = defineProps({
 
 const handleSelect = (item: any) => {
   if (props.mode === 'multi') {
-    const memos = [...props.selectMemos];
+    let memos = [...props.selectMemos];
     if (memos.find((memo: any) => memo.id === item.id)) {
       memos = memos.filter((memo: any) => memo.id !== item.id);
     } else {

@@ -24,7 +24,9 @@ const memoData = ref<any>({});
 const emit = defineEmits(["submit"]);
 function init(params: any) {
   const { action, memo, activeType } = params;
-  action === "add" ? (memoData.value = { type: activeType, title: "", content: "" }) : (memoData.value = memo);
+  setTimeout(() => {
+    action === "add" ? (memoData.value = { type: activeType, title: "", content: "" }) : (memoData.value = memo);
+  }, 300);
   open.value = true;
 }
 const rules = ref<any>({
@@ -35,12 +37,17 @@ const rules = ref<any>({
 const formRef = ref<any>(null);
 const wangEditorRef = ref<any>(null);
 
+const close = () => {
+  open.value = false;
+  memoData.value = {};
+}
+
 const submit = () => {
   formRef.value?.validate((valid: any) => {
     if (valid) {
       memoData.value.text = wangEditorRef.value?.getText();
       emit("submit", memoData.value);
-      open.value = false;
+      close()
     }
   });
 };

@@ -15,6 +15,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEventBusStore } from "@/store/modules/eventBus.ts";
 import Windows from "@/windows/index.js";
 import { createNotificationWindow } from "@/utils/notification.ts";
+import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
+
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 const eventBusStore = useEventBusStore();
 
@@ -44,10 +46,10 @@ async function setupWindow() {
     });
     return;
   }
-  if (currentWindow.label = "tool-screenshot") {
+  if (currentWindow.label === "tool-screenshot") {
+    settingStore.transparent = true;
     console.log("初始化")
     router.push({ name: "screenshot" })
-    currentWindow.show();
     return
   }
   // 不初始化快捷键（其他窗口）
@@ -87,6 +89,7 @@ async function setupWindow() {
 }
 
 function init() {
+  enable()
   setupWindow();
   nextTick(() => {
     adjustWindowSize();

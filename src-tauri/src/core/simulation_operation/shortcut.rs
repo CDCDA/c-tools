@@ -95,7 +95,6 @@ pub fn handle_shortcut(app: AppHandle, route_path: &str) {
         .skip_taskbar(true)
         .build();
         if let Some(win) = app.get_webview_window("tool-screenshot") {
-            win.show().unwrap();
             // 发送路径和base64编码
             win.emit(
                 "init-screenshot",
@@ -105,8 +104,6 @@ pub fn handle_shortcut(app: AppHandle, route_path: &str) {
                 ),
             )
             .unwrap();
-
-            win.set_focus().unwrap();
         }
     }
 }

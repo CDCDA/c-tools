@@ -49,28 +49,17 @@ class Windows {
   // 创建新窗口
   async createWin(options, params) {
     const args = Object.assign({}, windowConfig, options)
-    // console.log("窗口参数", args)
-    let fullScreenImage = null;
-    if (options.label.includes("截图")) {
-      // let startTime = Date.now();
-      fullScreenImage = (await invoke("capture_full_screen"))
-      // console.log("截图耗时:", Date.now() - startTime);
-    }
-    console.log("fullScreenImage:", fullScreenImage);
+    console.log("创建窗口参数:", args)
     // 判断窗口是否存在
     const existWin = await this.getWin(args.label)
     if (existWin) {
       console.log("窗口已存在:", existWin)
-      params.fullScreenImage = fullScreenImage
-      await emit(`init-data-${args.label}`, params);
       return existWin
     }
     // 创建窗口对象
     const win = new WebviewWindow(args.label, args)
-
     // 窗口创建完毕/失败
     win.once('tauri://created', async () => {
-      win.hide()
       if (!params.ico) {
         return;
       }
@@ -83,8 +72,9 @@ class Windows {
     })
 
     win.once(`window-ready-${args.label}`, async () => {
-      params.fullScreenImage = fullScreenImage
+
       await emit(`init-data-${args.label}`, params);
+
       if (params.minimize) {
         win.hide();
       } else {
@@ -96,6 +86,8 @@ class Windows {
       // 窗口创建失败
       console.log('窗口创建失败>>', error)
     })
+    console.log("创建窗口:", win)
+
     return win
   }
 

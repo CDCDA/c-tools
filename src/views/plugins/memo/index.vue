@@ -97,7 +97,9 @@ function submitMemo(memoData: any) {
 
 const memoDrawerRef = ref<MemoDrawer>(null);
 function openMemoDrawer(action: string, memo?: any) {
-  memoDrawerRef.value?.init({ action, memo: memo || currentMemo.value, activeType: activeType.value.value });
+  console.log("openMemoDrawer", action, memo)
+  const memoObj = { ...(memo || currentMemo.value) }
+  memoDrawerRef.value?.init({ action, memo: memoObj, activeType: activeType.value.value });
 }
 
 function saveLocalData() {
@@ -205,7 +207,8 @@ const addType = () => {
   });
 };
 
-const editType = (type: any) => {
+const editType = (typeObj: any) => {
+  const type = { ...typeObj }
   ElMessageBox.prompt("", "请输入分类名称", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
@@ -262,7 +265,7 @@ const deleteType = (type: any) => {
 };
 
 function handleSearch(val: any) {
-  console.log("触发搜索",val)
+  console.log("触发搜索", val)
   searchText.value = val
 }
 

@@ -37,23 +37,23 @@ export const selectPlugin = async (plugin: any, router: any) => {
   plugin = getPluginByName(plugin.name);
   const eventBusStore = useEventBusStore();
   eventBusStore.currentPlugin = plugin;
-  eventBusStore.pluginLoading = true;
+
   // 全屏截图相关插件
   if (screenshotPlugins.includes(plugin.name)) {
-    await invoke("shortcut", { routePath: "screenshot" });
-    eventBusStore.pluginLoading = true;
-    currentWindow.hide();
-
+    await currentWindow.hide();
+    await invoke("shortcut", { routePath: plugin.name });
     return;
   }
+  setWindowSize(800, 25);
   // 新窗口插件
   if (plugin.newWindow) {
     router.push({
       name: "pluginSearch",
     });
-    createNewWindow(plugin);
+    await createNewWindow(plugin);
+    setWindowSize(plugin.width, plugin.height);
+    eventBusStore.pluginLoading = false;
   } else {
-    setWindowSize(800, 25);
     await router.push({
       name: plugin.name,
       query: {

@@ -61,11 +61,9 @@ const startCapture = () => {
   isCapturing.value = true;
   selection.value.active = false;
   document.body.style.overflow = "hidden";
-  // document.removeEventListener("keydown", handleKeyDown);
   currentWindow.show()
   currentWindow.setFocus()
 };
-
 // 开始选择区域
 const startSelection = (event) => {
   selection.value.active = true; // 立即激活
@@ -182,86 +180,65 @@ defineExpose({
 
 <style scoped>
 .screenshot-container {
-  padding: 0;
-  z-index: -1;
-
-  &:hover {
-    .close-btn {
-      visibility: visible !important;
-    }
-  }
-}
-
-/* 截图遮罩层 */
-.capture-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100vw;
   height: 100vh;
-  background: transparent;
-  cursor: crosshair;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+/* 截图遮罩容器：不设背景色，由内部元素控制 */
+.capture-overlay {
+  position: fixed;
+  inset: 0;
   z-index: 9999;
+  cursor: crosshair;
+}
+
+/* 初始状态：全屏半透明灰色 */
+.full-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  /* 调整遮罩透明度 */
 }
 
 /* 选择区域框 */
 .selection-box {
   position: absolute;
-  border: 2px solid #007acc;
+  border: 2px solid white;
+  /* 蓝色边框 */
   background: transparent;
+  /* 内部透明，露出底层图片 */
   pointer-events: none;
+  /* 让鼠标事件穿透到父层 overlay */
+
+  /* 核心：利用巨大的 box-shadow 实现四周遮罩 */
+  /* 这里的 9999px 确保阴影覆盖整个屏幕 */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
 }
 
 .size-indicator {
   position: absolute;
-  top: -30px;
+  top: -25px;
   left: 0;
   background: #007acc;
   color: white;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 12px;
-  white-space: nowrap;
 }
 
 .coordinate-display {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.7);
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
   font-family: monospace;
-}
-
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  color: white;
-  z-index: 999;
-  transition: visibility 0.3s ease-in-out;
-
-  &:before {
-    content: "";
-    width: calc(100% + 4px);
-    height: calc(100% + 4px);
-    background: rgba(85, 85, 85, 0.7);
-    z-index: -1;
-    border-radius: 50%;
-    left: -2px;
-    top: -2px;
-    position: absolute;
-  }
-
-  visibility: hidden;
-}
-
-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  pointer-events: none;
 }
 </style>

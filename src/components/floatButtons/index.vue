@@ -1,6 +1,7 @@
 <template>
-  <div class="float-buttons">
-    <div class="base-btn-wrap" @click="toggleSettingPanel">
+  <div class="float-buttons" v-drag="{ dragSelf: true }">
+    <div class="base-btn-wrap" @click="
+      toggleSettingPanel">
       <slot name="base-btn">
         <div class="base-btn">
           <el-icon class="setting-icon">
@@ -9,9 +10,8 @@
         </div>
       </slot>
     </div>
-    <div class="float-btns-panel-wrap" :class="{ 'show': isSettingPanelVisible }">
+    <div v-if="props.type === 'panel'" class="float-btns-panel-wrap" :class="{ 'show': isSettingPanelVisible }">
       <slot name="btns">
-
       </slot>
     </div>
   </div>
@@ -21,12 +21,24 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Setting } from "@element-plus/icons-vue";
+import { vDrag } from "@/directive/drag.ts";
+const props = defineProps({
+  type: {
+    type: String,
+    default: 'panel'
+  }
 
+})
+const emit = defineEmits(['baseClick']);
 const isSettingPanelVisible = ref(false);
 
 const toggleSettingPanel = () => {
-  isSettingPanelVisible.value = !isSettingPanelVisible.value;
-  console.log(isSettingPanelVisible.value);
+  if (props.type === 'panel') {
+    isSettingPanelVisible.value = !isSettingPanelVisible.value;
+    console.log(isSettingPanelVisible.value);
+  } else {
+    emit('baseClick');
+  }
 }
 
 
@@ -34,12 +46,20 @@ const toggleSettingPanel = () => {
 
 <style scoped lang="scss">
 .float-buttons {
-  position: fixed;
-  bottom: 10%;
-  right: 27px;
+  position: fixed; // 拖拽时，指令会修改这个元素的 top 和 left
+  top: calc(100% - 92px);
+  left: calc(100% - 67px);
   display: flex;
   align-items: center;
   z-index: 1000;
+  // 确保父容器能够包裹住内容
+  height: 40px;
+}
+
+.base-btn-wrap {
+  z-index: 10;
+  flex-shrink: 0; // 防止被挤压
+
 }
 
 .base-btn-wrap {
@@ -69,42 +89,31 @@ const toggleSettingPanel = () => {
 }
 
 .float-btns-panel-wrap {
-  position: fixed;
-  bottom: 10%;
-  right: 75px;
+  /* 关键修改：从 fixed 改为 absolute */
+  position: absolute;
+
+  /* 相对于父容器 .float-buttons 定位 */
+  /* 假设你想让面板出现在按钮的左侧 */
+  right: 50px;
+  top: 50%;
+  transform: translateY(-50%) translateX(20%); // 默认隐藏在右侧偏移处
+
   padding: 0 10px;
   display: flex;
   align-items: center;
   background-color: #fff;
   border-radius: 25px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  /* padding: 8px; */
-  /* margin-right: 10px; */
-  transform: translateX(100%);
   opacity: 0;
   transition: all 0.3s ease;
   overflow: hidden;
   height: 40px;
+  white-space: nowrap; // 防止内容换行
 
   &.show {
-    transform: translateX(0);
+    /* 展开时的状态 */
+    transform: translateY(-50%) translateX(0);
     opacity: 1;
-  }
-}
-
-.float-btns-panel-btn {
-  padding: 4px 10px;
-  border: none;
-  border-radius: 20px;
-  margin: 0 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-
-  &:hover,
-  &:active {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 }
 </style>

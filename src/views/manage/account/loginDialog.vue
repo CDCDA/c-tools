@@ -22,9 +22,15 @@
       <div class="login-footer">
         <div class="other-login-ways">
           <span>其他登录方式：</span>
-          <el-icon class="login-icon"><ChatDotRound /></el-icon>
-          <el-icon class="login-icon"><Message /></el-icon>
-          <el-icon class="login-icon"><UserFilled /></el-icon>
+          <el-icon class="login-icon">
+            <ChatDotRound />
+          </el-icon>
+          <el-icon class="login-icon">
+            <Message />
+          </el-icon>
+          <el-icon class="login-icon">
+            <UserFilled />
+          </el-icon>
         </div>
         <div class="register-link">没有账号？<span class="link" @click="handleRegister">立即注册</span></div>
       </div>
@@ -67,8 +73,10 @@ const loginRules = reactive<FormRules>({
 const handleLogin = async () => {
   if (!loginFormRef.value) return;
 
-  try {
-    await loginFormRef.value.validate();
+
+  await loginFormRef.value.validate().then(async (valid) => {
+    if (!valid) return;
+    console.log("表单验证通过");
     const { code, data } = await login(loginForm.value);
     console.log("登录结果", code, data);
     if (code === 200) {
@@ -93,10 +101,7 @@ const handleLogin = async () => {
       }
       showLoginDialog.value = false;
     }
-  } catch (error) {
-    console.error("登录失败:", error);
-    ElNotification.error("登录失败，请检查输入信息");
-  }
+  });
 };
 
 // 处理弹窗关闭

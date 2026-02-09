@@ -1,15 +1,8 @@
 <template>
   <div :class="['code-editor-wrapper', { fullscreen: editorOptions.fullScreen }]">
     <div class="header" data-tauri-drag-region v-if="editorOptions.fullScreen">编辑器</div>
-    <VAceEditor
-      ref="aceEditorRef"
-      v-model:value="editorContent"
-      :lang="currentLanguage"
-      :theme="aceTheme"
-      :options="editorOptions"
-      :style="editorStyle"
-      @init="onEditorInit"
-    />
+    <VAceEditor ref="aceEditorRef" v-model:value="editorContent" :lang="currentLanguage" :theme="aceTheme"
+      :options="editorOptions" :style="editorStyle" @init="onEditorInit" />
     <div class="code-editor-footer">
       <div class="code-editor-footer-left">
         <slot name="footer-left-prepend"></slot>
@@ -31,7 +24,8 @@
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="lang in languageList" :key="lang" @click="currentLanguage = lang">
+                <el-dropdown-item v-for="lang in languageList" :disabled="lang === currentLanguage" :key="lang"
+                  @click="changeLanguage(lang)">
                   {{ lang }}
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -54,15 +48,17 @@ import { ref, computed, watch, nextTick, onUnmounted, reactive } from "vue";
 import { VAceEditor } from "vue3-ace-editor";
 import { ElNotification } from "element-plus";
 import { format } from "sql-formatter";
-import { js_beautify } from "js-beautify";
 import { debounce } from "lodash";
-
+import { js_beautify, css_beautify, html_beautify } from "js-beautify";
 // 导入所有需要的 Ace Editor 模块
 import ace from "ace-builds/src-noconflict/ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/mode-sql";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/mode-css";
+import "ace-builds/src-noconflict/mode-html";
+import "ace-builds/src-noconflict/mode-sh";
 import "ace-builds/src-noconflict/mode-text";
 import "ace-builds/src-noconflict/theme-chrome";
 import "ace-builds/src-noconflict/theme-monokai";
@@ -73,6 +69,9 @@ import "ace-builds/src-noconflict/ext-searchbox";
 import "ace-builds/src-noconflict/snippets/json";
 import "ace-builds/src-noconflict/snippets/sql";
 import "ace-builds/src-noconflict/snippets/javascript";
+import "ace-builds/src-noconflict/snippets/css";
+import "ace-builds/src-noconflict/snippets/html";
+import "ace-builds/src-noconflict/snippets/sh";
 
 // 导入 worker 文件
 import "ace-builds/src-noconflict/worker-json";
@@ -98,7 +97,7 @@ const props = defineProps({
   debounceDelay: { type: Number, default: 300 },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "update:language"]);
 
 const aceEditorRef = ref();
 const editorInstance = ref();
@@ -116,7 +115,7 @@ function fullScreen() {
   editorOptions.fullScreen = !editorOptions.fullScreen;
 }
 // 语言映射
-const languageList = ["json", "sql", "javascript", "java"] as any;
+const languageList = ["json", "sql", "javascript", "java", "css", "html", "shell", "nginx"] as any;
 
 // 主题映射
 const themeMap = {
@@ -145,6 +144,10 @@ const editorOptions = reactive({
   useWorker: true, // 启用语法检查工作线程
 });
 
+function changeLanguage(lang: string) {
+  emit("update:language", lang);
+  currentLanguage.value = lang;
+}
 // 编辑器样式
 const editorStyle = {
   width: "100%",
@@ -270,14 +273,33 @@ const formatContent = () => {
   }
 
   let formattedContent = currentContent;
+  console.log(currentLanguage.value);
   try {
-    if (props.language === "json") {
+    if (currentLanguage.value === "json") {
       const parsed = JSON.parse(currentContent);
       formattedContent = JSON.stringify(parsed, null, 2);
-    } else if (props.language === "sql") {
+    } else if (currentLanguage.value === "sql") {
       formattedContent = format(currentContent, { language: "sql" });
-    } else if (props.language === "javascript") {
+    } else if (currentLanguage.value === "javascript" || currentLanguage.value === "java") {
+      // Java 属于 C 风格家族，js_beautify 处理效果很好
       formattedContent = js_beautify(currentContent, {
+        indent_size: currentLanguage.value === "java" ? 4 : 2, // Java 规范通常是 4 空格
+        indent_char: " ",
+        max_preserve_newlines: 2,
+        preserve_newlines: true,
+        keep_array_indentation: false,
+        break_chained_methods: false,
+        indent_scripts: "normal",
+        brace_style: "collapse", // 大括号在行末
+        space_before_conditional: true,
+        unescape_strings: false,
+        jslint_happy: false,
+        end_with_newline: true,
+        wrap_line_length: 120, // Java 代码通常较长
+      });
+    } else if (currentLanguage.value === "css") {
+      console.log(currentContent);
+      formattedContent = css_beautify(currentContent, {
         indent_size: 2,
         indent_char: " ",
         max_preserve_newlines: 2,
@@ -296,6 +318,79 @@ const formatContent = () => {
         e4x: false,
         indent_empty_lines: false,
       });
+    } else if (currentLanguage.value === "html") {
+      formattedContent = html_beautify(currentContent, {
+        indent_size: 2,
+        indent_char: " ",
+        max_preserve_newlines: 2,
+        preserve_newlines: true,
+        keep_array_indentation: false,
+        break_chained_methods: false,
+        indent_scripts: "normal",
+        brace_style: "collapse",
+        space_before_conditional: true,
+        unescape_strings: false,
+        jslint_happy: false,
+        end_with_newline: false,
+        wrap_line_length: 80,
+        indent_inner_html: true,
+        comma_first: false,
+        e4x: true,
+        indent_empty_lines: false,
+      });
+    } else if (currentLanguage.value === "shell") {
+      // 简单的Shell脚本格式化，基于缩进
+      const lines = currentContent.split('\n');
+      let indentLevel = 0;
+      const indentSize = 2;
+      const formattedLines = lines.map(line => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.endsWith('{') || trimmedLine.endsWith('do') || trimmedLine.endsWith('then')) {
+          const result = ' '.repeat(indentLevel * indentSize) + trimmedLine;
+          indentLevel++;
+          return result;
+        } else if (trimmedLine.startsWith('}') || trimmedLine.startsWith('done') || trimmedLine.startsWith('fi')) {
+          indentLevel = Math.max(0, indentLevel - 1);
+          return ' '.repeat(indentLevel * indentSize) + trimmedLine;
+        } else {
+          return ' '.repeat(indentLevel * indentSize) + trimmedLine;
+        }
+      });
+      formattedContent = formattedLines.join('\n');
+    } else if (currentLanguage.value === "nginx") {
+      // Nginx配置文件格式化
+      const lines = currentContent.split('\n');
+      let indentLevel = 0;
+      const indentSize = 2;
+      const indent = ' '.repeat(indentSize);
+      let result = '';
+
+      for (const line of lines) {
+        let trimmed = line.trim();
+
+        if (trimmed === '') {
+          result += '\n';
+          continue;
+        }
+
+        // 处理闭合括号
+        if (trimmed.endsWith('}')) {
+          if (trimmed.length > 1) {
+            result += indent.repeat(indentLevel) + trimmed.replace('}', '') + '\n';
+            trimmed = '}';
+          }
+          indentLevel = Math.max(0, indentLevel - 1);
+        }
+        // 添加缩进
+        result += indent.repeat(indentLevel) + trimmed + '\n';
+
+        // 处理开括号
+        if (trimmed.endsWith('{')) {
+          indentLevel++;
+        }
+      }
+
+      formattedContent = result;
     }
 
     // 使用安全设置方法
@@ -482,6 +577,7 @@ defineExpose({
       height: 100%;
     }
   }
+
   .header {
     height: 40px;
     display: flex;
@@ -520,6 +616,7 @@ defineExpose({
     }
   }
 }
+
 .fullscreen {
   height: 100% !important;
   width: 100% !important;
