@@ -55,7 +55,6 @@ const showLoginDialog = ref(false);
 const loginForm = ref({
   password: "1",
   userName: "CCCC",
-  remember: true,
 });
 // 表单引用
 const loginFormRef = ref<FormInstance>();
@@ -77,7 +76,7 @@ const handleLogin = async () => {
   await loginFormRef.value.validate().then(async (valid) => {
     if (!valid) return;
     console.log("表单验证通过");
-    const { code, data } = await login(loginForm.value);
+    const { code, data } = await login(loginForm.value) as any;
     console.log("登录结果", code, data);
     if (code === 200) {
       ElNotification.success("登录成功");
@@ -94,11 +93,7 @@ const handleLogin = async () => {
       };
       Object.assign(userStore, userData);
       console.log("用户信息", userData);
-      try {
-        saveData("userData", userData);
-      } catch (error) {
-        console.log(error);
-      }
+      saveData("userData", userData);
       showLoginDialog.value = false;
     }
   });

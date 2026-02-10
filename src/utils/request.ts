@@ -11,7 +11,7 @@ axios.defaults.headers["Content-Type"] = "application/json;charset=utf-8";
 // 创建axios实例
 const service: AxiosInstance = axios.create({
   baseURL: process.env.NODE_ENV === "development" ? "/dev-api" : "/prod-api",
-  timeout: 150000,
+  timeout: 30000,
 });
 
 // 请求拦截器
@@ -26,7 +26,7 @@ service.interceptors.request.use(
 
   (error) => {
     Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
@@ -56,7 +56,7 @@ service.interceptors.response.use(
     Promise.reject(error);
     ElNotification.error(error.response);
     return error.response;
-  }
+  },
 );
 
 export default service;

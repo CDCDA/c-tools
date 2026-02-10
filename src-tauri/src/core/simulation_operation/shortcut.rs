@@ -72,6 +72,7 @@ pub fn handle_shortcut(app: AppHandle, route_path: &str) {
 
     // 4. 获取预创好的窗口
     if let Some(win) = app.get_webview_window("tool-screenshot") {
+        eprintln!("发送消息");
         // 发送路径和base64编码
         win.emit(
             "init-screenshot",

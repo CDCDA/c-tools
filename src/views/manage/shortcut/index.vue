@@ -17,11 +17,9 @@
           <el-table-column prop="label" label="插件名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
-              <ShortcutInput
-                v-model="scope.row.shortcut"
+              <ShortcutInput v-model="scope.row.shortcut"
                 :check-duplicate="(shortcut: any) => checkShortcutDuplicate(shortcut, scope.row)"
-                @change="handleShortcutChange(scope.row, 'plugin')"
-              />
+                @change="handleShortcutChange(scope.row, 'plugin')" />
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center" width="120">
@@ -38,11 +36,9 @@
           <el-table-column prop="label" label="功能名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
-              <ShortcutInput
-                v-model="scope.row.shortcut"
+              <ShortcutInput v-model="scope.row.shortcut"
                 :check-duplicate="(shortcut: any) => checkShortcutDuplicate(shortcut, scope.row)"
-                @change="handleShortcutChange(scope.row, 'global')"
-              />
+                @change="handleShortcutChange(scope.row, 'global')" />
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center" width="120">
@@ -62,22 +58,16 @@
           <el-table-column prop="label" label="指令名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
-              <ShortcutInput
-                v-model="scope.row.shortcut"
+              <ShortcutInput v-model="scope.row.shortcut"
                 :check-duplicate="(shortcut: any) => checkShortcutDuplicate(shortcut, scope.row)"
-                @change="handleShortcutChange(scope.row, 'command')"
-              />
+                @change="handleShortcutChange(scope.row, 'command')" />
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center" width="120">
             <template #default="scope">
               <el-button type="text" size="mini" @click="handleResetClick(scope.row, 'command')"> 重置 </el-button>
-              <el-button
-                type="text"
-                size="mini"
-                style="color: #ff4d4f"
-                @click="handleDeleteClick(scope.row, 'command')"
-              >
+              <el-button type="text" size="mini" style="color: #ff4d4f"
+                @click="handleDeleteClick(scope.row, 'command')">
                 删除
               </el-button>
             </template>
@@ -108,13 +98,11 @@ const commandShortcutList = computed(() => shortcutStore.commandShortcutList);
 function checkShortcutDuplicate(shortcut: string, currentItem: any): boolean {
   if (!shortcut) return false;
 
-  const allItems = [...pluginShortcutList.value, ...globalShortcutList.value, ...commandShortcutList.value];
-
-  const isDuplicate = allItems.some((item) => item.id !== currentItem.id && item.shortcut === shortcut);
-  if (isDuplicate) {
-    ElNotification.error("快捷键已存在");
+  const result = shortcutStore.checkShortcutDuplicate(shortcut, currentItem.id);
+  if (result.isDuplicate && result.duplicateItem) {
+    ElNotification.error(`快捷键已存在，与"${result.duplicateItem.label}"功能重复`);
   }
-  return isDuplicate;
+  return result.isDuplicate;
 }
 
 // 处理快捷键变化

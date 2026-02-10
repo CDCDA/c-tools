@@ -45,6 +45,7 @@
     "js-beautify": "^1.15.4",
     "lodash": "^4.17.21",
     "md-editor-v3": "^5.2.2",
+    "mitt": "^3.0.1",
     "nginxbeautifier": "^1.0.19",
     "openai": "^5.23.2",
     "pinia": "^3.0.3",

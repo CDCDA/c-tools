@@ -1,8 +1,7 @@
 <!--
  * @Description: 设置页
 -->
-<template>112
-222
+<template>
   <div class="manage-container">
     <manage-bar></manage-bar>
     <div class="manage-main">

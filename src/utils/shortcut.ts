@@ -1,4 +1,4 @@
-import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
+import { register, unregister, isRegistered } from "@tauri-apps/plugin-global-shortcut";
 
 const keyMap = {
   Ctrl: "Control",
@@ -9,11 +9,16 @@ const keyMap = {
 
 export const registerShortcut = async (item: any) => {
   try {
-    await unRegisterShortcut(item);
-    await register(
-      item.shortcut.replace(/Ctrl|Alt|Shift|Meta/g, (match: any) => keyMap[match]),
-      item.event
-    );
+    const shortcutKey = item.shortcut.replace(/Ctrl|Alt|Shift|Meta/g, (match: any) => keyMap[match]);
+
+    // 检查快捷键是否已被注册
+    const isKeyRegistered = await isRegistered(shortcutKey);
+    if (isKeyRegistered) {
+      console.log(`快捷键 ${item.shortcut} 已被注册，将先注销再重新注册`);
+      await unregister(shortcutKey);
+    }
+
+    await register(shortcutKey, item.event);
   } catch (error) {
     console.error(`注册快捷键 ${item.shortcut} 时出错:`, error);
     return false;

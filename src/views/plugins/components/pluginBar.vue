@@ -24,14 +24,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { registerShortcut } from "@/utils/shortcut.ts";
 import { useSettingStore } from "@/store/modules/setting.ts";
 import { createNewWindow } from "@/utils/plugin.ts";
 import { useRouter } from "vue-router";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { vPreventDrag } from "@/directive/preventDrag.ts"
-
+import { bus } from "@/utils/bus.ts";
 const currentWindow = getCurrentWindow();
 const router = useRouter();
 import { Setting } from "@element-plus/icons-vue";
@@ -61,20 +61,22 @@ const handleCommand = async (command: string) => {
   }
 };
 
-async function initRegisterShortcut() {
-  const settingStore = useSettingStore();
-  registerShortcut({
-    shortcut: settingStore.separateWindowShortCutKey,
-    event: () => {
-      handleCommand("window");
-    },
-  });
-}
+
 function handleSearch() {
   emit("pluginSearch", searchText.value)
 }
 
-initRegisterShortcut();
+onMounted(() => {
+  bus.on('separate-plugin-window', (data) => {
+    handleCommand('window');
+  });
+});
+
+onUnmounted(() => {
+  bus.off('separate-plugin-window'); // 记得解绑
+});
+
+
 </script>
 
 <style lang="scss" scoped>

@@ -59,7 +59,7 @@ function handleAvatarClick() {
   eventBusStore.currentPlugin = {
     label: "个人中心",
   };
-  router.push({ name: "account" });
+  router.push({ name: "pluginManage" });
   setWindowSize();
 }
 //插件数据
@@ -90,9 +90,6 @@ async function initWindow() {
   await currentWindow.setAlwaysOnTop(false);
   await new Promise((resolve) => setTimeout(resolve, 100));
   const appElement = document.getElementById("app");
-  // if (appElement) {
-  //   appElement.style.borderRadius = "8px";
-  // }
   currentWindow.emit("theme-changed");
   await adjustWindowSize();
 }

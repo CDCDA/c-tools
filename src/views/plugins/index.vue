@@ -6,8 +6,8 @@
     <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginSearch="pluginSearch" />
     <div class="plugin-main" :class="loading ? 'loading' : ''">
       <router-view v-slot="{ Component }">
-      <component :is="Component" ref="currentRouteRef" />
-    </router-view>
+        <component :is="Component" ref="currentRouteRef" />
+      </router-view>
     </div>
   </div>
 </template>
@@ -27,8 +27,8 @@ const headerType = ref("") as any;
 watch(
   () => route,
   () => {
-    console.log("新路由query参数:", route);
     plugin.value = getPluginByName(route.name);
+    console.log("当前路由插件:", plugin.value);
     const { type } = route.query;
     if (type === "main") {
       headerType.value = "main";
@@ -43,7 +43,6 @@ watch(
 );
 const currentRouteRef = ref(null) as any
 function pluginSearch(val: string) {
-  console.log("搜索:", val);
   currentRouteRef.value?.handleSearch(val)
 }
 </script>
@@ -53,10 +52,12 @@ function pluginSearch(val: string) {
   display: flex;
   flex-direction: column;
   height: 100%;
+
   .plugin-main {
     flex: 1;
     overflow: auto;
   }
+
   .loading {
     height: 0 !important;
   }

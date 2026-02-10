@@ -54,7 +54,11 @@ class Windows {
     const existWin = await this.getWin(args.label)
     if (existWin) {
       console.log("窗口已存在:", existWin)
+      existWin.show()
+      existWin.unminimize()
+      existWin.setFocus()
       return existWin
+
     }
     // 创建窗口对象
     const win = new WebviewWindow(args.label, args)

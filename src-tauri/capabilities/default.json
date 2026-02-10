@@ -44,6 +44,7 @@
         }
       ]
     },
+    "global-shortcut:allow-is-registered",
     "notification:allow-request-permission",
     "notification:default",
     "core:window:allow-set-position",

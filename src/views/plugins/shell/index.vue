@@ -45,6 +45,9 @@
             <el-form-item label="脚本名称">
               <el-input v-model="form.name" placeholder="请输入名称" />
             </el-form-item>
+            <el-form-item label="快捷键">
+              <ShortcutInput v-model="form.shortcut" @change="handleShortcutChange(scope.row, 'global')" />
+            </el-form-item>
             <el-form-item label="执行环境">
               <el-radio-group v-model="form.shell">
                 <el-radio-button label="powershell">PowerShell</el-radio-button>
@@ -99,6 +102,7 @@ import { savePluginData, getPluginData } from "@/utils/localSave.ts";
 import List from "@/components/list/index.vue";
 import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
 import Editor from "@/components/editor/index.vue";
+import ShortcutInput from "@/components/shortcut/shortcutInput.vue";
 
 import FloatButtons from '@/components/floatButtons/index.vue';
 import { Plus, VideoPlay, Edit, Delete } from "@element-plus/icons-vue";
@@ -223,7 +227,7 @@ const executeFinal = async () => {
   if (!activeScript.value) return;
 
   const script = activeScript.value;
-  let finalCmd = script.command;
+  let finalCmd = script.command as any;
 
   // 1. 替换占位符
   Object.keys(runParams.value).forEach(key => {

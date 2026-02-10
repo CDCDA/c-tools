@@ -14,7 +14,7 @@ export const useSettingStore = defineStore(
     const savePath = ref("D:\\c-tools-data");
     // 备份路径
     const backupPath = ref("D:\\c-tools-data-backup");
-    // 快捷键
+    // 主窗口快捷键
     const shortCutKey = ref("Alt+Space");
     // 开机启动
     const autoStart = ref(true);
@@ -44,14 +44,19 @@ export const useSettingStore = defineStore(
         autoStart.value = data.autoStart;
         separateWindowShortCutKey.value = data.separateWindowShortCutKey;
       }
-      await registerShortcut({
-        shortcut: shortCutKey.value,
-        event: () => {
-          getCurrentWindow().show();
-          getCurrentWindow().setFocus();
-        },
-      });
+      const currentWindow = await getCurrentWindow();
+      if (currentWindow.label === "main") {
+        console.log("注册主窗口快捷键");
+        await registerShortcut({
+          shortcut: shortCutKey.value,
+          event: () => {
+            currentWindow.show();
+            currentWindow.setFocus();
+          },
+        });
+      }
     };
+
     return {
       savePath,
       transparent,
@@ -66,7 +71,7 @@ export const useSettingStore = defineStore(
   },
   {
     persist: true, // 开启持久化
-  }
+  },
 );
 
 export default useSettingStore;

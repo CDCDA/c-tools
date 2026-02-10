@@ -22,6 +22,9 @@ listen(`init-screenshot`, async (event: any) => {
   type.value = event.payload[0]
   fullScreenImage.value = event.payload[1]
   console.log(type.value)
+  currentWindow.show()
+  currentWindow.setFocus()
+  currentWindow.unminimize()
   setTimeout(() => {
     console.log("111", itemRef.value)
     itemRef.value?.start()

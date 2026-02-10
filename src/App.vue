@@ -48,7 +48,6 @@ async function setupWindow() {
   }
   if (currentWindow.label === "tool-screenshot") {
     settingStore.transparent = true;
-    console.log("初始化")
     router.push({ name: "screenshot" })
     return
   }
@@ -89,7 +88,7 @@ async function setupWindow() {
 }
 
 function init() {
-  enable()
+  // enable()
   setupWindow();
   nextTick(() => {
     adjustWindowSize();

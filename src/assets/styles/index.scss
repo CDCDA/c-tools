@@ -47,11 +47,11 @@
 
 ::-webkit-scrollbar-track {
   // background: #f1f1f1; /* 浅灰色轨道 */
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d5d7dd;
+  background: #d5d7dd !important;
   border-radius: 10px;
   transition: background 0.3s ease-in-out;
 }
