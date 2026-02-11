@@ -20,7 +20,8 @@ service.interceptors.request.use(
     if (!user) {
       user = useUserStore();
     }
-    config.headers.Authorization = `${user.token}`;
+    console.log("user:", user);
+    config.headers.Authorization = `Bearer ${user.token}`;
     return config;
   },
 

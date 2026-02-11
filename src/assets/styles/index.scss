@@ -375,3 +375,97 @@
   justify-content: start;
   align-items: center;
 }
+
+/* 分页 -- 开始 */
+.el-pagination {
+  float: right;
+  span {
+    font-size: 0.8rem;
+  }
+  .el-input__inner {
+    font-size: 0.8rem;
+    height: 25.2px;
+  }
+  .btn-prev,
+  .btn-next {
+    background: transparent !important;
+    border: 1px solid white;
+    i {
+      font-size: 0.8rem;
+    }
+  }
+  .is-active.number {
+    background: #5c5c5c !important;
+    backdrop-filter: blur(20px) !important;
+  }
+}
+
+.manage-main {
+  width: calc(100% - 22px);
+  height: calc(100% - 20px);
+  margin: 10px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  .manage-search-form {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px;
+    .el-form-item {
+      margin-bottom: 10px;
+      margin-top: 10px;
+      margin-right: 15px;
+      .el-form-item__label-wrap {
+        margin-left: 0 !important;
+      }
+    }
+    .search-form-left {
+      display: flex;
+      flex: 1;
+      justify-content: start;
+      align-items: center;
+    }
+    background: white;
+    border-radius: 6px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+  }
+  .manage-table-wrap {
+    background: white;
+    border-radius: 6px;
+    flex: 1;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+    width: calc(100% - 30px);
+    height: calc(100% - 160px);
+    padding: 15px;
+    .manage-table {
+      height: calc(100% - 47px);
+      width: 100%;
+    }
+    .el-table__body {
+      border-bottom: 1px solid #dcdcdc;
+    }
+    // .cell {
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
+    // }
+    .el-image {
+      border-radius: 4px;
+      width: calc(100% - 4px);
+      aspect-ratio: 5 / 3;
+      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      margin: 2px;
+    }
+  }
+  .manage-pagination {
+    background: white;
+    border-radius: 6px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    width: calc(100% - 30px);
+    padding: 0 15px;
+  }
+}

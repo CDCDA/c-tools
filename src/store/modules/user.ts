@@ -5,6 +5,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { getStoreData, saveStoreData } from "@/utils/localSave.ts";
+import { verifyTokenNoIntercept } from "@/api/auth.ts";
+
 export const useUserStore = defineStore(
   "user",
   () => {
@@ -30,7 +32,6 @@ export const useUserStore = defineStore(
     };
     const loadStore = async () => {
       const data = (await getStoreData("user")) as any;
-      // console.log("1111", data);
       if (data) {
         userName.value = data.userName;
         token.value = data.token;
@@ -41,6 +42,22 @@ export const useUserStore = defineStore(
         email.value = data.email;
         createTime.value = data.createTime;
       }
+      const res = await verifyTokenNoIntercept(token.value);
+
+      if (res.data.code !== 200) {
+        clearStore();
+        return;
+      }
+    };
+    const clearStore = () => {
+      userName.value = "";
+      token.value = "";
+      permission.value = [];
+      userId.value = "";
+      avatar.value = "";
+      nickName.value = "";
+      email.value = "";
+      createTime.value = "";
     };
     return {
       userName,
@@ -53,11 +70,12 @@ export const useUserStore = defineStore(
       createTime,
       saveStore,
       loadStore,
+      clearStore,
     };
   },
   {
     persist: true, // 开启持久化
-  }
+  },
 );
 
 export default useUserStore;

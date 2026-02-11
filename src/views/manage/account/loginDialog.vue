@@ -91,9 +91,10 @@ const handleLogin = async () => {
         createTime: user.createTime,
         permission: ["add", "delete", "show", "operate"],
       };
+
       Object.assign(userStore, userData);
       console.log("用户信息", userData);
-      saveData("userData", userData);
+      userStore.saveStore();
       showLoginDialog.value = false;
     }
   });

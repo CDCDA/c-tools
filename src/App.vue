@@ -20,6 +20,7 @@ import Windows from "@/windows/index.js";
 import { createNotificationWindow } from "@/utils/notification.ts";
 import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
 import GlobalParamModal from '@/components/globalParamModal/index.vue';
+import { useUserStore } from '@/store/modules/user.ts';
 
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 const eventBusStore = useEventBusStore();
@@ -34,7 +35,7 @@ async function setupWindow() {
     settingStore.transparent = false;
     // 初始化所有store(包括快捷键)
     router.push({ name: "pluginSearch" });
-    loadAllStore(true);
+    await loadAllStore(true);
 
     // 监听创建窗口事件
     await listen(`create-window`, async (event: any) => {
@@ -99,11 +100,6 @@ function init() {
   });
 }
 init();
-onMounted(async () => {
-  console.log("测试翻译...");
-  const res = await quickTranslate("测试文本");
-  console.log("测试结果:", res);
-})
 
 onBeforeUnmount(() => {
   // console.log("【成功】关闭窗口:", currentWindow.label);

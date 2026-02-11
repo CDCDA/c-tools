@@ -4,14 +4,8 @@
 <template>
   <div class="c-editor-wrap" :class="showToolBar ? 'with-toolbar' : ''">
     <Toolbar class="c-editor-toolbar" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
-    <Editor
-      class="c-editor"
-      :class="showToolBar ? 'with-toolbar' : ''"
-      v-model="text"
-      :defaultConfig="editorConfig"
-      :mode="mode"
-      @onCreated="handleCreated"
-    />
+    <Editor class="c-editor" :class="showToolBar ? 'with-toolbar' : ''" v-model="text" :defaultConfig="editorConfig"
+      :mode="mode" @onCreated="handleCreated" />
   </div>
 </template>
 <script setup lang="ts">
@@ -165,6 +159,7 @@ defineExpose({
   flex-direction: column;
   width: 100%;
 }
+
 .c-editor {
   min-height: 160px;
   overflow: hidden;
@@ -173,12 +168,15 @@ defineExpose({
   border-left: 1px solid #dcdfe6;
   border-right: 1px solid #dcdfe6;
   border-radius: 0 0 4px 4px;
+
   :deep(.w-e-modal) {
     padding: 25px 15px 0;
   }
+
   :deep(.w-e-text-container p) {
     margin: 3px 0;
   }
+
   :deep(.w-e-scroll) {
     background-image: url(/src/assets/png/comment-back.png);
     background-repeat: no-repeat;
@@ -186,22 +184,27 @@ defineExpose({
     background-size: 28% auto;
     background-position: 100% 80%;
   }
+
   :deep(.babel-container) {
     display: flex;
     align-items: center;
     margin: 10px 0;
+
     span {
       margin: 0;
       width: 80px;
     }
+
     &:nth-child(3) {
       display: none;
     }
   }
+
   :deep(.button-container) {
     display: flex;
     align-items: center;
     justify-content: center;
+
     button {
       height: 25px;
       display: flex;
@@ -209,17 +212,21 @@ defineExpose({
     }
   }
 }
+
 .with-toolbar {
   .c-editor {
     border-radius: 0 0 6px 6px;
   }
 }
+
 .c-editor-toolbar {
   border: none !important;
+
   :deep(.w-e-drop-panel) {
     height: 200px;
     overflow: auto;
   }
+
   :deep(.w-e-toolbar) {
     border-radius: 6px 6px 0 0;
     border: 1px solid #dcdfe6;

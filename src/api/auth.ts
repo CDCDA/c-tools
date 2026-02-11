@@ -41,19 +41,18 @@ export const verifyToken = () =>
     url: "/auth/validate",
     method: "get",
   });
-let userData = window.localStorage.getItem("userData") as any;
-if (userData) userData = JSON.parse(userData) as any;
-const service: AxiosInstance = axios.create({
-  baseURL: process.env.NODE_ENV === "development" ? "/dev-api" : "/prod-api",
-  timeout: 150000,
-  headers: {
-    Authorization: `Bearer ${userData?.token}`,
-  },
-});
 
 //验证token（无拦截）
-export const verifyTokenNoIntercept = () =>
-  service({
+export const verifyTokenNoIntercept = (token: string) => {
+  const service: AxiosInstance = axios.create({
+    baseURL: process.env.NODE_ENV === "development" ? "/dev-api" : "/prod-api",
+    timeout: 150000,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return service({
     url: "/auth/validate",
     method: "get",
   });
+};
