@@ -9,6 +9,19 @@
   ],
   "permissions": [
     {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://127.0.0.1:11434/**"
+        }
+      ],
+      "deny": [
+        {
+          "url": "https://private.tauri.app"
+        }
+      ]
+    },
+    {
       "identifier": "shell:allow-execute",
       "allow": [
         {
@@ -138,7 +151,6 @@
     "core:webview:allow-create-webview",
     "core:window:allow-set-icon",
     "http:allow-fetch",
-    "http:default",
     {
       "identifier": "shell:allow-spawn",
       "allow": [
@@ -153,14 +165,6 @@
       "allow": [
         {
           "path": "$APPDATA/*"
-        }
-      ]
-    },
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://*"
         }
       ]
     }

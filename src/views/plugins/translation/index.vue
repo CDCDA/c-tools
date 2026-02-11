@@ -127,7 +127,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Switch } from "@element-plus/icons-vue";
-import { translate } from "@/api/translation.ts";
+import { translate, quickTranslate } from "@/api/translation.ts";
 import { debounce } from "lodash";
 import { QuestionFilled } from "@element-plus/icons-vue";
 import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
@@ -249,7 +249,7 @@ const switchLang = () => {
 
 
 const debouncedTranslate = debounce(() => {
-  handleTranslate();
+  handleAiTranslate();
 }, 500);
 
 const handleTranslate = async () => {
@@ -269,9 +269,16 @@ const handleTranslate = async () => {
   }
 };
 
-const handleFormatType = (type: any) => {
-  options.value.formatType = type.value;
-  translateText.value = formatText(tempText.value, options.value.formatType);
+
+const handleAiTranslate = async () => {
+  console.log("开始AI翻译", originalText.value);
+  if (!originalText.value) {
+    return;
+  }
+  const res = await quickTranslate(originalText.value);
+  console.log("AI翻译结果", res);
+  tempText.value = { ...res }
+  translateText.value = formatText(res, options.value.autoFormatType);
   if (options.value.autoCopy) {
     writeText(translateText.value);
   }

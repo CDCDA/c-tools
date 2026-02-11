@@ -51,7 +51,7 @@ function menuClick(plugin: any) {
   router.push({ name: "pluginConfig", params: { id: plugin.id } });
 }
 function toPersonalCenter() {
-  router.push({ name: "manage" });
+  router.push({ name: "account" });
 }
 onMounted(() => {
   // 从pluginData获取插件列表

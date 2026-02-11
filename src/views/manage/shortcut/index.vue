@@ -17,8 +17,7 @@
           <el-table-column prop="label" label="插件名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
-              <ShortcutInput v-model="scope.row.shortcut"
-                :check-duplicate="(shortcut: any) => checkShortcutDuplicate(shortcut, scope.row)"
+              <ShortcutInput v-model="scope.row.shortcut" :exclude-id="scope.row.id"
                 @change="handleShortcutChange(scope.row, 'plugin')" />
             </template>
           </el-table-column>
@@ -36,8 +35,7 @@
           <el-table-column prop="label" label="功能名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
-              <ShortcutInput v-model="scope.row.shortcut"
-                :check-duplicate="(shortcut: any) => checkShortcutDuplicate(shortcut, scope.row)"
+              <ShortcutInput v-model="scope.row.shortcut" :exclude-id="scope.row.id"
                 @change="handleShortcutChange(scope.row, 'global')" />
             </template>
           </el-table-column>
@@ -58,8 +56,7 @@
           <el-table-column prop="label" label="指令名称" align="center" />
           <el-table-column prop="shortcut" label="快捷键" align="center">
             <template #default="scope">
-              <ShortcutInput v-model="scope.row.shortcut"
-                :check-duplicate="(shortcut: any) => checkShortcutDuplicate(shortcut, scope.row)"
+              <ShortcutInput v-model="scope.row.shortcut" :exclude-id="scope.row.id"
                 @change="handleShortcutChange(scope.row, 'command')" />
             </template>
           </el-table-column>
@@ -93,17 +90,6 @@ const router = useRouter();
 const pluginShortcutList = computed(() => shortcutStore.pluginShortcutList);
 const globalShortcutList = computed(() => shortcutStore.globalShortcutList);
 const commandShortcutList = computed(() => shortcutStore.commandShortcutList);
-
-// 检查快捷键是否重复
-function checkShortcutDuplicate(shortcut: string, currentItem: any): boolean {
-  if (!shortcut) return false;
-
-  const result = shortcutStore.checkShortcutDuplicate(shortcut, currentItem.id);
-  if (result.isDuplicate && result.duplicateItem) {
-    ElNotification.error(`快捷键已存在，与"${result.duplicateItem.label}"功能重复`);
-  }
-  return result.isDuplicate;
-}
 
 // 处理快捷键变化
 function handleShortcutChange(item: any, type: string) {

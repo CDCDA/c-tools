@@ -4,8 +4,6 @@
 
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { registerShortcut } from "@/utils/shortcut.ts";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { saveStoreData, getStoreData } from "@/utils/localSave.ts";
 export const useSettingStore = defineStore(
   "setting",
@@ -14,12 +12,8 @@ export const useSettingStore = defineStore(
     const savePath = ref("D:\\c-tools-data");
     // 备份路径
     const backupPath = ref("D:\\c-tools-data-backup");
-    // 主窗口快捷键
-    const shortCutKey = ref("Alt+Space");
     // 开机启动
     const autoStart = ref(true);
-    // 分离为独立窗口快捷键
-    const separateWindowShortCutKey = ref("Ctrl+Shift+Space");
     // 透明
     const transparent = ref(false);
     // 可见
@@ -29,9 +23,7 @@ export const useSettingStore = defineStore(
         transparent: transparent.value,
         visible: visible.value,
         backupPath: backupPath.value,
-        shortCutKey: shortCutKey.value,
         autoStart: autoStart.value,
-        separateWindowShortCutKey: separateWindowShortCutKey.value,
       });
     };
     const loadStore = async () => {
@@ -40,20 +32,7 @@ export const useSettingStore = defineStore(
         transparent.value = false;
         visible.value = data.visible;
         backupPath.value = data.backupPath;
-        shortCutKey.value = data.shortCutKey;
         autoStart.value = data.autoStart;
-        separateWindowShortCutKey.value = data.separateWindowShortCutKey;
-      }
-      const currentWindow = await getCurrentWindow();
-      if (currentWindow.label === "main") {
-        console.log("注册主窗口快捷键");
-        await registerShortcut({
-          shortcut: shortCutKey.value,
-          event: () => {
-            currentWindow.show();
-            currentWindow.setFocus();
-          },
-        });
       }
     };
 
@@ -62,9 +41,7 @@ export const useSettingStore = defineStore(
       transparent,
       visible,
       backupPath,
-      shortCutKey,
       autoStart,
-      separateWindowShortCutKey,
       saveStore,
       loadStore,
     };

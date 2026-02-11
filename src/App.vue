@@ -1,6 +1,8 @@
 <template>
   <div class="app-container" :style="{ background: settingStore.transparent ? 'transparent' : 'white !important' }">
     <RouterView />
+    <GlobalParamModal />
+
   </div>
 </template>
 
@@ -8,6 +10,7 @@
 import { nextTick, onMounted, onBeforeUnmount } from "vue";
 import { adjustWindowSize } from "@/utils/window.ts";
 import { useRouter } from "vue-router";
+import { quickTranslate } from "@/api/translation.ts";
 import { saveAllStore, loadAllStore } from "@/utils/storeManage.ts";
 import { listen } from "@tauri-apps/api/event";
 import { useSettingStore } from "@/store/modules/setting.ts";
@@ -16,6 +19,7 @@ import { useEventBusStore } from "@/store/modules/eventBus.ts";
 import Windows from "@/windows/index.js";
 import { createNotificationWindow } from "@/utils/notification.ts";
 import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
+import GlobalParamModal from '@/components/globalParamModal/index.vue';
 
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 const eventBusStore = useEventBusStore();
@@ -95,6 +99,11 @@ function init() {
   });
 }
 init();
+onMounted(async () => {
+  console.log("测试翻译...");
+  const res = await quickTranslate("测试文本");
+  console.log("测试结果:", res);
+})
 
 onBeforeUnmount(() => {
   // console.log("【成功】关闭窗口:", currentWindow.label);

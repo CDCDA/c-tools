@@ -1,244 +1,218 @@
 <template>
-  <el-input
-    :model-value="modelValue"
-    :placeholder="placeholder"
-    readonly
-    :class="{ 'is-recording': isRecording }"
-    @keydown="handleKeyDown"
-    @keyup="handleKeyUp"
-    @focus="handleFocus"
-    @blur="handleBlur"
-  >
+  <el-input ref="inputRef" :model-value="displayValue" :placeholder="isRecording ? '正在录制...按下组合键' : placeholder"
+    readonly :class="{ 'is-recording': isRecording }" @keydown="handleKeyDown" @keyup="handleKeyUp"
+    @click="startRecording" @blur="handleBlur">
     <template #prefix>
-      <span v-if="isRecording" class="recording-indicator"></span>
+      <div v-if="isRecording" class="recording-dot"></div>
     </template>
     <template #suffix>
-      <el-button v-if="modelValue && !isRecording" link size="small" @click.stop="handleClear">
-        <el-icon><Close /></el-icon>
+      <el-button v-if="modelValue && !isRecording" link @click.stop="handleClear">
+        <el-icon>
+          <Close />
+        </el-icon>
       </el-button>
     </template>
   </el-input>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { ElMessage } from "element-plus";
+import { ref, computed } from "vue";
+import { ElNotification } from "element-plus";
 import { Close } from "@element-plus/icons-vue";
+import { useShortcutStore } from "@/store/modules/shortcut.ts";
 
 interface Props {
   modelValue?: string;
   placeholder?: string;
-  // 用于检查快捷键是否重复的函数
-  checkDuplicate?: (shortcut: string) => boolean;
-}
-
-interface Emits {
-  (e: "update:modelValue", value: string): void;
-  (e: "change", value: string): void;
+  excludeId?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: "",
-  placeholder: "请按下快捷键",
-  checkDuplicate: () => false,
+  placeholder: "点击录制快捷键",
+  excludeId: "",
 });
 
-const emit = defineEmits<Emits>();
-
+const emit = defineEmits(["update:modelValue", "change"]);
+const shortcutStore = useShortcutStore();
+const inputRef = ref();
 const isRecording = ref(false);
-const currentKeys = ref<Set<string>>(new Set());
-const lastKeyTime = ref(0);
 
-// 修饰键映射
-const modifierKeys = new Set(["Control", "Alt", "Shift", "Meta"]);
-const keyMap: Record<string, string> = {
+// 临时记录当前按下的修饰键
+const modifiers = ref({
+  Ctrl: false,
+  Alt: false,
+  Shift: false,
+  Meta: false,
+});
+
+// 计算显示值：录制中显示实时组合，非录制显示已保存值
+const displayValue = computed(() => {
+  if (!isRecording.value) return props.modelValue;
+
+  const parts = [];
+  if (modifiers.value.Ctrl) parts.push("Ctrl");
+  if (modifiers.value.Alt) parts.push("Alt");
+  if (modifiers.value.Shift) parts.push("Shift");
+  if (modifiers.value.Meta) parts.push("Meta");
+  return parts.join("+") + (parts.length > 0 ? "+" : "");
+});
+
+// 修饰键定义
+const modifierKeysMap: Record<string, keyof typeof modifiers.value> = {
+  Control: "Ctrl",
+  Alt: "Alt",
+  Shift: "Shift",
+  Meta: "Meta",
+};
+
+// 功能键映射
+const specialKeyMap: Record<string, string> = {
   " ": "Space",
-  ArrowUp: "↑",
-  ArrowDown: "↓",
-  ArrowLeft: "←",
-  ArrowRight: "→",
+  ArrowUp: "Up",
+  ArrowDown: "Down",
+  ArrowLeft: "Left",
+  ArrowRight: "Right",
   Escape: "Esc",
   Enter: "Enter",
   Tab: "Tab",
-  CapsLock: "CapsLock",
   Backspace: "Backspace",
-  Delete: "Delete",
-  Insert: "Insert",
-  Home: "Home",
-  End: "End",
-  PageUp: "PageUp",
-  PageDown: "PageDown",
+  Delete: "Del",
 };
 
-// 处理按键按下
+function startRecording() {
+  isRecording.value = true;
+  shortcutStore.unRegisterAll(); // 录制时禁用全局快捷键
+  resetModifiers();
+}
+
+function resetModifiers() {
+  modifiers.value = { Ctrl: false, Alt: false, Shift: false, Meta: false };
+}
+
 function handleKeyDown(event: KeyboardEvent) {
   if (!isRecording.value) return;
 
   event.preventDefault();
   event.stopPropagation();
 
-  const now = Date.now();
+  const key = event.key;
 
-  // 如果两次按键间隔超过1秒，清空之前的按键
-  if (now - lastKeyTime.value > 1000) {
-    currentKeys.value.clear();
-  }
-  lastKeyTime.value = now;
-
-  // 添加修饰键
-  if (event.ctrlKey) currentKeys.value.add("Ctrl");
-  if (event.altKey) currentKeys.value.add("Alt");
-  if (event.shiftKey) currentKeys.value.add("Shift");
-  if (event.metaKey) currentKeys.value.add("Meta");
-
-  // 添加普通按键（排除修饰键本身）
-  if (!modifierKeys.has(event.key)) {
-    const key = keyMap[event.key] || (event.key.length === 1 ? event.key.toUpperCase() : event.key);
-    currentKeys.value.add(key);
+  // 1. 处理修饰键更新状态
+  if (modifierKeysMap[key]) {
+    modifiers.value[modifierKeysMap[key]] = true;
+    return;
   }
 
-  updateShortcut();
+  // 2. 如果按下的是普通键（非修饰键）
+  const finalKey = specialKeyMap[key] || (key.length === 1 ? key.toUpperCase() : key);
+
+  // 生成最终快捷键字符串
+  const result = composeShortcut(finalKey);
+
+  if (validate(result)) {
+    submitShortcut(result);
+  }
 }
 
-// 处理按键释放
 function handleKeyUp(event: KeyboardEvent) {
   if (!isRecording.value) return;
 
-  event.preventDefault();
-  event.stopPropagation();
-
-  // 移除释放的修饰键
-  if (event.key === "Control") currentKeys.value.delete("Ctrl");
-  if (event.key === "Alt") currentKeys.value.delete("Alt");
-  if (event.key === "Shift") currentKeys.value.delete("Shift");
-  if (event.key === "Meta") currentKeys.value.delete("Meta");
-
-  // 对于普通按键，在释放时结束录制
-  if (!modifierKeys.has(event.key)) {
-    const shortcut = getCurrentShortcut();
-    if (shortcut && isValidShortcut(shortcut)) {
-      // 检查是否重复
-      if (props.checkDuplicate(shortcut)) {
-        ElMessage.warning("该快捷键已被使用，请选择其他快捷键");
-        currentKeys.value.clear();
-      } else {
-        // 延迟结束录制，确保所有按键状态都已更新
-        setTimeout(() => {
-          isRecording.value = false;
-        }, 100);
-      }
-    }
+  // 如果松开了修饰键，同步更新状态
+  const mod = modifierKeysMap[event.key];
+  if (mod) {
+    modifiers.value[mod] = false;
   }
 }
 
-// 获取当前快捷键字符串
-function getCurrentShortcut(): string {
-  if (currentKeys.value.size === 0) return "";
+function composeShortcut(finalKey: string): string {
+  const parts = [];
+  if (modifiers.value.Ctrl || (event as any).ctrlKey) parts.push("Ctrl");
+  if (modifiers.value.Alt || (event as any).altKey) parts.push("Alt");
+  if (modifiers.value.Shift || (event as any).shiftKey) parts.push("Shift");
+  if (modifiers.value.Meta || (event as any).metaKey) parts.push("Meta");
 
-  const keys = Array.from(currentKeys.value);
-  return keys
-    .sort((a, b) => {
-      // 修饰键排序：Ctrl, Alt, Shift, Meta, 其他键
-      const order: Record<string, number> = { Ctrl: 1, Alt: 2, Shift: 3, Meta: 4 };
-      return (order[a] || 5) - (order[b] || 5);
-    })
-    .join("+");
-}
-
-// 更新快捷键
-function updateShortcut() {
-  const shortcut = getCurrentShortcut();
-  if (!shortcut) return;
-
-  // 验证快捷键格式
-  if (isValidShortcut(shortcut)) {
-    // 检查是否重复
-    if (props.checkDuplicate(shortcut)) {
-      ElMessage.warning("该快捷键已被使用，请选择其他快捷键");
-      return;
-    }
-
-    emit("update:modelValue", shortcut);
-    emit("change", shortcut);
+  // 过滤重复并加入普通键
+  if (!parts.includes(finalKey)) {
+    parts.push(finalKey);
   }
+  return parts.join("+");
 }
 
-// 验证快捷键格式 - 修改为支持3段式快捷键
-function isValidShortcut(shortcut: string): boolean {
+function validate(shortcut: string) {
   const parts = shortcut.split("+");
 
-  // 单个功能键
-  if (parts.length === 1 && /^F[1-9][0-2]?$/.test(parts[0])) {
-    return true;
+  // 必须包含至少一个非修饰键
+  const hasNormalKey = parts.some(p => !["Ctrl", "Alt", "Shift", "Meta"].includes(p));
+  // 必须包含至少一个修饰键 (除非是 F1-F12)
+  const hasModifier = parts.some(p => ["Ctrl", "Alt", "Shift", "Meta"].includes(p));
+  const isFunctionKey = /^F[1-9][0-2]?$/.test(parts[parts.length - 1]);
+
+  if (!hasNormalKey) return false;
+  if (!hasModifier && !isFunctionKey) return false;
+
+  return true;
+}
+
+function submitShortcut(shortcut: string) {
+  // 校验查重
+  const check = shortcutStore.checkShortcutDuplicate(shortcut, props.excludeId);
+  if (check.isDuplicate) {
+    ElNotification.warning({
+      title: "快捷键冲突",
+      message: `与功能【${check.duplicateItem?.label}】重复`,
+      position: "bottom-right",
+    });
+    return;
   }
 
-  // 支持2段或3段式快捷键：至少一个修饰键 + 一个普通键
-  // 例如：Ctrl+A, Shift+Alt+1, Ctrl+Shift+A 等
-  const modifierCount = parts.filter((part) => ["Ctrl", "Alt", "Shift", "Meta"].includes(part)).length;
-
-  const normalKeyCount = parts.filter((part) => !["Ctrl", "Alt", "Shift", "Meta"].includes(part)).length;
-
-  // 至少1个修饰键和1个普通键，最多支持3个按键组合
-  return modifierCount >= 1 && normalKeyCount >= 1 && parts.length <= 3;
+  emit("update:modelValue", shortcut);
+  emit("change", shortcut);
+  stopRecording();
 }
 
-// 处理获得焦点
-function handleFocus() {
-  isRecording.value = true;
-  currentKeys.value.clear();
-  lastKeyTime.value = Date.now();
+function stopRecording() {
+  isRecording.value = false;
+  resetModifiers();
+  console.log("stopRecording", shortcutStore.shortcuts);
+  shortcutStore.registerAll(); // 恢复全局快捷键
+  inputRef.value?.blur();
 }
 
-// 处理失去焦点
 function handleBlur() {
+  // 延迟关闭，防止点击清除按钮时触发
   setTimeout(() => {
-    isRecording.value = false;
-    currentKeys.value.clear();
-  }, 200);
+    if (isRecording.value) {
+      stopRecording();
+    }
+  }, 150);
 }
 
-// 清空快捷键
 function handleClear() {
   emit("update:modelValue", "");
   emit("change", "");
 }
-
-// 监听 modelValue 变化，同步到外部
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (!newValue) {
-      currentKeys.value.clear();
-    }
-  }
-);
 </script>
 
 <style scoped lang="scss">
-:deep(.el-input) {
-  &.is-recording {
-    .el-input__wrapper {
-      box-shadow: 0 0 0 1px #409eff inset;
-    }
+.is-recording {
+  :deep(.el-input__wrapper) {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
+    background-color: var(--el-color-primary-light-9);
   }
 }
 
-.recording-indicator {
-  display: inline-block;
+.recording-dot {
   width: 8px;
   height: 8px;
-  // background-color: #ff4d4f;
+  background-color: var(--el-color-danger);
   border-radius: 50%;
+  margin-right: 8px;
   animation: blink 1s infinite;
 }
 
 @keyframes blink {
-  0%,
   50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
     opacity: 0;
   }
 }

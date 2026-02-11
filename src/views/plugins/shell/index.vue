@@ -46,7 +46,7 @@
               <el-input v-model="form.name" placeholder="请输入名称" />
             </el-form-item>
             <el-form-item label="快捷键">
-              <ShortcutInput v-model="form.shortcut" @change="handleShortcutChange(scope.row, 'global')" />
+              <ShortcutInput v-model="form.shortcut" :excludeId="form.id" />
             </el-form-item>
             <el-form-item label="执行环境">
               <el-radio-group v-model="form.shell">
@@ -95,17 +95,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { ElNotification, ElMessage, ElMessageBox } from "element-plus";
 import { Command } from '@tauri-apps/plugin-shell';
 import { savePluginData, getPluginData } from "@/utils/localSave.ts";
 import List from "@/components/list/index.vue";
 import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
 import Editor from "@/components/editor/index.vue";
+import { useShortcutStore } from "@/store/modules/shortcut.ts";
 import ShortcutInput from "@/components/shortcut/shortcutInput.vue";
-
 import FloatButtons from '@/components/floatButtons/index.vue';
 import { Plus, VideoPlay, Edit, Delete } from "@element-plus/icons-vue";
+import { bus } from "@/utils/bus.ts";
+import { useRoute } from 'vue-router'
+const route = useRoute();
+const shortcutStore = useShortcutStore();
 // 数据类型定义
 interface ScriptArg {
   key: string;
@@ -196,6 +200,21 @@ const saveScript = async () => {
   } else {
     scripts.value.push({ ...form.value, createdAt: Date.now() });
   }
+  if (form.value.shortcut) {
+    // 处理快捷键变化
+    shortcutStore.setShortcut({
+      id: form.value.id,
+      name: form.value.name || form.value.id,
+      label: form.value.name || form.value.id,
+      shortcut: form.value.shortcut || "",
+      enabled: true,
+      type: "command",
+      payload: {
+        scriptId: form.value.id,
+      }
+    })
+  }
+
   await saveLocalData();
   drawerVisible.value = false;
   ElNotification.success("保存成功");
@@ -261,6 +280,8 @@ const executeFinal = async () => {
   }
 };
 
+
+
 const realScripts = computed(() => {
   if (searchText.value) {
     return scripts.value.filter(s => s.name.includes(searchText.value));
@@ -279,7 +300,28 @@ const loadLocalData = async () => {
       createdAt: script.createdAt || Date.now()
     }));
   }
+  if (!play.value) return;
+  const { scriptId } = route.query;
+  if (!scriptId) return;
+  const item = scripts.value.find(s => s.id === scriptId);
+  if (item) {
+    playVideo(item);
+  }
+  play.value = false;
+  // bus.on('shell-command', (data: any) => {
+  //   if (!data.scriptId) return;
+  //   const item = scripts.value.find(s => s.id === data.scriptId);
+  //   if (item) {
+  //     playVideo(item);
+  //   }
+  // });
 };
+const play = ref(false)
+
+watch(() => route, (val) => {
+  if (!val.query.scriptId) return;
+  play.value = true;
+}, { immediate: true, deep: true })
 const handleClick = (item: CustomScript) => {
   writeText(item.command);
   ElNotification.success("脚本已复制到剪贴板");
@@ -289,6 +331,8 @@ const searchText = ref("");
 function handleSearch(val: any) {
   searchText.value = val
 }
+
+
 
 onMounted(loadLocalData);
 

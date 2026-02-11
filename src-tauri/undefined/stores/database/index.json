@@ -1,0 +1,1 @@
+{"databaseList":[{"name":"pg1","url":"postgresql://postgres:123456@120.48.127.181:5432/C_PW","connectType":"host","host":"120.48.127.181","port":"5432","database":"C_PW","username":"postgres","password":"123456","type":"postgresql","id":1763431811548,"schema":"C_PW"}],"defaultDatabase":{"host":"localhost","port":3306,"url":"jdbc:mysql://localhost:3306/test","name":"MySQL"}}

@@ -9,9 +9,9 @@ import { pluginData } from "@/utils/plugin.ts";
 import { saveStoreData, getStoreData } from "@/utils/localSave.ts";
 import { bus } from "@/utils/bus.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useRouter } from "vue-router";
-import { getPluginByName } from "../../utils/plugin";
 import router from "@/router/index.ts";
+import { executeScript } from "../../utils/shellExecutor";
+import { getPluginData } from "@/utils/localSave.ts";
 
 // 快捷键项接口
 interface ShortcutItem {
@@ -27,24 +27,6 @@ export const useShortcutStore = defineStore("shortcut", () => {
   // 所有的快捷键都统一管理
   const shortcuts = ref<ShortcutItem[]>([]);
 
-  // --- 核心操作：统一的增删改 ---
-  const setShortcut = (item: ShortcutItem) => {
-    const index = shortcuts.value.findIndex((s) => s.id === item.id);
-    if (index > -1) {
-      // 如果快捷键变化了，先注销旧的
-      if (shortcuts.value[index].shortcut !== item.shortcut) {
-        unRegisterShortcut(shortcuts.value[index]);
-      }
-      shortcuts.value[index] = item;
-    } else {
-      shortcuts.value.push(item);
-    }
-    // 执行物理注册
-    registerSingle(item);
-    // 保存到本地
-    saveStore();
-  };
-
   // --- 核心操作：删除快捷键 ---
   const removeShortcut = (id: string) => {
     const index = shortcuts.value.findIndex((s) => s.id === id);
@@ -59,8 +41,8 @@ export const useShortcutStore = defineStore("shortcut", () => {
   };
 
   // --- 核心操作：分发器 (解决持久化不能存函数的问题) ---
-  const handleShortcutExecute = (item: ShortcutItem) => {
-    console.log("执行快捷键动作:", item.id);
+  const handleShortcutExecute = async (item: ShortcutItem) => {
+    console.log("执行快捷键动作:", item);
     const currentWindow = getCurrentWindow();
 
     switch (item.type) {
@@ -69,13 +51,21 @@ export const useShortcutStore = defineStore("shortcut", () => {
         selectPlugin(item, router);
         break;
       case "command":
-        const plugin = getPluginByName("shell");
-        selectPlugin(plugin, router);
-        // 指令类型：比如 shell 脚本
-        bus.emit("execute-plugin-action", {
-          pluginId: "shell",
-          actionId: item.payload.scriptId,
-        });
+        const shellData = await getPluginData("shell_pro");
+        // 1. 获取所有脚本数据
+        const script = shellData?.scripts?.find((s: any) => s.id === item.payload.scriptId);
+        if (!script) return;
+
+        // 2. 判断是否有参数
+        if (script.args && script.args.length > 0) {
+          currentWindow.show();
+          currentWindow.setFocus();
+          // 有参数：显示全局参数弹窗，不跳转页面
+          bus.emit("show-global-param-dialog", script);
+        } else {
+          // 无参数：直接静默执行
+          executeScript(script, {});
+        }
         break;
       case "global":
         // 全局类型：如显示/隐藏窗口
@@ -92,16 +82,28 @@ export const useShortcutStore = defineStore("shortcut", () => {
             // 分离当前窗口为独立窗口
             bus.emit("separate-plugin-window");
             break;
+          case "global-personal-center":
+            router.push({ name: "account" });
+            break;
+          case "global-plugin-manager":
+            router.push({ name: "pluginManage" });
+            break;
         }
         break;
     }
   };
 
-  // --- 核心操作：物理注册 ---
+  // --- 改进：统一的物理注册，增加安全性 ---
   const registerSingle = (item: ShortcutItem) => {
-    if (!item.shortcut || !item.enabled) return;
+    // 1. 如果没开启或快捷键为空，确保它是注销状态
+    if (!item.shortcut || !item.enabled) {
+      unRegisterShortcut(item);
+      return;
+    }
 
-    // 重新封装 event，不存入 state，只在注册时动态绑定
+    // 2. 关键：注册前先尝试注销，防止重复绑定
+    unRegisterShortcut(item);
+
     const registerItem = {
       ...item,
       event: () => {
@@ -111,25 +113,48 @@ export const useShortcutStore = defineStore("shortcut", () => {
     registerShortcut(registerItem);
   };
 
-  // --- 核心操作：注册所有快捷键 ---
-  const registerAll = () => {
-    console.log("开始注册所有快捷键", shortcuts.value);
-    shortcuts.value.forEach((item) => {
-      registerSingle(item);
-    });
+  const setShortcut = (item: ShortcutItem) => {
+    const index = shortcuts.value.findIndex((s) => s.id === item.id);
+
+    if (index > -1) {
+      // 无论快捷键字符串是否变化，都先注销旧配置对应的物理按键
+      unRegisterShortcut(shortcuts.value[index]);
+      shortcuts.value[index] = item;
+    } else {
+      shortcuts.value.push(item);
+    }
+
+    // 执行新配置的物理注册
+    registerSingle(item);
+    saveStore();
+  };
+
+  // --- 改进：registerAll 增加清理动作 ---
+  const registerAll = async () => {
+    // 先全部注销，防止内存堆积
+    await unRegisterAll();
+    setTimeout(() => {
+      shortcuts.value.forEach((item) => {
+        if (item.enabled) {
+          registerSingle(item);
+        }
+      });
+    }, 500);
   };
 
   // --- 核心操作：注销所有快捷键 ---
   const unRegisterAll = () => {
+    console.log("注销所有快捷键", shortcuts.value);
     shortcuts.value.forEach((item) => {
       unRegisterShortcut(item);
     });
   };
 
   const initShortcutConfig = () => {
-    console.log("初始化插件快捷键列表");
+    console.log("初始化插件快捷键列表", pluginData);
     const pluginShortcuts = pluginData.map((plugin: any) => ({
-      id: plugin.name,
+      id: plugin.id,
+      name: plugin.name,
       label: plugin.label,
       shortcut: plugin.shortcut,
       enabled: true,
@@ -146,7 +171,21 @@ export const useShortcutStore = defineStore("shortcut", () => {
       {
         id: "global-separate-window",
         label: "分离为独立窗口",
-        shortcut: "Alt+Shift+c",
+        shortcut: "Alt+Shift+C",
+        enabled: true,
+        type: "global",
+      },
+      {
+        id: "global-personal-center",
+        label: "个人中心",
+        shortcut: "Alt+Shift+A",
+        enabled: true,
+        type: "global",
+      },
+      {
+        id: "global-plugin-manager",
+        label: "插件管理",
+        shortcut: "Alt+Shift+S",
         enabled: true,
         type: "global",
       },
@@ -180,8 +219,8 @@ export const useShortcutStore = defineStore("shortcut", () => {
     if (shortcuts.value.length === 0) {
       // 初始化插件快捷键列表
       initShortcutConfig();
+      saveStore();
     }
-
     // 注册所有快捷键
     registerAll();
   };
@@ -200,9 +239,22 @@ export const useShortcutStore = defineStore("shortcut", () => {
       duplicateItem,
     };
   };
+  const getGlobalShortcutList = () => {
+    return shortcuts.value.filter((item) => item.type === "global");
+  };
 
+  const getPluginShortcutList = () => {
+    return shortcuts.value.filter((item) => item.type === "plugin");
+  };
+
+  const getCommandShortcutList = () => {
+    return shortcuts.value.filter((item) => item.type === "command");
+  };
   return {
     shortcuts,
+    getGlobalShortcutList,
+    getPluginShortcutList,
+    getCommandShortcutList,
     setShortcut,
     removeShortcut,
     registerAll,

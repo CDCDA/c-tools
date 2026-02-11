@@ -25,7 +25,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { registerShortcut } from "@/utils/shortcut.ts";
 import { useSettingStore } from "@/store/modules/setting.ts";
 import { createNewWindow } from "@/utils/plugin.ts";
 import { useRouter } from "vue-router";

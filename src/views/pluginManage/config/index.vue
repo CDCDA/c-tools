@@ -18,7 +18,7 @@
         <el-collapse v-model="activeCollapseNames">
           <el-collapse-item title="基础设置" name="1">
             <el-form-item label="快捷键">
-              <el-input v-model="pluginConfig.settings.shortcut" placeholder="例如: Ctrl+Shift+P" />
+              <ShortcutInput v-model="pluginConfig.settings.shortcut" :excludeId="pluginConfig.pluginId" />
             </el-form-item>
             <el-form-item label="是否启用">
               <el-switch v-model="pluginConfig.settings.enabled" />
@@ -70,11 +70,13 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { pluginData } from "@/utils/plugin.ts";
 import { usePluginConfigStore } from "@/store/modules/pluginConfig.ts";
+import { useShortcutStore } from "@/store/modules/shortcut.ts";
+import ShortcutInput from "@/components/shortcut/shortcutInput.vue";
 import { ElNotification } from "element-plus";
-
 const route = useRoute();
 const router = useRouter();
 const pluginConfigStore = usePluginConfigStore();
+const shortcutStore = useShortcutStore();
 
 // 获取当前插件ID
 const pluginId = computed(() => route.params.id as string);
@@ -99,15 +101,28 @@ const loadPluginInfo = () => {
   }
   console.log("找到的插件:", config);
   if (config) {
-    pluginConfig.value = config
+    pluginConfig.value = { ...config }
   } else {
     ElNotification.error('未找到指定插件的配置');
     router.push({ name: "pluginManage" });
   }
 };
 
+
 // 保存插件配置
 const saveConfig = () => {
+  console.log("pluginConfig.value:", pluginConfig.value);
+  if (pluginConfig.value.settings.shortcut) {
+    shortcutStore.setShortcut({
+      id: pluginConfig.value.pluginId,
+      name: pluginConfig.value.settings.name,
+      label: pluginConfig.value.settings.label || pluginId.value,
+      shortcut: pluginConfig.value.settings.shortcut,
+      enabled: true,
+      type: "plugin",
+      payload: pluginConfig.value.settings
+    });
+  }
   pluginConfigStore.setPluginConfig(pluginConfig.value);
   ElNotification.success('插件配置已保存');
 }

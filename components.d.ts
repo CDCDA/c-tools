@@ -57,6 +57,7 @@ declare module 'vue' {
     FileConfigDrawer: typeof import('./src/components/file/fileConfigDrawer.vue')['default']
     FileTree: typeof import('./src/components/file/fileTree.vue')['default']
     FloatButtons: typeof import('./src/components/floatButtons/index.vue')['default']
+    GlobalParamModal: typeof import('./src/components/globalParamModal/index.vue')['default']
     Image: typeof import('./src/components/image/index.vue')['default']
     ImageMagnifier: typeof import('./src/components/image/ImageMagnifier.vue')['default']
     List: typeof import('./src/components/list/index.vue')['default']

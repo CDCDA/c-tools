@@ -63,21 +63,19 @@ export const usePluginConfigStore = defineStore("pluginConfig", () => {
   // --- 核心操作：从本地加载 ---setPluginConfig
   const loadStore = async () => {
     const storeData = (await getStoreData("pluginConfig")) || {};
-    console.log("加载插件配置", storeData);
-
     pluginConfigs.value = storeData.pluginConfigs || [];
     if (pluginConfigs.value.length == 0) {
       resetPluginConfigs();
+      saveStore();
     }
   };
 
   const resetPluginConfigs = () => {
     pluginConfigs.value = [];
-    console.log("重置插件配置", pluginData);
     pluginData.forEach((plugin: any) => {
       pluginConfigs.value.push({
-        pluginId: plugin.id || plugin.name,
-        settings: { enabled: true, ...(plugin.meta || {}) },
+        pluginId: plugin.id,
+        settings: { enabled: true, name: plugin.name || plugin.id, ...(plugin.meta || {}) },
       });
     });
   };
