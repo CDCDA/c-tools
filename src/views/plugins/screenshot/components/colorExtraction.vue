@@ -1,9 +1,16 @@
 <template>
   <div class="color-extraction">
     <!-- 像素级放大镜 -->
-    <PixelPerfectMagnifier v-if="isPicking && fullScreenImage" :full-screen-image="fullScreenImage"
-      :mouse-position="mousePosition" :magnification="10" :grid-size="9" :view-size="110" @color-picked="onColorPicked"
-      ref="magnifierRef" />
+    <PixelPerfectMagnifier
+      v-if="isPicking && fullScreenImage"
+      :full-screen-image="fullScreenImage"
+      :mouse-position="mousePosition"
+      :magnification="10"
+      :grid-size="9"
+      :view-size="110"
+      @color-picked="onColorPicked"
+      ref="magnifierRef"
+    />
   </div>
 </template>
 
@@ -17,13 +24,13 @@ import PixelPerfectMagnifier from "@/components/image/canvasMagnifier.vue";
 const props = defineProps({
   type: {
     type: String,
-    default: 'colorExtraction',
+    default: "colorExtraction",
   },
   fullScreenImage: {
     type: String,
-    default: '',
+    default: "",
   },
-})
+});
 interface RgbColor {
   r: number;
   g: number;
@@ -43,19 +50,21 @@ let cleanupFunctions: (() => void)[] = [];
 const startPicking = async () => {
   try {
     isPicking.value = true;
-    currentWindow.setFocus(true);
+    currentWindow.setFocus();
     currentWindow.show();
 
     await invoke("start_color_picking");
     // 监听鼠标移动
-    const unlistenMouseMove = await listen<[number, number]>("mouse-moved", async (event) => {
-      const [x, y] = event.payload;
-      const { width, height } = await physicalToLogical(x, y);
-      mousePosition.value = { x: width, y: height };
-      // console.log(mousePosition.value);
-    });
+    const unlistenMouseMove = await listen<[number, number]>(
+      "mouse-moved",
+      async (event) => {
+        const [x, y] = event.payload;
+        const { width, height } = await physicalToLogical(x, y);
+        mousePosition.value = { x: width, y: height };
+        // console.log(mousePosition.value);
+      }
+    );
     cleanupFunctions.push(unlistenMouseMove);
-
 
     console.log("✅ 像素级取色模式已启动");
   } catch (error) {
@@ -86,8 +95,8 @@ const onColorPicked = (colorData: any) => {
 };
 
 // 键盘事件处理
-const handleKeyDown = (event) => {
-  if (event.key === "Escape" && isCapturing.value) {
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === "Escape" && isPicking.value) {
     stopPicking();
   }
 };
@@ -95,14 +104,16 @@ const handleKeyDown = (event) => {
 defineExpose({
   start() {
     document.addEventListener("keydown", handleKeyDown);
-    console.log("ASDAD", props.fullScreenImage)
+    console.log("ASDAD", props.fullScreenImage);
     startPicking();
   },
-})
+});
 </script>
 <style scoped>
 .color-extraction {
   height: 100vh;
+  width: 100vw;
   background: transparent;
+  background-size: 100% !important;
 }
 </style>

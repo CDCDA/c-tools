@@ -2,13 +2,24 @@
 <template>
   <div class="pixel-magnifier-container" :style="rootStyle">
     <!-- 全屏图像 -->
-    <img v-if="fullScreenImage" ref="fullScreenImageRef" :src="fullScreenImage" @load="onFullScreenImageLoad" />
+    <img
+      v-if="fullScreenImage"
+      class="full-screen-image"
+      ref="fullScreenImageRef"
+      :src="fullScreenImage"
+      @load="onFullScreenImageLoad"
+    />
 
     <!-- 放大镜视图 -->
     <div class="pixel-magnifier-view" :style="magnifierViewStyle">
       <!-- 像素视图层 -->
       <div class="canvas-wrapper" :style="canvasWrapperStyle">
-        <canvas ref="canvasRef" :width="actualViewSize" :height="actualViewSize" class="pixel-canvas"></canvas>
+        <canvas
+          ref="canvasRef"
+          :width="actualViewSize"
+          :height="actualViewSize"
+          class="pixel-canvas"
+        ></canvas>
 
         <!-- 网格层：使用 CSS 绘制，确保绝对对齐 -->
         <div class="pixel-grid-overlay"></div>
@@ -52,7 +63,9 @@ const actualViewSize = computed(() => props.gridSize * props.cellSize);
 
 // 计算对比色
 const contrastColor = computed(() => {
-  return dominantBrightness.value > 128 ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.4)";
+  return dominantBrightness.value > 128
+    ? "rgba(0, 0, 0, 0.3)"
+    : "rgba(255, 255, 255, 0.4)";
 });
 
 const rootStyle = computed(() => ({
@@ -139,7 +152,8 @@ const updatePixelView = () => {
 
 const updateCurrentColor = (ctx) => {
   // 从画布中心取样（因为我们已经把目标像素移到中心了）
-  const centerCoord = Math.floor(props.gridSize / 2) * props.cellSize + props.cellSize / 2;
+  const centerCoord =
+    Math.floor(props.gridSize / 2) * props.cellSize + props.cellSize / 2;
   const pixelData = ctx.getImageData(centerCoord, centerCoord, 1, 1).data;
 
   const [r, g, b] = pixelData;
@@ -151,10 +165,15 @@ const updateCurrentColor = (ctx) => {
   // 计算感知亮度 (Rec. 709)
   dominantBrightness.value = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-  emits("pixel-change", { x: props.mousePosition.x, y: props.mousePosition.y, color: { ...currentPixelColor } });
+  emits("pixel-change", {
+    x: props.mousePosition.x,
+    y: props.mousePosition.y,
+    color: { ...currentPixelColor },
+  });
 };
 
-const rgbToHex = (r, g, b) => "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
+const rgbToHex = (r, g, b) =>
+  "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 
 const handleMouseDown = (event) => {
   if (event.button === 0) {
@@ -273,6 +292,12 @@ onUnmounted(() => {
   vertical-align: middle;
 }
 
+.full-screen-image {
+  width: 100vw;
+  height: 100vh;
+  background-size: 100% !important;
+  object-fit: contain;
+}
 /* 修正后的网格层 */
 .pixel-grid-overlay {
   position: absolute;

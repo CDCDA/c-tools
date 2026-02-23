@@ -1,49 +1,64 @@
 <template>
   <!-- 容器背景是全屏截图 -->
-  <div class="screenshot-container" :style="{ backgroundImage: `url(${fullScreenImage})` }">
+  <div
+    class="screenshot-container"
+    :style="{ backgroundImage: `url(${fullScreenImage})` }"
+  >
     <!-- 截图遮罩层 -->
-    <div v-if="isCapturing" class="capture-overlay" :class="{ 'is-selecting': selection.active }"
-      @mousedown="startSelection" @mousemove="updateSelection" @mouseup="endSelection">
+    <div
+      v-if="isCapturing"
+      class="capture-overlay"
+      :class="{ 'is-selecting': selection.active }"
+      @mousedown="startSelection"
+      @mousemove="updateSelection"
+      @mouseup="endSelection"
+    >
       <!-- 初始未拖拽时的全局灰色遮罩（可选，见下方 CSS） -->
       <div v-if="!selection.active" class="full-mask"></div>
       <!-- 选择区域框 -->
-      <div v-show="selection.active" class="selection-box" :style="{
-        left: selection.x + 'px',
-        top: selection.y + 'px',
-        width: selection.width + 'px',
-        height: selection.height + 'px',
-      }">
+      <div
+        v-show="selection.active"
+        class="selection-box"
+        :style="{
+          left: selection.x + 'px',
+          top: selection.y + 'px',
+          width: selection.width + 'px',
+          height: selection.height + 'px',
+        }"
+      >
         <!-- 尺寸显示 -->
-        <div class="size-indicator">{{ selection.width }} × {{ selection.height }}</div>
+        <div class="size-indicator">
+          {{ selection.width }} × {{ selection.height }}
+        </div>
       </div>
 
       <!-- 坐标显示 -->
-      <div class="coordinate-display">坐标: ({{ currentMouse.x }}, {{ currentMouse.y }})</div>
+      <div class="coordinate-display">
+        坐标: ({{ currentMouse.x }}, {{ currentMouse.y }})
+      </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { ElNotification } from "element-plus";
-import { convertFileSrc } from '@tauri-apps/api/core';
 const props = defineProps({
   type: {
     type: String,
-    default: 'screenshot',
+    default: "screenshot",
   },
   fullScreenImage: {
     type: String,
-    default: '',
+    default: "",
   },
-})
+});
 
 const currentWindow = getCurrentWindow();
 
 // 响应式数据
 const isCapturing = ref(false);
-const capturedImage = ref("");
+const capturedImage = ref("") as any;
 const selection = ref({
   active: false,
   startX: 0,
@@ -60,13 +75,12 @@ const startCapture = () => {
   isCapturing.value = true;
   selection.value.active = false;
   document.body.style.overflow = "hidden";
-  currentWindow.show()
-  currentWindow.setFocus()
-
+  currentWindow.show();
+  currentWindow.setFocus();
 };
 
 // 开始选择区域
-const startSelection = (event) => {
+const startSelection = (event: MouseEvent) => {
   selection.value.active = true; // 立即激活
   selection.value.startX = event.clientX;
   selection.value.startY = event.clientY;
@@ -76,7 +90,7 @@ const startSelection = (event) => {
   selection.value.height = 0;
 };
 // 更新选择区域
-const updateSelection = (event) => {
+const updateSelection = (event: MouseEvent) => {
   currentMouse.value.x = event.clientX;
   currentMouse.value.y = event.clientY;
 
@@ -91,7 +105,11 @@ const updateSelection = (event) => {
 
 // 结束选择并截图
 const endSelection = async () => {
-  if (!selection.value.active || selection.value.width < 5 || selection.value.height < 5) {
+  if (
+    !selection.value.active ||
+    selection.value.width < 5 ||
+    selection.value.height < 5
+  ) {
     selection.value.active = false;
     return;
   }
@@ -105,9 +123,11 @@ const endSelection = async () => {
       height: Math.round(selection.value.height),
       ignoreDpi: false,
     };
+    console.log("1111:", area);
 
     // 调用 Rust 后端截图
     const result = await invoke("capture_area", area);
+    console.log("截图结果:", result);
     if (result) {
       capturedImage.value = result;
     }
@@ -143,19 +163,18 @@ const cleanup = () => {
 };
 
 // 键盘事件处理
-const handleKeyDown = (event) => {
+const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === "Escape" && isCapturing.value) {
     cleanup();
   }
 };
-
 
 defineExpose({
   start() {
     document.addEventListener("keydown", handleKeyDown);
     startCapture();
   },
-})
+});
 </script>
 
 <style scoped>
@@ -163,9 +182,10 @@ defineExpose({
   position: relative;
   width: 100vw;
   height: 100vh;
-  background-size: 100% 100%;
+  background-size: 100% !important;
   background-repeat: no-repeat;
   overflow: hidden;
+  object-fit: contain;
 }
 
 /* 截图遮罩容器：不设背景色，由内部元素控制 */
