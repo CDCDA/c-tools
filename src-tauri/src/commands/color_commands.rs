@@ -349,96 +349,58 @@ pub fn capture_magnifier_area(
 
 // 使用 screenshots crate 的备选实现（考虑DPI缩放）
 #[tauri::command]
-pub fn capture_area(
-    x: i32,
-    y: i32,
-    width: u32,
-    height: u32,
-    ignore_dpi: bool, // 是否忽略DPI缩放
-) -> Option<String> {
-    // 参数验证
+pub fn capture_area(x: i32, y: i32, width: u32, height: u32, ignore_dpi: bool) -> Option<String> {
     if width == 0 || height == 0 {
-        eprintln!("截图区域尺寸无效: {}x{}", width, height);
         return None;
     }
 
-    let screens = match Screen::all() {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("获取屏幕信息失败: {}", e);
-            return None;
-        }
-    };
-
-    if screens.is_empty() {
-        eprintln!("未检测到任何屏幕");
-        return None;
-    }
-
-    // 获取DPI缩放比例
+    let screens = Screen::all().ok()?;
     let dpi_scale = if ignore_dpi {
         1.0
     } else {
         get_system_dpi_scale()
     };
 
-    // 将逻辑坐标转换为物理坐标
     let physical_point = logical_to_physical_point(POINT { x, y });
     let physical_width = (width as f64 * dpi_scale).round() as u32;
     let physical_height = (height as f64 * dpi_scale).round() as u32;
 
-    // 找到包含指定坐标的屏幕
-    let target_screen = screens.iter().find(|screen| {
-        let info = &screen.display_info;
+    let screen = screens.into_iter().find(|s| {
+        let info = &s.display_info;
         physical_point.x >= info.x
             && physical_point.x < info.x + info.width as i32
             && physical_point.y >= info.y
             && physical_point.y < info.y + info.height as i32
-    });
+    })?;
 
-    let screen = match target_screen {
-        Some(s) => s,
-        None => {
-            eprintln!("未找到包含坐标 ({}, {}) 的屏幕", x, y);
-            return None;
-        }
-    };
-
-    // 计算在屏幕内的相对坐标
     let screen_x = (physical_point.x - screen.display_info.x).max(0) as u32;
     let screen_y = (physical_point.y - screen.display_info.y).max(0) as u32;
 
-    // 确保截图区域不超出屏幕边界
-    let actual_width = physical_width.min(screen.display_info.width - screen_x);
-    let actual_height = physical_height.min(screen.display_info.height - screen_y);
+    // 捕获原始区域
+    let screenshot_image = screen
+        .capture_area(
+            screen_x as i32,
+            screen_y as i32,
+            physical_width.min(screen.display_info.width - screen_x),
+            physical_height.min(screen.display_info.height - screen_y),
+        )
+        .ok()?;
 
-    if actual_width == 0 || actual_height == 0 {
-        eprintln!("截图区域超出屏幕边界");
-        return None;
-    }
+    // --- 修复后的逻辑 ---
+    let mut png_bytes: Vec<u8> = Vec::new();
 
-    let screenshot_image = match screen.capture_area(
-        screen_x as i32,
-        screen_y as i32,
-        actual_width,
-        actual_height,
-    ) {
-        Ok(img) => img,
-        Err(e) => {
-            eprintln!("捕获区域失败: {}", e);
-            return None;
-        }
-    };
+    if dpi_scale != 1.0 && !ignore_dpi {
+        // 1. 从 screenshots::Image 获取原始 RGBA 数据
+        let raw_rgba = screenshot_image.rgba();
 
-    // 如果需要，将图像缩放到逻辑大小
-    let final_image = if dpi_scale != 1.0 && !ignore_dpi {
-        // 使用 image crate 进行高质量缩放
-        let img_buffer: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_raw(
+        // 2. 创建 RgbaImage (注意是 Rgba，因为 screenshots 返回的是 rgba)
+        let img_buffer = image::RgbaImage::from_raw(
             screenshot_image.width(),
             screenshot_image.height(),
-            screenshot_image.to_png().ok()?,
+            raw_rgba.to_vec(),
         )?;
 
+        // 3. 缩放到逻辑尺寸
         let resized = image::imageops::resize(
             &img_buffer,
             width,
@@ -446,20 +408,17 @@ pub fn capture_area(
             image::imageops::FilterType::Lanczos3,
         );
 
-        // 将缩放后的图像转换回 screenshots::Image
-        screenshots::Image::new(resized.width(), resized.height(), resized.into_raw())
+        // 4. 直接将缩放后的图像编码为 PNG
+        resized
+            .write_to(
+                &mut std::io::Cursor::new(&mut png_bytes),
+                image::ImageFormat::Png,
+            )
+            .ok()?;
     } else {
-        screenshot_image
-    };
-
-    // 编码为 PNG
-    let png_bytes = match final_image.to_png() {
-        Ok(bytes) => bytes,
-        Err(e) => {
-            eprintln!("PNG 编码失败: {}", e);
-            return None;
-        }
-    };
+        // 如果不需要缩放，直接使用 screenshots 自带的编码
+        png_bytes = screenshot_image.to_png().ok()?;
+    }
 
     let base64_string = general_purpose::STANDARD.encode(&png_bytes);
     Some(format!("data:image/png;base64,{}", base64_string))

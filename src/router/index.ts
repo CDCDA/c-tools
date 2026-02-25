@@ -12,7 +12,10 @@ const routes: Array<any> = [
     path: "/pluginSearch",
     name: "pluginSearch",
     meta: { name: "应用查询" },
-    component: () => import(/* webpackChunkName: "about" */ "/src/views/plugins/pluginSearch.vue"),
+    component: () =>
+      import(
+        /* webpackChunkName: "about" */ "/src/views/plugins/pluginSearch.vue"
+      ),
   },
   {
     path: "/plugin",
@@ -231,7 +234,8 @@ const routes: Array<any> = [
           alwaysOnTop: false,
           newWindow: false,
         },
-        component: () => import("@/views/plugins/screenshotAndSuspended/index.vue"),
+        component: () =>
+          import("@/views/plugins/screenshotAndSuspended/index.vue"),
       },
 
       {
@@ -315,7 +319,14 @@ const routes: Array<any> = [
       {
         path: "/notification",
         name: "notification",
-        meta: { id: 101, hideen: true, name: "通知", description: "通知", type: "assist", showHeader: false },
+        meta: {
+          id: 101,
+          hideen: true,
+          name: "通知",
+          description: "通知",
+          type: "assist",
+          showHeader: false,
+        },
         component: () => import("@/views/plugins/notification/index.vue"),
       },
     ],
@@ -350,18 +361,18 @@ const routes: Array<any> = [
             component: () => import("/src/views/manage/account/index.vue"),
           },
 
-          {
-            path: "/localData",
-            name: "localData",
-            meta: {
-              label: "本地数据",
-              isHidden: true,
-              svgIcon: "pluginSvg-sql",
-              src: "/images/manageImages/用户.png",
-              affix: true,
-            },
-            component: () => import("/src/views/manage/localData/index.vue"),
-          },
+          // {
+          //   path: "/localData",
+          //   name: "localData",
+          //   meta: {
+          //     label: "本地数据",
+          //     isHidden: true,
+          //     svgIcon: "pluginSvg-sql",
+          //     src: "/images/manageImages/用户.png",
+          //     affix: true,
+          //   },
+          //   component: () => import("/src/views/manage/localData/index.vue"),
+          // },
         ],
       },
       {
@@ -411,18 +422,18 @@ const routes: Array<any> = [
             },
             component: () => import("/src/views/manage/database/index.vue"),
           },
-          {
-            path: "/shortcut",
-            name: "shortcut",
-            meta: {
-              label: "快捷方式",
-              isHidden: true,
-              svgIcon: "pluginSvg-sql",
-              src: "/images/manageImages/用户.png",
-              affix: true,
-            },
-            component: () => import("/src/views/manage/shortcut/index.vue"),
-          },
+          // {
+          //   path: "/shortcut",
+          //   name: "shortcut",
+          //   meta: {
+          //     label: "快捷方式",
+          //     isHidden: true,
+          //     svgIcon: "pluginSvg-sql",
+          //     src: "/images/manageImages/用户.png",
+          //     affix: true,
+          //   },
+          //   component: () => import("/src/views/manage/shortcut/index.vue"),
+          // },
         ],
       },
     ],
