@@ -224,7 +224,7 @@ defineExpose({
   top: -25px;
   left: 0;
   background: #007acc;
-  color: white;
+  color: #252526;
   padding: 2px 6px;
   border-radius: 2px;
   font-size: 12px;
@@ -235,7 +235,7 @@ defineExpose({
   bottom: 20px;
   right: 20px;
   background: rgba(0, 0, 0, 0.6);
-  color: white;
+  color: #252526;
   padding: 4px 10px;
   border-radius: 4px;
   font-family: monospace;

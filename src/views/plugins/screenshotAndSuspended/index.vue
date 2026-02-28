@@ -212,7 +212,7 @@ onBeforeUnmount(() => {
   top: -30px;
   left: 0;
   background: #007acc;
-  color: white;
+  color: #252526;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
   top: 20px;
   left: 20px;
   background: rgba(0, 0, 0, 0.7);
-  color: white;
+  color: #252526;
   padding: 8px 12px;
   border-radius: 6px;
   font-family: monospace;
@@ -235,7 +235,7 @@ onBeforeUnmount(() => {
   top: 10px;
   right: 10px;
   cursor: pointer;
-  color: white;
+  color: #252526;
   z-index: 999;
   transition: visibility 0.3s ease-in-out;
 

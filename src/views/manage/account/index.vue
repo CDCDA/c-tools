@@ -108,7 +108,7 @@ function initLoginDialog() {
       .user-icon {
         width: 40px;
         height: 40px;
-        fill: white;
+        fill: #252526;
       }
     }
     .user-img-box {
@@ -122,7 +122,7 @@ function initLoginDialog() {
       .user-img {
         width: 100%;
         height: 100%;
-        fill: white;
+        fill: #252526;
       }
     }
   }

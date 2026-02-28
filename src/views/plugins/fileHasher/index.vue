@@ -200,7 +200,7 @@ p {
 
 button {
   background-color: #3498db;
-  color: white;
+  color: #252526;
   border: none;
   padding: 12px 24px;
   border-radius: 4px;

@@ -36,7 +36,7 @@ onMounted(async () => {
   // position: absolute;
   height: 100%;
   width: 100%;
-  background: white;
+  background: #252526;
   // animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   .notification-header {
     padding: 3px 10px;

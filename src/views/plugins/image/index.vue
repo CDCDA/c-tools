@@ -29,12 +29,6 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .image-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: #000;
   &:hover {
     .close-btn {
       visibility: visible !important;
@@ -51,7 +45,7 @@ onMounted(async () => {
     top: 10px;
     right: 10px;
     cursor: pointer;
-    color: white;
+    color: #252526;
     z-index: 999;
     transition: visibility 0.3s ease-in-out;
     &:before {
