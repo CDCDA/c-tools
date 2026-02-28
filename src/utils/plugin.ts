@@ -6,9 +6,13 @@ import { useEventBusStore } from "@/store/modules/eventBus.ts";
 import { usePluginConfigStore } from "@/store/modules/pluginConfig.ts";
 const currentWindow = getCurrentWindow();
 // 工具插件
-export const pluginData = getPluginData().filter((item) => item.type === "tool");
+export const pluginData = getPluginData().filter(
+  (item) => item.type === "tool"
+);
 // 辅助插件
-export const assistPlugins = getPluginData().filter((item) => item.type === "assist");
+export const assistPlugins = getPluginData().filter(
+  (item) => item.type === "assist"
+);
 
 export function getPluginData() {
   const pluginRoute = routes.find((route: any) => route.name === "plugin");
@@ -31,7 +35,9 @@ export const getPluginByName = (name: string) => {
 
   if (plugin) {
     const pluginConfigStore = usePluginConfigStore();
-    const pluginConfig = pluginConfigStore.getPluginConfig(plugin.id || plugin.name);
+    const pluginConfig = pluginConfigStore.getPluginConfig(
+      plugin.id || plugin.name
+    );
     if (!pluginConfig) return plugin;
     console.log("插件配置", pluginConfig);
     return {
@@ -43,7 +49,11 @@ export const getPluginByName = (name: string) => {
   return plugin;
 };
 
-const screenshotPlugins = ["screenshot", "screenshotAndSuspended", "colorExtraction"];
+const screenshotPlugins = [
+  "screenshot",
+  "screenshotAndSuspended",
+  "colorExtraction",
+];
 
 // 选择插件并执行
 export const selectPlugin = async (plugin: any, router: any) => {
@@ -77,7 +87,8 @@ export const selectPlugin = async (plugin: any, router: any) => {
     await createNewWindow(plugin);
     setWindowSize(800, 220);
   } else {
-    await router.push({
+    console.log("普通插件", plugin);
+    router.push({
       name: plugin.name,
       query: {
         type: "main",
