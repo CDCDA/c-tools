@@ -100,6 +100,7 @@ onMounted(() => {
 .sortable {
   height: calc(100% - 2px);
 }
+
 #container {
   list-style: none;
   border-radius: 4px;
@@ -107,10 +108,11 @@ onMounted(() => {
   padding: 0;
   margin: 0;
   height: 100%;
-  border: 1px solid #d5d7dd;
+  border: 1px solid #EBEBEB;
   background: white;
   /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 }
+
 .list-item {
   padding: 5px 10px;
   background: white;
@@ -120,35 +122,43 @@ onMounted(() => {
   align-items: center;
   transition: all 0.3s ease;
 }
+
 .list-item:hover {
   background: #f8f9fa;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
 .list-item:active {
   cursor: grabbing;
 }
+
 .list-item.dragging {
   opacity: 0.6;
   background: #e3f2fd;
   transform: rotate(5deg);
 }
+
 .drag-handle {
   margin-right: 15px;
   color: #bdc3c7;
   font-size: 1.2rem;
 }
+
 .item-content {
   flex: 1;
 }
+
 .item-title {
   font-weight: 500;
   margin-bottom: 5px;
 }
+
 .item-description {
   font-size: 0.85rem;
   color: #7f8c8d;
 }
+
 .list-item.dragging {
   opacity: 0.6;
   background: #e3f2fd;
@@ -160,6 +170,7 @@ onMounted(() => {
   opacity: 0.4;
   background: #c8e6c9;
 }
+
 /* 简约现代动画 */
 .list-item {
   transition: all 0.25s ease-in-out;

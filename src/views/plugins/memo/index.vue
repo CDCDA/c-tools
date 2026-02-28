@@ -3,10 +3,10 @@
     <MemoSidebar ref="memoSidebarRef" :typeList="typeList" :activeType="activeType"
       @update:activeType="updateActiveType" @addType="addType" @editType="editType" @deleteType="deleteType" />
     <MemoList ref="memoListRef" :mode="mode" :memoList="memoList" :activeType="activeType" :currentMemo="currentMemo"
-      :selectMemos="selectMemos" @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer"
-      @update:selectMemos="updateSelectMemos" />
-    <MemoTools ref="memoToolsRef" :mode="mode" :isAll="isAll" :activeType="activeType" :currentMemo="currentMemo"
-      @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer" @changeMode="changeMode" @selectAll="selectAll" />
+      :selectIds="selectIds" @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer"
+      @update:selectIds="updateSelectIds" />
+    <!-- <MemoTools ref="memoToolsRef" :mode="mode" :isAll="isAll" :activeType="activeType" :currentMemo="currentMemo"
+      @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer" @changeMode="changeMode" @selectAll="selectAll" /> -->
     <MemoDrawer ref="memoDrawerRef" @submit="submitMemo" />
   </div>
 </template>
@@ -27,29 +27,29 @@ import { currentWindow } from "@/utils/window.ts";
 
 const currentMemo = computed(() => {
   if (mode.value === 'single') {
-    return selectMemos.value[0] || {};
+    return memoList.value.find((item: any) => item.id === selectIds.value[0]) || {};
   }
   return {};
 });
-const selectMemos = ref<any>([]);
+const selectIds = ref<any>([]);
 const mode = ref('single')
 const isAll = computed(() => {
-  return selectMemos.value.length === memoList.value.length;
+  return selectIds.value.length === memoList.value.length;
 })
 function selectAll() {
   if (mode.value === 'single') {
     return;
   }
-  if (selectMemos.value.length === memoList.value.length) {
-    selectMemos.value = [];
+  if (selectIds.value.length === memoList.value.length) {
+    selectIds.value = [];
   } else {
-    selectMemos.value = memoList.value;
+    selectIds.value = memoList.value.map((item: any) => item.id);
   }
 }
 
 function changeMode() {
   mode.value = mode.value === 'single' ? 'multi' : 'single';
-  selectMemos.value = [];
+  selectIds.value = [];
 }
 
 const typeList = ref([
@@ -70,8 +70,8 @@ function updateCurrentMemo(memo: any) {
   currentMemo.value = memo;
 }
 
-function updateSelectMemos(memos: any) {
-  selectMemos.value = memos;
+function updateSelectIds(ids: any) {
+  selectIds.value = ids;
 }
 
 function updateActiveType(type: any) {
@@ -140,19 +140,20 @@ const memoList = computed(() => {
 });
 
 function deleteMemo(memo?: any) {
-  if (mode.value === 'multi') {
-    if (!selectMemos.value.length) {
+  console.log("deleteMemo", memo, selectIds.value);
+  if (selectIds.value.length > 1) {
+    if (!selectIds.value.length) {
       ElNotification.error("请先选择要删除的备忘录");
       return;
     } else {
-      ElMessageBox.confirm(`确认删除 ${selectMemos.value.length} 个备忘录吗？`, "Tip", {
+      ElMessageBox.confirm(`确认删除 ${selectIds.value.length} 个备忘录吗？`, "Tip", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       }).then(() => {
-        totalMemoList.value = totalMemoList.value.filter((item: any) => !selectMemos.value.find((memo: any) => memo.id === item.id));
+        totalMemoList.value = totalMemoList.value.filter((item: any) => !selectIds.value.includes(item.id));
         ElNotification.success("删除成功");
-        selectMemos.value = [];
+        selectIds.value = [];
         saveLocalData();
       });
     }
@@ -172,7 +173,7 @@ function deleteMemo(memo?: any) {
   }).then(() => {
     totalMemoList.value = totalMemoList.value.filter((item: any) => item.id !== memo.id);
     ElNotification.success("删除成功");
-    selectMemos.value = [];
+    selectIds.value = [];
     saveLocalData();
   });
 }

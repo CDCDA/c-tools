@@ -458,7 +458,7 @@ router.beforeEach(() => {
 
 router.afterEach(() => {
   const eventBusStore = useEventBusStore();
-  eventBusStore.pluginLoading = false;
+  eventBusStore.pluginLoading = true;
 });
 
 export default router;

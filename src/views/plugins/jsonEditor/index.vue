@@ -2,14 +2,33 @@
   <div class="page-main json">
     <Editor class="json-editor" ref="jsonEditorRef" v-model="jsonStr" language="json">
       <template #footer-left-append>
-        <el-checkbox v-model="options.autoPaste" style="margin-right: 10px;">自动粘贴</el-checkbox>
-        <el-checkbox v-model="options.autoFormat" style="margin-right: 10px;">自动格式化</el-checkbox>
+        <el-tooltip content="自动粘贴" placement="top">
+          <svg-icon iconName="otherSvg-粘贴" :class="options.autoPaste ? 'is-active' : ''"
+            @click="options.autoPaste = !options.autoPaste" class="svg-btn" />
+        </el-tooltip>
+        <el-tooltip content=" 自动格式化" placement="top">
+          <svg-icon iconName="otherSvg-自动格式化" :class="options.autoFormat ? 'is-active' : ''"
+            @click="options.autoFormat = !options.autoFormat" class="svg-btn" />
+        </el-tooltip>
       </template>
       <template #footer-right>
-        <el-button type="text" class="code-editor-footer-item" size="mini" @click="handleFormat">格式化</el-button>
-        <el-button type="text" class="code-editor-footer-item" size="mini" @click="handleUniqueArray">数组去重</el-button>
-        <el-button type="text" class="code-editor-footer-item" size="mini" @click="handleEscape">转义</el-button>
-        <el-button type="text" class="code-editor-footer-item" size="mini" @click="handleUnescape">去转义</el-button>
+        <el-tooltip content="格式化" placement="top">
+          <svg-icon iconName="otherSvg-格式刷" class="svg-btn" @click="handleFormat" />
+        </el-tooltip>
+        <el-tooltip content="数组去重" placement="top">
+          <svg-icon iconName="otherSvg-去重" class="svg-btn" @click="handleUniqueArray" />
+        </el-tooltip>
+        <el-tooltip content="转义" placement="top">
+          <svg-icon iconName="otherSvg-转义" class="svg-btn" @click="handleEscape" />
+        </el-tooltip>
+        <el-tooltip content="去转义" placement="top">
+          <svg-icon iconName="otherSvg-转义" class="svg-btn" style="transform: rotate(90deg);"
+            @click="handleUnescape" />
+        </el-tooltip>
+        <!-- <el-button type="text" class="svg-btn" size="mini" @click="handleFormat">格式化</el-button> -->
+        <!-- <el-button type="text" class="svg-btn" size="mini" @click="handleUniqueArray">数组去重</el-button> -->
+        <!-- <el-button type="text" class="svg-btn" size="mini" @click="handleEscape">转义</el-button>
+        <el-button type="text" class="svg-btn" size="mini" @click="handleUnescape">去转义</el-button> -->
       </template>
     </Editor>
   </div>
@@ -92,6 +111,7 @@ onUnmounted(() => {
   border-radius: 4px;
   height: calc(100% - 12px);
 }
+
 
 .tools {
   width: 100%;

@@ -1,17 +1,26 @@
 <template>
   <div class="plugin-bar" data-tauri-drag-region>
     <div class="plugin-bar-left" data-tauri-drag-region>
-      <el-tag class="plugin-name" effect="dark" round closable type="info" @close="close">{{ plugin.label }}</el-tag>
+      <!-- <el-tag class="plugin-name" effect="dark" round closable type="info" @close="close"><svg-icon
+          :iconName="plugin.meta.icon" style="margin-right: 5px;" />{{ plugin.label }}</el-tag> -->
+      <div class="plugin-name">
+        <svg-icon :iconName="plugin.meta.icon" style="margin-right: 5px;" />
+        <div style="margin-bottom: 2px;">{{ plugin.label }}</div>
+        <svg-icon iconName="otherSvg-关闭" style="cursor: pointer;margin-left: 5px;width: 22px;height: 22px;"
+          @click="close" />
+      </div>
+
     </div>
     <div class="plugin-bar-center" data-tauri-drag-region>
+      <svg-icon iconName="otherSvg-搜索" v-if="props.plugin.meta.search"
+        style="margin-left: 20px; width: 23px; height: 23px"></svg-icon>
+
       <el-input class="plugin-bar-search" v-model="searchText" data-tauri-drag-region v-prevent-drag
         v-if="props.plugin.meta.search" @keyup.enter="handleSearch()" placeholder="请输入关键字" />
     </div>
     <div class="plugin-bar-right" data-tauri-drag-region>
       <el-dropdown @command="handleCommand">
-        <el-icon class="setting">
-          <Setting data-tauri-drag-region />
-        </el-icon>
+        <svg-icon iconName="otherSvg-设置" data-tauri-drag-region style="width: 23px; height: 23px"></svg-icon>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="window">分离为独立窗口</el-dropdown-item>
@@ -80,14 +89,15 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .plugin-bar {
-  height: 45px;
+  height: 35px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #d5d7dd;
+  padding: 10px 0 0 0;
+  // border-bottom: 1px solid #EBEBEB;
 
   i {
     outline: none !important;
@@ -105,21 +115,16 @@ onUnmounted(() => {
       height: 32px;
       font-size: 18px;
       padding-right: 15px;
-      padding-left: 20px;
-      background-color: var(--el-color-primary);
-      color: #fff;
+      padding-left: 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      // background-color: var(--el-color-primary);
+      color: black;
+      font-weight: bold;
       border: none;
 
-      :deep(.el-tag__content) {
-        margin-bottom: 4px;
-      }
 
-      :deep(.el-tag__close) {
-        width: 20px;
-        height: 20px;
-        font-size: 20px;
-        margin-bottom: 2px;
-      }
 
       .plugin-close {
         margin-left: 5px;
@@ -130,6 +135,9 @@ onUnmounted(() => {
 
   .plugin-bar-center {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: start;
   }
 
   .plugin-bar-right {
@@ -150,12 +158,13 @@ onUnmounted(() => {
     height: 100%;
 
     :deep(.el-input__wrapper) {
-      padding-left: 22px;
+      padding-left: 5px;
       border-radius: 0 !important;
       box-shadow: none;
+      background: transparent;
 
       .el-input__inner {
-        font-size: 20px !important;
+        font-size: 18px !important;
       }
     }
   }

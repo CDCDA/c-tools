@@ -75,7 +75,7 @@ const fixed = () => {
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #d5d7dd;
+  border-bottom: 1px solid #EBEBEB;
 
   .svg-icon {
     margin-right: 5px;

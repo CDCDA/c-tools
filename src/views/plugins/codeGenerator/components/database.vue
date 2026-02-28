@@ -2,7 +2,7 @@
   <div class="database part-container">
     <div class="part-header">
       <div class="part-title">
-        <el-dropdown class="code-editor-footer-item" placement="top" trigger="click">
+        <el-dropdown class="svg-btn" placement="top" trigger="click">
           <el-button type="text" size="mini" style="margin-bottom: -2px">
             {{ currentDatabase.name || "请选择数据库" }}
           </el-button>
@@ -17,21 +17,15 @@
       </div>
       <div class="part-tools">
         <el-tooltip content="添加新的数据库连接" placement="top">
-          <el-icon><Plus @click="handleAdd" /></el-icon>
+          <el-icon>
+            <Plus @click="handleAdd" />
+          </el-icon>
         </el-tooltip>
       </div>
     </div>
     <div class="part-main database-table">
-      <el-table
-        border
-        :data="tableList"
-        ref="tableRef"
-        v-loading="loading"
-        row-key="tableName"
-        @row-click="handleClick"
-        style="width: 100%"
-        @selection-change="handleSelectionChange"
-      >
+      <el-table border :data="tableList" ref="tableRef" v-loading="loading" row-key="tableName" @row-click="handleClick"
+        style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="selection" align="center" width="55" />
         <!-- <el-table-column type="index" align="center" label="序号" width="55" /> -->
         <el-table-column prop="tableName" align="center" label="表名" show-overflow-tooltip />
@@ -178,9 +172,11 @@ defineExpose({
   height: 100%;
   display: flex;
   flex-direction: column;
+
   .database-table {
     flex: 1;
     min-height: 0;
+
     .el-table {
       height: 100%;
       width: 100%;
@@ -188,6 +184,7 @@ defineExpose({
     }
   }
 }
+
 .database-select {
   margin-bottom: 10px;
 }

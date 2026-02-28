@@ -1,5 +1,6 @@
 <template>
-  <div class="app-container" :style="{ background: settingStore.transparent ? 'transparent' : 'white !important' }">
+  <div class="app-container"
+    :style="{ background: settingStore.transparent ? 'transparent' : 'linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important' }">
     <RouterView />
     <GlobalParamModal />
 
@@ -117,8 +118,8 @@ onBeforeUnmount(() => {
   --el-color-primary-light-3: #4db6ac !important;
   --el-button-active-bg-color: #00968c !important;
   --el-button-hover-bg-color: #00968c !important;
-  /* --el-table-border-color: #d5d7dd !important;
-  --el-border-color-lighter: #d5d7dd !important; */
+  /* --el-table-border-color: #EBEBEB !important;
+  --el-border-color-lighter: #EBEBEB !important; */
 }
 
 body {

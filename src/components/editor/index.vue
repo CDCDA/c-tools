@@ -3,11 +3,16 @@
     <div class="header" data-tauri-drag-region v-if="editorOptions.fullScreen">编辑器</div>
     <VAceEditor ref="aceEditorRef" v-model:value="editorContent" :lang="currentLanguage" :theme="aceTheme"
       :options="editorOptions" :style="editorStyle" @init="onEditorInit" />
+    <!-- 空态显示 -->
+    <div class="empty-state" v-if="!editorContent.trim()">
+      <div class="empty-icon"><svg-icon iconName="otherSvg-大括号"></svg-icon></div>
+      <div class="empty-text">请输入或粘贴JSON内容</div>
+    </div>
     <div class="code-editor-footer">
       <div class="code-editor-footer-left">
         <slot name="footer-left-prepend"></slot>
         <slot name="footer-left">
-          <div class="code-editor-footer-item">
+          <div class="label-value-item">
             <span class="label">字数:</span>
             <span class="value">{{ editorContent.length }}</span>
           </div>
@@ -18,8 +23,8 @@
         <slot name="footer-right-prepend"></slot>
 
         <slot name="footer-right">
-          <el-dropdown class="code-editor-footer-item" placement="top" trigger="click">
-            <el-button type="text" size="mini" style="margin-bottom: 2px" class="language-button">
+          <el-dropdown class="label-value-item" placement="top" trigger="click">
+            <el-button type="text" size="mini" class="language-button">
               {{ currentLanguage }}
             </el-button>
             <template #dropdown>
@@ -31,11 +36,15 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <el-button type="text" size="mini" class="code-editor-footer-item" @click="fullScreen">
-            {{ editorOptions.fullScreen ? "退出全屏" : "全屏" }}
-          </el-button>
 
-          <el-button type="text" size="mini" class="code-editor-footer-item" @click="formatContent"> 格式化 </el-button>
+          <el-tooltip content="全屏" placement="top">
+            <svg-icon iconName="otherSvg-全屏" class="svg-btn" v-if="!editorOptions.fullScreen"
+              @click="fullScreen"></svg-icon>
+            <svg-icon iconName="otherSvg-退出全屏" class="svg-btn" v-else @click="fullScreen"></svg-icon>
+          </el-tooltip>
+          <el-tooltip content="格式化" placement="top">
+            <svg-icon iconName="otherSvg-格式刷" class="svg-btn" @click="formatContent" />
+          </el-tooltip>
         </slot>
         <slot name="footer-right-append"></slot>
       </div>
@@ -521,7 +530,8 @@ defineExpose({
   height: calc(100% - 10px);
   width: calc(100% - 2px);
   overflow: hidden;
-  border: 1px solid #d5d7dd;
+  // border: 1px solid #EBEBEB;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.02);
   background: white;
   border-radius: 4px;
   display: flex;
@@ -529,13 +539,49 @@ defineExpose({
   min-height: 0;
   padding: 8px 0px 0px 0px;
 
+  // 空态显示
+  .empty-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 40px;
+    /* 为底部工具栏留出空间 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    pointer-events: none;
+    /* 允许点击穿透到底层编辑器 */
+    opacity: 1;
+    transition: all 1s ease;
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.1;
+      transition: all 1s ease;
+    }
+
+    .empty-text {
+      font-size: 15px;
+      color: #999;
+      text-align: center;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+      letter-spacing: 1px;
+      /* 扩大字间距 */
+    }
+  }
+
   .code-editor-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 5px;
-    height: 30px;
-    border-top: 1px solid #d5d7dd;
+    padding: 0 10px;
+    height: 40px;
+    border-top: 1px solid #EBEBEB;
 
     .code-editor-footer-left,
     .code-editor-footer-right {
@@ -545,24 +591,30 @@ defineExpose({
       justify-content: center;
     }
 
+    .language-button {
+      margin: 0 5px;
+      height: 100% !important;
+      padding: 5px;
+    }
+
     .code-editor-footer-left {
-      .code-editor-footer-item {
-        margin-right: 10px;
+
+      .label-value-item {
+        margin: 0px 5px;
+        color: #666666;
+        padding: 5px;
+        font-size: 14px;
+
+        .value {
+          margin-left: 10px;
+        }
       }
     }
 
-    .code-editor-footer-right {
-      .code-editor-footer-item {
-        margin-left: 10px;
-      }
-    }
 
-    .code-editor-footer-item {
-      font-size: 14px !important;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+
+    .svg-btn {
+
 
       span {
         height: 100%;
@@ -583,7 +635,7 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid #d5d7dd;
+    border-bottom: 1px solid #EBEBEB;
   }
 
   // Ace Editor 会自动填充容器

@@ -28,7 +28,7 @@ function handleClick() {
   z-index: 999;
 
   user-select: none;
-  border-bottom: 1px solid #d5d7dd;
+  border-bottom: 1px solid #EBEBEB;
 
   .plugin-manage-bar-left {
     height: 100%;

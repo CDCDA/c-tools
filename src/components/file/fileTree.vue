@@ -28,15 +28,9 @@
       </div>
     </div>
     <div class="part-main">
-      <el-tree-v2
-        v-loading="loading"
-        :data="treeData"
-        :props="defaultProps"
-        :show-checkbox="props.showCheckbox"
-        ref="treeRef"
-        style="border-radius: 0 0 4px 4px; width: calc(100% - 2px); height: calc(100% - 2px)"
-        :height="treeHeight"
-      >
+      <el-tree-v2 v-loading="loading" :data="treeData" :props="defaultProps" :show-checkbox="props.showCheckbox"
+        ref="treeRef" style="border-radius: 0 0 4px 4px; width: calc(100% - 2px); height: calc(100% - 2px)"
+        :height="treeHeight">
         <template #default="{ node }">
           <div class="tree-node">
             <div class="node-left">
@@ -280,17 +274,20 @@ defineExpose({
 .tree-container {
   width: 100%;
   height: 100%;
+
   .tree-node {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding-right: 25px;
     width: 100%;
+
     .node-right {
       display: flex;
       align-items: center;
     }
   }
+
   .header {
     font-size: 14px;
     padding: 5px 0;
@@ -298,37 +295,45 @@ defineExpose({
     justify-content: space-between;
     align-items: center;
     width: 100%;
+
     .title {
       width: 100px;
     }
+
     .tools {
       width: 100%;
       display: flex;
       justify-content: end;
       align-items: center;
       font-size: 18px;
+
       .el-icon:active {
         transform: translateY(1px);
       }
+
       .el-icon,
       .svg-icon {
         cursor: pointer;
         margin-left: 5px;
         outline: unset;
       }
+
       .left-tools {
         display: flex;
         justify-content: start;
         align-items: center;
+
         .el-button--text {
           margin-top: 2px;
         }
       }
+
       .right-tools {
         display: flex;
         justify-content: end;
         align-items: center;
       }
+
       .count,
       .time {
         display: flex;
@@ -338,11 +343,13 @@ defineExpose({
       }
     }
   }
+
   .el-tree {
     width: 100%;
-    border: 1px solid #d5d7dd;
+    border: 1px solid #EBEBEB;
     border-radius: 4px;
     height: calc(100% - 30px);
+
     :deep(.el-vl__wrapper, .el-vl__window) {
       height: 100%;
     }

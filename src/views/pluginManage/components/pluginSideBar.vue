@@ -68,7 +68,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .sidebar {
   width: 250px;
-  border-right: 1px solid #d5d7dd;
+  border-right: 1px solid #EBEBEB;
   height: calc(100% - 51px);
   display: flex;
   flex-direction: column;
@@ -137,7 +137,7 @@ onMounted(() => {
 
 // 个人中心样式
 .personal {
-  border-top: 1px solid #d5d7dd;
+  border-top: 1px solid #EBEBEB;
   padding: 5px 10px;
   height: 42px;
   cursor: pointer;

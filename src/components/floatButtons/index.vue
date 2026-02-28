@@ -4,9 +4,7 @@
       toggleSettingPanel">
       <slot name="base-btn">
         <div class="base-btn">
-          <el-icon class="setting-icon">
-            <Setting />
-          </el-icon>
+          <svg-icon iconName="otherSvg-设置" class="setting-icon" />
         </div>
       </slot>
     </div>

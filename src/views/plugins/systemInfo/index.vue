@@ -11,13 +11,13 @@
             <span class="label">内存</span>
             <span class="value">{{
               `${formatBytesToGB(system.available_memory || 0)} / ${formatBytesToGB(system.total_memory || 0)}`
-            }}</span>
+              }}</span>
           </div>
           <div class="system-details-item">
             <span class="label">交换空间</span>
             <span class="value">{{
               `${formatBytesToGB(system.used_swap || 0)} / ${formatBytesToGB(system.total_swap || 0)}`
-            }}</span>
+              }}</span>
           </div>
         </div>
         <div class="disks">
@@ -148,26 +148,31 @@ onMounted(async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
+
   .system-info-first {
     height: 25%;
     margin-bottom: 10px;
     display: flex;
+
     .system-details {
       width: calc(28% - 20px);
       height: calc(100% - 20px);
       margin-right: 10px;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: white;
+      background: #252526;
       border-radius: 4px;
       padding: 10px 15px;
       display: flex;
       flex-direction: column;
       justify-content: space-around;
+
       .system-details-item {
         display: flex;
+
         .value {
           font-size: 13px;
         }
+
         .label {
           font-size: 14px;
           font-weight: bold;
@@ -176,31 +181,36 @@ onMounted(async () => {
         }
       }
     }
+
     .disks {
       width: calc(72% - 10px);
       height: 100%;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: white;
+      background: #252526;
       border-radius: 4px;
       display: flex;
+
       .disks-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex: 1;
-        border-right: 1px solid #d5d7dd;
+        border-right: 1px solid #EBEBEB;
         padding: 10px;
+
         .disks-item-img {
           width: 60px;
           height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
+
           .svg-icon {
             width: 50px;
             height: 50px;
           }
         }
+
         .disks-item-info {
           width: calc(100% - 80px);
           padding-right: 10px;
@@ -208,18 +218,22 @@ onMounted(async () => {
           flex-direction: column;
           justify-content: space-evenly;
           height: 100%;
+
           .disks-subItem {
             display: flex;
             justify-content: space-between;
             align-items: center;
+
             span {
               display: block;
             }
+
             .label {
               width: 70px;
               font-size: 14px;
               font-weight: bold;
             }
+
             .value {
               font-size: 13px;
             }
@@ -228,41 +242,48 @@ onMounted(async () => {
       }
     }
   }
+
   .system-info-second {
     height: calc(75% - 10px);
     display: flex;
+
     .memory {
       width: 70%;
       height: 100%;
       margin-right: 10px;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: white;
+      background: #252526;
       border-radius: 4px;
     }
+
     .cpu {
       width: calc(30% - 10px);
       height: 100%;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: white;
+      background: #252526;
       border-radius: 4px;
       display: flex;
       flex-wrap: wrap;
-      border-left: 1px solid #d5d7dd;
-      border-top: 1px solid #d5d7dd;
+      border-left: 1px solid #EBEBEB;
+      border-top: 1px solid #EBEBEB;
+
       .cpu-item {
         width: calc(50% - 11px);
         padding: 0 5px;
         display: flex;
         height: calc(12.5% - 1px);
-        border-right: 1px solid #d5d7dd;
-        border-bottom: 1px solid #d5d7dd;
+        border-right: 1px solid #EBEBEB;
+        border-bottom: 1px solid #EBEBEB;
+
         .cpu-item-icon {
           width: 40%;
+
           .svg-icon {
             width: 100%;
             height: 100%;
           }
         }
+
         .cpu-item-info {
           width: calc(60% - 10px);
 
@@ -270,17 +291,21 @@ onMounted(async () => {
           align-items: center;
           flex-direction: column;
           justify-content: space-evenly;
+
           .cpu-item-top,
           .cpu-item-bottom {
             width: calc(100% - 10px);
           }
+
           span {
             display: flex;
             align-items: center;
           }
+
           .value {
             font-size: 13px;
           }
+
           .label {
             font-size: 14px;
             font-weight: bold;

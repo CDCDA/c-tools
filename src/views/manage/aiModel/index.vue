@@ -15,12 +15,9 @@
         <el-table-column prop="apiKey" label="API密钥" align="center" width="150px" show-overflow-tooltip />
         <el-table-column label="操作" align="center" width="120px" fixed="right">
           <template #default="scope">
-            <el-button type="text" style="color: #409eff" @click="handleEdit(scope.row)" text size="mini"
-              >编辑</el-button
-            >
-            <el-button type="text" style="color: #ff4d4f" @click="handleDelete(scope.row)" text size="mini"
-              >删除</el-button
-            >
+            <el-button type="text" style="color: #409eff" @click="handleEdit(scope.row)" text size="mini">编辑</el-button>
+            <el-button type="text" style="color: #ff4d4f" @click="handleDelete(scope.row)" text
+              size="mini">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -64,14 +61,15 @@ const handleDelete = (row: any) => {
 .manage-page-main {
   width: 100%;
   height: 100%;
+
   .ai-model-tip {
     margin: 15px;
     border-radius: 4px;
-    background: white;
+    background: #252526;
     height: 80px;
     display: flex;
     align-items: center;
-    border: 1px solid #d5d7dd;
+    border: 1px solid #EBEBEB;
     background: linear-gradient(90deg, #f5f7fa 0%, #e4e7ed 100%);
 
     .tip {
@@ -84,13 +82,15 @@ const handleDelete = (row: any) => {
       padding: 0 20px;
     }
   }
+
   .ai-model-list {
     width: calc(100% - 30px);
     height: calc(100% - 135px);
     margin: 15px;
     border-radius: 4px;
     overflow: hidden;
-    background: white;
+    background: #252526;
+
     .el-button {
       margin: 0 5px;
       padding: 0;

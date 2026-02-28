@@ -9,15 +9,15 @@
     <div class="file-json">
       <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading">
         <template #footer-left-prepend>
-          <div class="code-editor-footer-item">
+          <div class="svg-btn">
             <span class="label">耗时:</span>
             <span class="value">{{ (consumingTime / 1000).toFixed(2) }}s</span>
           </div>
         </template>
         <template #footer-right-prepend>
-          <el-button type="text" class="code-editor-footer-item" @click="hanldeOpenConfig">文件查询配置</el-button>
-          <el-button type="text" class="code-editor-footer-item" @click="handleCharTree">字符树</el-button>
-          <el-button type="text" class="code-editor-footer-item" @click="handleJsonTree">json树</el-button>
+          <el-button type="text" class="svg-btn" @click="hanldeOpenConfig">文件查询配置</el-button>
+          <el-button type="text" class="svg-btn" @click="handleCharTree">字符树</el-button>
+          <el-button type="text" class="svg-btn" @click="handleJsonTree">json树</el-button>
         </template>
       </Editor>
     </div>
@@ -172,38 +172,46 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   .file-path {
     flex: 1;
     height: 100%;
-    border: 1px solid #d5d7dd;
+    border: 1px solid #EBEBEB;
     border-radius: 4px;
     font-size: 14px;
     color: #333;
-    background: white;
+    background: #252526;
     margin: 0 5px;
   }
+
   margin-bottom: 10px;
 }
+
 .file-option {
   display: flex;
   margin-bottom: 10px;
+
   .file-option-item:nth-child(1) {
     margin-right: 10px;
   }
 }
+
 .file-json {
   flex: 1;
   min-height: 0;
 }
+
 .tools {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   .tools-left,
   .tools-right {
     display: flex;
   }
+
   .count,
   .time {
     font-size: 14px;

@@ -4,21 +4,16 @@
       <el-input v-model="targetPath">
         <template #prepend><span style="cursor: pointer" @click="handleSelectFile()">选择文件夹</span></template>
         <template #append>
-          <span style="cursor: pointer" :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }" @click="handleOrganize"
-            >开始整理</span
-          >
+          <span style="cursor: pointer" :style="{ cursor: newLoading ? 'no-drop' : 'pointer' }"
+            @click="handleOrganize">开始整理</span>
         </template>
       </el-input>
     </div>
     <el-splitter>
       <el-splitter-panel :min="200" size="50%">
-        <file-tree
-          ref="fileTreeRef"
-          style="width: calc(100% - 2px)"
-          key="fileOrganizer"
+        <file-tree ref="fileTreeRef" style="width: calc(100% - 2px)" key="fileOrganizer"
           :defaultOptions="{ excludeFiles: '.git,node_modules,target' }"
-          @update:path="(val: any) => (targetPath = val)"
-        />
+          @update:path="(val: any) => (targetPath = val)" />
       </el-splitter-panel>
       <el-splitter-panel :min="200" size="50%">
         <div class="tree-new part-container">
@@ -27,12 +22,8 @@
             <div class="part-tools"></div>
           </div>
           <div class="part-main">
-            <el-tree-v2
-              v-loading="newLoading"
-              :data="newTreeData"
-              :props="props"
-              style="border-radius: 0 0 4px 4px; width: calc(100% - 2px); height: calc(100% - 2px)"
-            >
+            <el-tree-v2 v-loading="newLoading" :data="newTreeData" :props="props"
+              style="border-radius: 0 0 4px 4px; width: calc(100% - 2px); height: calc(100% - 2px)">
               <template #default="{ node }">
                 <el-icon class="el-icon--left">
                   <Document v-if="!node.data.is_file" />
@@ -49,8 +40,7 @@
     <div class="tools">
       <div class="left-tools">
         <div class="ai-model">AI模型：</div>
-        <el-button type="text" @click="handleSelectAiModel"
-          >{{ `${aiModel.modelName}(${aiModel.modelId})` }}
+        <el-button type="text" @click="handleSelectAiModel">{{ `${aiModel.modelName}(${aiModel.modelId})` }}
         </el-button>
       </div>
       <div class="center-tools">{{ tips }}</div>
@@ -66,12 +56,8 @@
       <el-button type="text" @click="handleJsonTree">json树</el-button>
       <el-button type="text" @click="handleFormat">格式化</el-button> -->
     </div>
-    <model-select-drawer
-      ref="modelSelectDrawerRef"
-      v-model:isOpen="isOpen"
-      :selectedModel="aiModel"
-      @setModel="setModel"
-    />
+    <model-select-drawer ref="modelSelectDrawerRef" v-model:isOpen="isOpen" :selectedModel="aiModel"
+      @setModel="setModel" />
   </div>
 </template>
 
@@ -252,29 +238,35 @@ const handleSelectAiModel = () => {
   padding-bottom: 0;
   height: calc(100% - 20px);
 }
+
 .file-select {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   .file-path {
     flex: 1;
     height: 100%;
-    border: 1px solid #d5d7dd;
+    border: 1px solid #EBEBEB;
     border-radius: 4px;
     font-size: 14px;
     color: #333;
-    background: white;
+    background: #252526;
     margin: 0 5px;
   }
+
   //margin-bottom: 10px;
 }
+
 .file-option {
   display: flex;
+
   // margin-bottom: 10px;
   .file-option-item:nth-child(1) {
     margin-right: 10px;
   }
 }
+
 .el-splitter {
   margin-top: 15px;
   height: calc(100% - 80px);
@@ -282,9 +274,10 @@ const handleSelectAiModel = () => {
 
 .el-tree {
   width: 100%;
-  border: 1px solid #d5d7dd;
+  border: 1px solid #EBEBEB;
   border-radius: 4px;
   height: calc(100% - 30px);
+
   :deep(.el-vl__wrapper, .el-vl__window) {
     height: 100%;
   }

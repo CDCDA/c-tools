@@ -1,22 +1,21 @@
 <template>
   <div class="memo-list">
-    <el-empty v-if="memoList.length === 0" image="" image-style="height: 100px" description="暂无数据" />
-    <div v-for="item in memoList" :key="item.value" @click="handleSelect(item)" @dblclick="handleDbClick(item)"
-      :class="['memo-list-item', { active: item.id === currentMemo?.id || props.selectMemos.find((memo: any) => memo.id === item.id) }]">
-      <!-- 1. 在父容器上绑定双击事件 -->
-      <div class="editor-content-view" v-html="item.content" @click="handleClick"></div>
-      <div class="memo-title flex-between">
-        <div class="title">{{ item.title }}</div>
-        <div class="tools">
-          <el-icon @click="emit('openMemoDrawer', 'edit', item)">
-            <Edit />
-          </el-icon>
-          <el-icon @click="emit('deleteMemo', item)">
-            <Delete />
-          </el-icon>
+    <List :list="memoList" @update:selectIds="updateSelectIds" ref="listRef" @dbClick="handleDbClick"
+      @batchDelete="emit('deleteMemo', item)">
+      <template #default="{ item, index }">
+        <div class="memo-list-item">
+          <!-- 1. 在父容器上绑定双击事件 -->
+          <div class="editor-content-view" v-html="item.content" @click="handleClick"></div>
+          <div class="memo-title flex-between">
+            <div class="title">{{ item.title }}</div>
+            <div class="tools">
+              <svg-icon iconName="otherSvg-编辑" class="svg-btn" @click="emit('openMemoDrawer', 'edit', item)" />
+              <svg-icon iconName="otherSvg-删除" class="svg-btn" @click="emit('deleteMemo', item)" />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </List>
   </div>
 </template>
 
@@ -29,8 +28,8 @@ import { copyImgToClipboard } from "@/utils/clipboard";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 const currentWindow = getCurrentWindow();
-import { ElMessage } from "element-plus";
-const emit = defineEmits(["update:selectMemos", "submitMemo", "deleteMemo", "openMemoDrawer"]);
+import { ElMessage, ElNotification } from "element-plus";
+const emit = defineEmits(["update:selectIds", "submitMemo", "deleteMemo", "openMemoDrawer"]);
 const props = defineProps({
   memoList: {
     type: Array as any,
@@ -40,29 +39,18 @@ const props = defineProps({
     type: String,
     default: 'single',
   },
-  selectMemos: {
+  selectIds: {
     type: Array as any,
     default: () => [],
   }
 });
 
-const handleSelect = (item: any) => {
-  if (props.mode === 'multi') {
-    let memos = [...props.selectMemos];
-    if (memos.find((memo: any) => memo.id === item.id)) {
-      memos = memos.filter((memo: any) => memo.id !== item.id);
-    } else {
-      memos.push(item);
-    }
-    emit("update:selectMemos", memos);
-
-  } else {
-    emit("update:selectMemos", [item]);
-  }
-
+const currentMemo = ref(null);
+const updateSelectIds = (ids: any) => {
+  emit("update:selectIds", ids);
 }
+
 const handleDbClick = async (item: any) => {
-  console.log("click", item);
   // 模拟双击事件
   currentWindow.hide();
   writeText(item.text);
@@ -88,101 +76,108 @@ const handleClick = (event: MouseEvent) => {
     ElNotification.success("已复制到剪贴板");
   }
 };
+const listRef = ref(null);
+
+defineExpose({
+  getSelectIds: () => listRef.value.getSelectIds(),
+});
 
 </script>
 
-<style lang="scss">
-/* 建议加上这个样式，增加可交互提示感 */
-.editor-content-view p {
-  cursor: pointer;
-  user-select: none;
-  /* 防止双击时选中文本干扰视觉 */
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: rgba(var(--el-color-primary-rgb), 0.1);
-  }
-}
-</style>
-<style lang="scss">
-.memo-list-item {
 
 
-  p {
-    margin: 0 !important;
-    padding: 5px !important;
-    border-radius: 3px;
-
-    img {
-      border-radius: 4px !important;
-    }
-
-    &:hover {
-      background-color: #c5c5c5 !important;
-      color: #fff !important;
-    }
-  }
-}
-</style>
 <style lang="scss" scoped>
 .memo-list {
   display: flex;
   flex-direction: column;
   height: fit-content;
-  padding: 10px;
+  padding: 10px 10px 10px 0;
   flex: 1;
   margin-left: 155px;
-  margin-right: 66px;
+  margin-right: 5px;
   overflow-y: auto;
   overflow-x: hidden;
   height: auto;
 
-  .memo-list-item {
-    max-height: 220px;
-    border-radius: 6px;
-    border: 2px solid #d5d7dd;
-    cursor: pointer;
-    margin-bottom: 10px;
-    width: calc(100% - 5px);
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
+  :deep(.c-list) {
+    width: 100%;
 
-    .editor-content-view {
-      height: calc(100% - 32px);
-      overflow: auto;
-    }
+    .c-list-item {
+      position: relative;
 
-    .memo-title {
-      width: calc(100% - 8px);
-      border-top: 1px dashed #d5d7dd;
-      margin-top: 10px;
-      font-size: 15px;
-      color: #756e6e;
-      padding: 4px 4px 0px 4px;
 
-      .tools {
-        width: fit-content;
+      .memo-list-item {
+        max-height: 220px;
+        border-radius: 6px;
+        // border: 2px solid #EBEBEB;
+        cursor: pointer;
+        // margin-bottom: 10px;
+        width: calc(100% - 5px);
+        padding: 5px;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: start;
 
-        .el-icon {
-          font-size: 16px;
-          margin-left: 10px;
+
+
+        .editor-content-view {
+          height: calc(100% - 32px);
+          overflow: auto;
+          font-family: Consolas;
+          z-index: 10;
+
+          p {
+            margin: 0 !important;
+            padding: 5px !important;
+            border-radius: 3px;
+
+            &:hover {
+              background: #4647471a !important;
+              // color: #fff !important;
+            }
+
+            img {
+              border-radius: 4px !important;
+            }
+          }
         }
+
+        .memo-title {
+          width: calc(100% - 8px);
+          // border-top: 1px solid #EBEBEB;
+          margin-top: 10px;
+          font-size: 15px;
+          color: #666666;
+          padding: 4px 4px 0px 4px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .tools {
+            width: fit-content;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+
+            .svg-icon {
+              width: 16px;
+              height: 16px;
+              margin: 0 2px;
+            }
+          }
+        }
+
+
       }
-    }
 
-    &.active,
-    &:hover {
-      border-color: var(--el-color-primary);
-    }
-  }
+      &:hover .memo-title .tools {
+        visibility: visible !important;
+      }
 
-  .memo-list-item:last-child {
-    margin-bottom: 0;
+      //   .memo-list-item:last-child {
+      //     margin-bottom: 0;
+    }
   }
 }
 </style>

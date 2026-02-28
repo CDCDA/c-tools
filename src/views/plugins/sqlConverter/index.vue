@@ -178,16 +178,28 @@ const copyResult = async () => {
 
 <style lang="scss">
 .sql-input {
+  &:hover {
+    border: none;
+    outline: none;
+  }
+
   .el-textarea__inner {
+    border: none;
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.02);
+
     min-height: 150px !important;
   }
+
   margin-bottom: 10px;
 }
+
 .sql-output-wrap {
   margin-top: 10px;
   flex: 1;
   min-height: 0;
 }
+
 .sql-tools {
   display: flex;
   align-items: center;
@@ -197,6 +209,7 @@ const copyResult = async () => {
     margin-left: 15px;
   }
 }
+
 .sql-output {
   border-radius: 4px;
   //padding: 10px;

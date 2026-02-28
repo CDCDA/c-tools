@@ -3,8 +3,15 @@
     <Editor class="code-editor" ref="codeEditorRef" v-model="codeContent" :language="currentLanguage"
       @update:language="changeLanguage">
       <template #footer-left-append>
-        <el-checkbox v-model="options.autoPaste" style="margin-right: 10px;">自动粘贴</el-checkbox>
-        <el-checkbox v-model="options.autoFormat" style="margin-right: 10px;">自动格式化</el-checkbox>
+        <el-tooltip content="自动粘贴" placement="top">
+          <svg-icon iconName="otherSvg-粘贴" :class="options.autoPaste ? 'is-active' : ''"
+            @click="options.autoPaste = !options.autoPaste" class="svg-btn" />
+        </el-tooltip>
+        <el-tooltip content=" 自动格式化" placement="top">
+          <svg-icon iconName="otherSvg-自动格式化" :class="options.autoFormat ? 'is-active' : ''"
+            @click="options.autoFormat = !options.autoFormat" class="svg-btn" />
+        </el-tooltip>
+
       </template>
     </Editor>
   </div>

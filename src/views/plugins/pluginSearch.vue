@@ -2,11 +2,16 @@
   <div class="plugin-search">
     <div class="plugin-search-header-bar" data-tauri-drag-region>
       <div class="plugin-search-header-bar-left" data-tauri-drag-region>
+        <svg-icon iconName="otherSvg-搜索" v-if="!loading" data-tauri-drag-region
+          style="margin-left: 20px; width: 23px; height: 23px"></svg-icon>
         <el-input v-if="!loading" class="plugin-search-header-bar-search" data-tauri-drag-region v-model="searchText"
           @input="handleSearch" v-prevent-drag placeholder="请输入命令/应用" />
-        <el-tag style="margin-left: 20px" v-else class="plugin-name" effect="dark" round type="info">{{
-          currentPlugin?.label
-          }}</el-tag>
+        <div class="plugin-name" v-else>
+          <svg-icon :iconName="currentPlugin.meta.icon" style="margin-right: 5px;" />
+          <div style="margin-bottom: 2px;">{{ currentPlugin.label }}</div>
+          <svg-icon iconName="otherSvg-关闭" style="cursor: pointer;margin-left: 5px;width: 22px;height: 22px;"
+            @click="close" />
+        </div>
       </div>
       <div class="plugin-search-header-bar-right" data-tauri-drag-region>
         <c-image v-if="!loading" class="user-avatar" :src="avatarUrl" @click="handleAvatarClick"></c-image>
@@ -18,7 +23,7 @@
         <!-- <div class="title">最近使用</div> -->
         <div class="plugin-list recent-used">
           <div class="plugin-item" v-for="plugin in plugins" :key="plugin.id" @click="selectPlugin(plugin, router)">
-            <svg-icon :iconName="plugin.icon" />
+            <svg-icon style="color: #666666" :iconName="plugin.icon" />
             <div class="plugin-item-title">{{ plugin.label }}</div>
           </div>
         </div>
@@ -38,7 +43,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, Directive, computed, onActivated } from "vue";
-import { vPreventDrag } from "@/directive/preventDrag.ts"
+import { vPreventDrag } from "@/directive/preventDrag.ts";
 import { pluginData, selectPlugin } from "@/utils/plugin.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { adjustWindowSize, setWindowSize } from "@/utils/window.ts";
@@ -64,7 +69,6 @@ function handleAvatarClick() {
 }
 //插件数据
 const plugins = ref(pluginData);
-
 
 const handleSearch = (query: any) => {
   searchText.value = query;
@@ -103,15 +107,16 @@ onActivated(() => {
 
 <style lang="scss" scoped>
 .plugin-search-header-bar {
-  height: 45px;
-  min-height: 45px;
+  height: 35px;
+  min-height: 35px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #d5d7dd;
+  padding: 10px 0 0 0;
+  // border-bottom: 1px solid #F5F5F5;
 
   .plugin-search-header-bar-left {
     height: 100%;
@@ -127,7 +132,7 @@ onActivated(() => {
     display: flex;
     align-items: center;
     justify-content: end;
-    padding-right: 15px;
+    padding-right: 22px;
 
     .user-avatar {
       width: 35px;
@@ -146,9 +151,10 @@ onActivated(() => {
     height: 100%;
 
     :deep(.el-input__wrapper) {
-      padding-left: 25px;
+      padding-left: 5px;
       border-radius: 0 !important;
       box-shadow: none;
+      background: transparent;
 
       .el-input__inner {
         font-size: 20px !important;
@@ -202,7 +208,7 @@ onActivated(() => {
 
     &:hover,
     &:active {
-      background: #d5d7dd;
+      background: #e1e5e7;
     }
   }
 
@@ -228,7 +234,7 @@ onActivated(() => {
 :deep(.el-loading-spinner) {
   height: 100%;
   right: 0px !important;
-  margin-top: -23px !important;
+  margin-top: -16px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -243,9 +249,14 @@ onActivated(() => {
   height: 32px;
   font-size: 18px;
   padding-right: 15px;
-  padding-left: 20px;
-  background-color: var(--el-color-primary);
-  color: #fff;
+  padding-left: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 20px;
+  // background-color: var(--el-color-primary);
+  color: black;
+  font-weight: bold;
   border: none;
 
   :deep(.el-tag__content) {

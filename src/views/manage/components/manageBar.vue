@@ -28,13 +28,15 @@ function handleClick() {
   z-index: 999;
 
   user-select: none;
-  border-bottom: 1px solid #d5d7dd;
+  border-bottom: 1px solid #EBEBEB;
+
   .manage-bar-left {
     height: 100%;
     margin: 0 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+
     .manage-name {
       height: 32px;
       font-size: 18px;
@@ -43,20 +45,24 @@ function handleClick() {
       background-color: #00968c;
       color: #fff;
       border: none;
+
       :deep(.el-tag__content) {
         margin-bottom: 4px;
       }
+
       :deep(.el-tag__close) {
         width: 20px;
         height: 20px;
         font-size: 20px;
       }
+
       .manage-close {
         margin-left: 5px;
         cursor: pointer;
       }
     }
   }
+
   .manage-bar-right {
     height: 100%;
     width: 60px;
@@ -64,23 +70,28 @@ function handleClick() {
     align-items: center;
     justify-content: end;
     padding-right: 15px;
+
     .plugin-icon {
       width: 35px;
       height: 30px;
       border-radius: 30px;
       cursor: pointer;
     }
+
     .manage {
       font-size: 25px;
       cursor: pointer;
     }
   }
+
   .manage-bar-search {
     height: 100%;
+
     :deep(.el-input__wrapper) {
       padding-left: 25px;
       border-radius: 0 !important;
       box-shadow: none;
+
       .el-input__inner {
         font-size: 20px !important;
       }

@@ -39,7 +39,7 @@ const wangEditorRef = ref<any>(null);
 
 const close = () => {
   open.value = false;
-  memoData.value = {};
+  memoData.value = { type: 'all', title: "", content: "" };
 }
 
 const submit = () => {

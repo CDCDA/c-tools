@@ -6,7 +6,7 @@
           <div class="part-header">
             <div class="part-title">待翻译文本</div>
             <div class="part-tools">
-              <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
+              <el-dropdown class="svg-btn" placement="bottom" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
                   {{sourceLangList.find((lang) => lang.value === options.sourceLang)?.label || options.sourceLang}}
                 </el-button>
@@ -22,7 +22,7 @@
               <el-icon style="margin-right: 6px" @click="switchLang">
                 <Switch />
               </el-icon>
-              <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
+              <el-dropdown class="svg-btn" placement="bottom" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
                   {{targetLangList.find((lang) => lang.value === options.targetLang)?.label || options.targetLang}}
                 </el-button>
@@ -72,7 +72,7 @@
             <div class="part-title">翻译结果</div>
             <div class="part-tools">
               <span class="pre-text">自动转为</span>
-              <el-dropdown class="code-editor-footer-item" placement="top" trigger="click">
+              <el-dropdown class="label-value-btn" placement="top" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
                   {{
                     formatList.find((format) => format.value === options.autoFormatType)?.label ||
@@ -102,7 +102,7 @@
             <div class="part-footer-right">
               <div class="part-footer-item">
                 <span class="pre-text">切换为</span>
-                <el-dropdown class="code-editor-footer-item" placement="bottom" trigger="click">
+                <el-dropdown class="label-value-btn" placement="bottom" trigger="click">
                   <el-button type="text" size="mini" style="margin-bottom: -2px">
                     {{formatList.find((format) => format.value === options.formatType)?.label || options.formatType}}
                   </el-button>
@@ -249,7 +249,8 @@ const switchLang = () => {
 
 
 const debouncedTranslate = debounce(() => {
-  handleAiTranslate();
+  // handleAiTranslate();
+  handleTranslate();
 }, 500);
 
 const handleTranslate = async () => {
@@ -357,7 +358,7 @@ onBeforeUnmount(() => {
         border-radius: 0 0 4px 4px;
         box-shadow: none;
         height: 100%;
-        border: 1px solid #d5d7dd;
+        border: 1px solid #EBEBEB;
       }
     }
   }
@@ -371,7 +372,7 @@ onBeforeUnmount(() => {
         border-radius: 0;
         box-shadow: none;
         height: 100%;
-        border: 1px solid #d5d7dd;
+        border: 1px solid #EBEBEB;
       }
     }
   }

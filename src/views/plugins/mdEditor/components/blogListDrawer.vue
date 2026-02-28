@@ -118,10 +118,10 @@ defineExpose({
   flex-direction: column;
 
   .c-list .c-list-item {
-    max-height: 150px;
+
     border-radius: 6px;
 
-    border: 1px solid #d5d7dd;
+    border: 1px solid #EBEBEB;
     cursor: pointer;
     margin-bottom: 10px;
     width: calc(100% - 14px);
@@ -139,7 +139,7 @@ defineExpose({
 
     .c-title {
       width: calc(100% - 8px);
-      border-top: 1px dashed #d5d7dd;
+      border-top: 1px dashed #EBEBEB;
       margin-top: 10px;
       font-size: 15px;
       color: #756e6e;

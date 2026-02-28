@@ -63,7 +63,12 @@ export const selectPlugin = async (plugin: any, router: any) => {
     return;
   }
   eventBusStore.pluginLoading = true;
-  setWindowSize(800, 25);
+  setWindowSize(800, 35);
+  // await new Promise((resolve) => {
+  //   setTimeout(() => {
+  //     resolve(null);
+  //   }, 50000);
+  // });
   // 新窗口插件
   if (plugin.newWindow) {
     await router.push({
@@ -71,8 +76,6 @@ export const selectPlugin = async (plugin: any, router: any) => {
     });
     await createNewWindow(plugin);
     setWindowSize(800, 220);
-
-    eventBusStore.pluginLoading = false;
   } else {
     await router.push({
       name: plugin.name,
@@ -81,7 +84,7 @@ export const selectPlugin = async (plugin: any, router: any) => {
       },
     });
     setWindowSize(plugin.width, plugin.height);
-    eventBusStore.pluginLoading = false;
+
     currentWindow.show();
     currentWindow.setFocus();
   }
