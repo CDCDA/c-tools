@@ -2,13 +2,17 @@
   <div class="database part-container">
     <div class="part-header">
       <div class="part-title">
-        <el-dropdown class="svg-btn" placement="top" trigger="click">
+        <el-dropdown class="label-value-btn" placement="top" trigger="click">
           <el-button type="text" size="mini" style="margin-bottom: -2px">
             {{ currentDatabase.name || "请选择数据库" }}
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item v-for="db in databaseList" :key="db.url" @click="handleSelectDatabase(db)">
+              <el-dropdown-item
+                v-for="db in databaseList"
+                :key="db.url"
+                @click="handleSelectDatabase(db)"
+              >
                 {{ db.name }}
               </el-dropdown-item>
             </el-dropdown-menu>
@@ -24,15 +28,35 @@
       </div>
     </div>
     <div class="part-main database-table">
-      <el-table border :data="tableList" ref="tableRef" v-loading="loading" row-key="tableName" @row-click="handleClick"
-        style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table
+        border
+        :data="tableList"
+        ref="tableRef"
+        v-loading="loading"
+        row-key="tableName"
+        @row-click="handleClick"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column type="selection" align="center" width="55" />
         <!-- <el-table-column type="index" align="center" label="序号" width="55" /> -->
-        <el-table-column prop="tableName" align="center" label="表名" show-overflow-tooltip />
-        <el-table-column prop="tableComment" align="center" label="注释" show-overflow-tooltip />
+        <el-table-column
+          prop="tableName"
+          align="center"
+          label="表名"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="tableComment"
+          align="center"
+          label="注释"
+          show-overflow-tooltip
+        />
         <el-table-column align="center" label="操作" width="55">
           <template #default="scope">
-            <el-button type="text" size="mini" @click="handleView(scope.row)">查看</el-button>
+            <el-button type="text" size="mini" @click="handleView(scope.row)"
+              >查看</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -44,7 +68,13 @@
       <div class="part-footer-right">
         <div class="part-footer-item">
           <span>共</span>
-          <span :style="{ margin: '0px 5px 2px 5px', color: 'var(--el-color-primary)' }">{{ tableList.length }}</span>
+          <span
+            :style="{
+              margin: '0px 5px 2px 5px',
+              color: 'var(--el-color-primary)',
+            }"
+            >{{ tableList.length }}</span
+          >
           <span>条数据</span>
         </div>
       </div>
