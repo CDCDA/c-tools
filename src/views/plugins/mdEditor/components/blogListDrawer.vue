@@ -1,14 +1,26 @@
 <template>
-  <el-drawer v-model="dialogVisible" title="博客列表" size="50%" direction="rtl" :close-on-click-modal="false">
+  <el-drawer
+    v-model="dialogVisible"
+    title="博客列表"
+    size="50%"
+    direction="rtl"
+    :close-on-click-modal="false"
+  >
     <div class="blog-list-container">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="0px">
+      <!-- <el-form :model="form" :rules="rules" ref="formRef" label-width="0px">
         <el-form-item prop="blogTitle">
-          <el-input v-model="queryForm.blogTitle" @keyup.enter="handleSearch" placeholder="请输入博客标题" />
+          <el-input
+            v-model="queryForm.blogTitle"
+            @keyup.enter="handleSearch"
+            placeholder="请输入博客标题"
+          />
         </el-form-item>
-      </el-form>
+      </el-form> -->
       <List :list="blogList">
         <template #default="{ item }">
-          <div class="c-list-item-content" @click="handleClick(item)">{{ item.blogAbstract }}</div>
+          <div class="c-list-item-content" @click="handleClick(item)">
+            {{ item.blogAbstract }}
+          </div>
           <div class="c-title flex-between">
             <div class="title">{{ item.blogTitle }}</div>
             <div class="tools">
@@ -22,7 +34,6 @@
                   <Edit />
                 </el-icon>
               </el-tooltip>
-
             </div>
           </div>
         </template>
@@ -32,26 +43,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from "vue";
 import List from "@/components/list/index.vue";
-import { pageBlogs, getBlogById } from "@/api/blog.ts";
-const router = useRouter();
+import { pageBlogs } from "@/api/blog.ts";
 const dialogVisible = ref(false);
 const loading = ref(false);
 const blogList = ref<any[]>([]);
-const selectedBlogs = ref<any[]>([]);
-const searchQuery = ref('');
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const queryForm = ref({
-  blogTitle: '',
+  blogTitle: "",
   pageNum: currentPage.value,
-  pageSize: pageSize.value
+  pageSize: pageSize.value,
 });
-const emit = defineEmits(['edit-blog']);
+const emit = defineEmits(["edit-blog"]);
 
 // 模拟获取博客列表数据
 const getBlogList = async () => {
@@ -64,32 +70,46 @@ const getBlogList = async () => {
 };
 
 // 处理搜索
-const handleSearch = () => {
-  queryForm.value.pageNum = 1;
-  getBlogList();
-};
+// const handleSearch = () => {
+//   queryForm.value.pageNum = 1;
+//   getBlogList();
+// };
 
 // 处理编辑
-const handleEdit = (blog: any) => {
-  emit('edit-blog', blog);
+// const handleEdit = (blog: any) => {
+//   emit('edit-blog', blog);
+//   dialogVisible.value = false;
+// };
+
+// 处理删除
+// const handleDelete = (id: number) => {
+//   ElMessageBox.confirm('确定要删除这篇博客吗？', '警告', {
+//     confirmButtonText: '确定',
+//     cancelButtonText: '取消',
+//     type: 'warning'
+//   }).then(() => {
+//     // 这里应该调用实际的API删除博客
+//     ElMessage.success('删除成功');
+//     getBlogList();
+//   }).catch(() => {
+//     // 取消删除
+//   });
+// };
+// 处理点击
+const handleClick = (blog: any) => {
+  emit("edit-blog", blog);
   dialogVisible.value = false;
 };
 
-// 处理删除
-const handleDelete = (id: number) => {
-  ElMessageBox.confirm('确定要删除这篇博客吗？', '警告', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    // 这里应该调用实际的API删除博客
-    ElMessage.success('删除成功');
-    getBlogList();
-  }).catch(() => {
-    // 取消删除
-  });
+const playVideo = (item?: any) => {
+  console.log(item);
+  // emit('play-video', item);
 };
-
+// 处理编辑
+const editItem = (blog: any) => {
+  emit("edit-blog", blog);
+  dialogVisible.value = false;
+};
 // 打开抽屉
 const open = () => {
   dialogVisible.value = true;
@@ -107,7 +127,7 @@ onMounted(() => {
 
 defineExpose({
   open,
-  close
+  close,
 });
 </script>
 
@@ -118,10 +138,9 @@ defineExpose({
   flex-direction: column;
 
   .c-list .c-list-item {
-
     border-radius: 6px;
 
-    border: 1px solid #EBEBEB;
+    border: 1px solid #ebebeb;
     cursor: pointer;
     margin-bottom: 10px;
     width: calc(100% - 14px);
@@ -134,12 +153,12 @@ defineExpose({
       height: calc(100% - 32px);
       overflow: auto;
       padding: 5px;
-      color: rgb(36, 41, 46)
+      color: rgb(36, 41, 46);
     }
 
     .c-title {
       width: calc(100% - 8px);
-      border-top: 1px dashed #EBEBEB;
+      border-top: 1px dashed #ebebeb;
       margin-top: 10px;
       font-size: 15px;
       color: #756e6e;

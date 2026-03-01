@@ -1,29 +1,29 @@
 <template>
-  <div class="app-container"
-    :style="{ background: settingStore.transparent ? 'transparent' : 'linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important' }">
+  <div
+    class="app-container"
+    :style="{
+      background: settingStore.transparent
+        ? 'transparent'
+        : 'linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important',
+    }"
+  >
     <RouterView />
     <GlobalParamModal />
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, onBeforeUnmount } from "vue";
+import { nextTick, onBeforeUnmount } from "vue";
 import { adjustWindowSize } from "@/utils/window.ts";
 import { useRouter } from "vue-router";
-import { quickTranslate } from "@/api/translation.ts";
 import { saveAllStore, loadAllStore } from "@/utils/storeManage.ts";
 import { listen } from "@tauri-apps/api/event";
 import { useSettingStore } from "@/store/modules/setting.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEventBusStore } from "@/store/modules/eventBus.ts";
 import Windows from "@/windows/index.js";
-import { createNotificationWindow } from "@/utils/notification.ts";
-import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart';
-import GlobalParamModal from '@/components/globalParamModal/index.vue';
-import { useUserStore } from '@/store/modules/user.ts';
+import GlobalParamModal from "@/components/globalParamModal/index.vue";
 
-import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 const eventBusStore = useEventBusStore();
 
 const settingStore = useSettingStore();
@@ -31,7 +31,7 @@ const router = useRouter();
 const currentWindow = getCurrentWindow();
 
 async function setupWindow() {
-  console.log('当前窗口', currentWindow)
+  console.log("当前窗口", currentWindow);
   if (currentWindow.label === "main") {
     settingStore.transparent = false;
     // 初始化所有store(包括快捷键)
@@ -54,8 +54,8 @@ async function setupWindow() {
   }
   if (currentWindow.label === "tool-screenshot") {
     settingStore.transparent = true;
-    router.push({ name: "screenshot" })
-    return
+    router.push({ name: "screenshot" });
+    return;
   }
   // 不初始化快捷键（其他窗口）
   loadAllStore(false);
@@ -72,7 +72,10 @@ async function setupWindow() {
     } else {
       settingStore.showHeader = false;
     }
-    router.push({ name: params.routeName, query: { routeName: params.routeName } });
+    router.push({
+      name: params.routeName,
+      query: { routeName: params.routeName },
+    });
     switch (params.routeName) {
       case "notification":
         eventBusStore.set("notification", params);
@@ -87,7 +90,7 @@ async function setupWindow() {
         eventBusStore.set("fullScreenImage", params.fullScreenImage);
         break;
     }
-    currentWindow.show()
+    currentWindow.show();
   });
 
   await currentWindow.emit(`window-ready-${currentWindow.label}`);

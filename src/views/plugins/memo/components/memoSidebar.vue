@@ -1,18 +1,31 @@
 <template>
   <div class="memo-bar-container">
     <el-menu class="memo-bar">
-      <el-menu-item v-for="item in typeList" @click="emit('update:activeType', item)" :key="item.value"
-        :index="item.value" :class="{ 'is-active': item.value === activeType.value }">
+      <el-menu-item
+        v-for="item in props.typeList"
+        @click="emit('update:activeType', item)"
+        :key="item.value"
+        :index="item.value"
+        :class="{ 'is-active': item.value === activeType.value }"
+      >
         <div class="menu-content flex-between">
           <span>{{ item.label }}</span>
           <div class="tools flex-center">
-            <svg-icon iconName="otherSvg-编辑" style="margin-left: 5px;font-size: 16px;" @click="emit('editType', item)"
-              v-if="item.value !== 'all'" />
+            <svg-icon
+              iconName="otherSvg-编辑"
+              style="margin-left: 5px; font-size: 16px"
+              @click="emit('editType', item)"
+              v-if="item.value !== 'all'"
+            />
             <!-- <el-icon @click="emit('editType', item)" v-if="item.value !== 'all'">
               <Edit />
             </el-icon> -->
-            <svg-icon iconName="otherSvg-删除" style="margin-left: 5px;font-size: 16px;" @click="emit('deleteType', item)"
-              v-if="item.value !== 'all'" />
+            <svg-icon
+              iconName="otherSvg-删除"
+              style="margin-left: 5px; font-size: 16px"
+              @click="emit('deleteType', item)"
+              v-if="item.value !== 'all'"
+            />
             <!-- <el-icon @click="emit('deleteType', item)" v-if="item.value !== 'all'">
               <Delete />
             </el-icon> -->
@@ -33,12 +46,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { Plus, Delete, Edit } from "@element-plus/icons-vue";
-const emit = defineEmits(["changeType", 'deleteType', 'addType', 'editType']);
 const props = defineProps({
   typeList: {
-    type: Array,
+    type: Array as any,
     default: () => [] as any,
   },
   activeType: {
@@ -46,6 +56,12 @@ const props = defineProps({
     default: "",
   },
 });
+const emit = defineEmits([
+  "update:activeType",
+  "deleteType",
+  "addType",
+  "editType",
+]);
 </script>
 <style lang="scss" scoped>
 .memo-bar-container {
@@ -143,7 +159,6 @@ const props = defineProps({
     font-size: 25px;
     color: #666666;
     cursor: pointer;
-
   }
 }
 </style>

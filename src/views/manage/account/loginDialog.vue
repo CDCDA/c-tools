@@ -1,13 +1,35 @@
 <template>
   <!-- 登录弹窗 -->
-  <el-dialog v-model="showLoginDialog" title="用户登录" width="400px" :before-close="handleClose" center>
+  <el-dialog
+    v-model="showLoginDialog"
+    title="用户登录"
+    width="400px"
+    :before-close="handleClose"
+    center
+  >
     <div class="login-dialog-content">
-      <el-form :model="loginForm" :rules="loginRules" ref="loginFormRef" label-width="80px" class="login-form">
+      <el-form
+        :model="loginForm"
+        :rules="loginRules"
+        ref="loginFormRef"
+        label-width="80px"
+        class="login-form"
+      >
         <el-form-item label="用户名" prop="userName">
-          <el-input v-model="loginForm.userName" placeholder="请输入用户名" clearable />
+          <el-input
+            v-model="loginForm.userName"
+            placeholder="请输入用户名"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" clearable show-password />
+          <el-input
+            v-model="loginForm.password"
+            type="password"
+            placeholder="请输入密码"
+            clearable
+            show-password
+          />
         </el-form-item>
         <el-form-item label="记住我" prop="remember">
           <el-switch v-model="loginForm.remember" />
@@ -15,8 +37,12 @@
       </el-form>
 
       <div class="login-actions">
-        <el-button type="primary" @click="handleLogin" class="login-btn"> 登录 </el-button>
-        <el-button @click="showLoginDialog = false" class="cancel-btn"> 取消 </el-button>
+        <el-button type="primary" @click="handleLogin" class="login-btn">
+          登录
+        </el-button>
+        <el-button @click="showLoginDialog = false" class="cancel-btn">
+          取消
+        </el-button>
       </div>
 
       <div class="login-footer">
@@ -32,7 +58,9 @@
             <UserFilled />
           </el-icon>
         </div>
-        <div class="register-link">没有账号？<span class="link" @click="handleRegister">立即注册</span></div>
+        <div class="register-link">
+          没有账号？<span class="link" @click="handleRegister">立即注册</span>
+        </div>
       </div>
     </div>
   </el-dialog>
@@ -45,7 +73,6 @@ import type { FormInstance, FormRules } from "element-plus";
 import { ElNotification } from "element-plus";
 import { login } from "@/api/auth.ts";
 import { useUserStore } from "@/store/modules/user.ts";
-import { saveData } from "@/utils/dataSave.ts";
 const userStore = useUserStore();
 
 // 控制登录弹窗显示
@@ -55,6 +82,7 @@ const showLoginDialog = ref(false);
 const loginForm = ref({
   password: "1",
   userName: "CCCC",
+  remember: true,
 });
 // 表单引用
 const loginFormRef = ref<FormInstance>();
@@ -63,7 +91,12 @@ const loginFormRef = ref<FormInstance>();
 const loginRules = reactive<FormRules>({
   userName: [
     { required: true, message: "请输入用户名", trigger: "blur" },
-    { min: 3, max: 20, message: "用户名长度在 3 到 20 个字符", trigger: "blur" },
+    {
+      min: 3,
+      max: 20,
+      message: "用户名长度在 3 到 20 个字符",
+      trigger: "blur",
+    },
   ],
   password: [{ required: true, message: "请输入密码", trigger: "blur" }],
 });
@@ -72,11 +105,10 @@ const loginRules = reactive<FormRules>({
 const handleLogin = async () => {
   if (!loginFormRef.value) return;
 
-
   await loginFormRef.value.validate().then(async (valid) => {
     if (!valid) return;
     console.log("表单验证通过");
-    const { code, data } = await login(loginForm.value) as any;
+    const { code, data } = (await login(loginForm.value)) as any;
     console.log("登录结果", code, data);
     if (code === 200) {
       ElNotification.success("登录成功");

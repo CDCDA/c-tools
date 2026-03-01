@@ -5,19 +5,21 @@
         <div class="system-details">
           <div class="system-details-item">
             <span class="label">操作系统</span>
-            <span class="value">{{ `${system.name || ""} ${system.version || ""}` }}</span>
+            <span class="value">{{
+              `${system.name || ""} ${system.version || ""}`
+            }}</span>
           </div>
           <div class="system-details-item">
             <span class="label">内存</span>
             <span class="value">{{
               `${formatBytesToGB(system.available_memory || 0)} / ${formatBytesToGB(system.total_memory || 0)}`
-              }}</span>
+            }}</span>
           </div>
           <div class="system-details-item">
             <span class="label">交换空间</span>
             <span class="value">{{
               `${formatBytesToGB(system.used_swap || 0)} / ${formatBytesToGB(system.total_swap || 0)}`
-              }}</span>
+            }}</span>
           </div>
         </div>
         <div class="disks">
@@ -125,7 +127,9 @@ const initData = async () => {
       memoryList.value.shift();
       memoryTimeList.value.shift();
     }
-    memoryList.value.push(formatBytesToGB(apiData.memory.used).replace("GB", ""));
+    memoryList.value.push(
+      formatBytesToGB(apiData.memory.used).replace("GB", "")
+    );
     memoryTimeList.value.push(new Date().toLocaleTimeString());
     memoryOptions.series[0].data = memoryList.value;
     memoryOptions.xAxis.data = memoryTimeList.value;
@@ -159,7 +163,7 @@ onMounted(async () => {
       height: calc(100% - 20px);
       margin-right: 10px;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: #252526;
+      background: white;
       border-radius: 4px;
       padding: 10px 15px;
       display: flex;
@@ -186,7 +190,7 @@ onMounted(async () => {
       width: calc(72% - 10px);
       height: 100%;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: #252526;
+      background: white;
       border-radius: 4px;
       display: flex;
 
@@ -195,7 +199,7 @@ onMounted(async () => {
         justify-content: space-between;
         align-items: center;
         flex: 1;
-        border-right: 1px solid #EBEBEB;
+        border-right: 1px solid #ebebeb;
         padding: 10px;
 
         .disks-item-img {
@@ -252,7 +256,7 @@ onMounted(async () => {
       height: 100%;
       margin-right: 10px;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: #252526;
+      background: white;
       border-radius: 4px;
     }
 
@@ -260,20 +264,20 @@ onMounted(async () => {
       width: calc(30% - 10px);
       height: 100%;
       box-shadow: 1px 1px 3px rgb(163, 163, 163);
-      background: #252526;
+      background: white;
       border-radius: 4px;
       display: flex;
       flex-wrap: wrap;
-      border-left: 1px solid #EBEBEB;
-      border-top: 1px solid #EBEBEB;
+      border-left: 1px solid #ebebeb;
+      border-top: 1px solid #ebebeb;
 
       .cpu-item {
         width: calc(50% - 11px);
         padding: 0 5px;
         display: flex;
         height: calc(12.5% - 1px);
-        border-right: 1px solid #EBEBEB;
-        border-bottom: 1px solid #EBEBEB;
+        border-right: 1px solid #ebebeb;
+        border-bottom: 1px solid #ebebeb;
 
         .cpu-item-icon {
           width: 40%;

@@ -2,12 +2,25 @@
   <div class="page-main file-tree-json">
     <div class="file-select">
       <el-input v-model="options.path">
-        <template #prepend><span style="cursor: pointer" @click="selectFile()">选择文件夹</span></template>
-        <template #append><span style="cursor: pointer" @click="handleCopy">复制json</span></template>
+        <template #prepend
+          ><span style="cursor: pointer" @click="selectFile()"
+            >选择文件夹</span
+          ></template
+        >
+        <template #append
+          ><span style="cursor: pointer" @click="handleCopy"
+            >复制json</span
+          ></template
+        >
       </el-input>
     </div>
     <div class="file-json">
-      <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading">
+      <Editor
+        ref="jsonEditorRef"
+        v-model="fileJson"
+        language="json"
+        v-loading="loading"
+      >
         <template #footer-left-prepend>
           <div class="svg-btn">
             <span class="label">耗时:</span>
@@ -15,14 +28,23 @@
           </div>
         </template>
         <template #footer-right-prepend>
-          <el-button type="text" class="svg-btn" @click="hanldeOpenConfig">文件查询配置</el-button>
-          <el-button type="text" class="svg-btn" @click="handleCharTree">字符树</el-button>
-          <el-button type="text" class="svg-btn" @click="handleJsonTree">json树</el-button>
+          <el-button type="text" class="svg-btn" @click="hanldeOpenConfig"
+            >文件查询配置</el-button
+          >
+          <el-button type="text" class="svg-btn" @click="handleCharTree"
+            >字符树</el-button
+          >
+          <el-button type="text" class="svg-btn" @click="handleJsonTree"
+            >json树</el-button
+          >
         </template>
       </Editor>
     </div>
 
-    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
+    <file-config-drawer
+      ref="fileConfigDrawerRef"
+      @update:options="updateOptions"
+    />
   </div>
 </template>
 
@@ -76,7 +98,10 @@ const selectFile = async (path?: string) => {
   } else {
     options.value.path = path;
   }
-  window.localStorage.setItem("fileTreeJson-fileOptions", JSON.stringify(options.value));
+  window.localStorage.setItem(
+    "fileTreeJson-fileOptions",
+    JSON.stringify(options.value)
+  );
   loading.value = true;
   const startTime = new Date().getTime();
 
@@ -126,7 +151,11 @@ interface FileNode {
 
 const jsonToTreeString = (nodes: FileNode[], rootName?: string): string => {
   let output = rootName ? `${rootName}/\n` : "";
-  const buildNodeString = (node: FileNode, prefix: string, isLast: boolean): string => {
+  const buildNodeString = (
+    node: FileNode,
+    prefix: string,
+    isLast: boolean
+  ): string => {
     let line = prefix;
     line += isLast ? "└── " : "├── ";
     line += node.name;
@@ -176,11 +205,11 @@ onMounted(async () => {
   .file-path {
     flex: 1;
     height: 100%;
-    border: 1px solid #EBEBEB;
+    border: 1px solid #ebebeb;
     border-radius: 4px;
     font-size: 14px;
     color: #333;
-    background: #252526;
+    background: white;
     margin: 0 5px;
   }
 

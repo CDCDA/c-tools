@@ -1,5 +1,9 @@
 <template>
-  <div class="plugin-header" data-tauri-drag-region v-if="props.plugin.showHeader">
+  <div
+    class="plugin-header"
+    data-tauri-drag-region
+    v-if="props.plugin.showHeader"
+  >
     <div class="plugin-header-left" data-tauri-drag-region>
       <svg-icon :iconName="props.plugin.icon"></svg-icon>
       <div>{{ props.plugin.label }}</div>
@@ -18,15 +22,25 @@
       <!-- <svg-icon iconName="otherSvg-刷新" @click="changeDialogType" /> -->
       <!-- <svg-icon iconName="otherSvg-缩小窗口" @click="blowUp" v-if="isFull" /> -->
       <svg-icon iconName="otherSvg-放大窗口" @click="blowUp" />
-      <svg-icon iconName="otherSvg-未固定" style="font-size: 22px;" @click="fixed" v-if="!isFixed" />
-      <svg-icon iconName="otherSvg-已固定" style="font-size: 22px;" @click="fixed" v-else />
+      <svg-icon
+        iconName="otherSvg-未固定"
+        style="font-size: 22px"
+        @click="fixed"
+        v-if="!isFixed"
+      />
+      <svg-icon
+        iconName="otherSvg-已固定"
+        style="font-size: 22px"
+        @click="fixed"
+        v-else
+      />
       <svg-icon iconName="otherSvg-关闭" @click="close" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 const currentWindow = getCurrentWindow();
 const emit = defineEmits(["handleSearch"]);
@@ -37,7 +51,7 @@ const props = defineProps({
   },
 });
 
-const isFixed = ref(false)
+const isFixed = ref(false) as any;
 
 const searchText = ref("");
 onMounted(async () => {
@@ -75,7 +89,7 @@ const fixed = () => {
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid #EBEBEB;
+  border-bottom: 1px solid #ebebeb;
 
   .svg-icon {
     margin-right: 5px;

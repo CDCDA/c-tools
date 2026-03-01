@@ -1,25 +1,39 @@
 <template>
   <div class="md-editor-container">
-    <MdEditor ref="mdEditorRef" v-model="blogData.content" @onSave="blogSave" @onUploadImg="onUploadImg" />
+    <MdEditor
+      ref="mdEditorRef"
+      v-model="blogData.content"
+      @onSave="blogSave"
+      @onUploadImg="onUploadImg"
+    />
     <div class="setting">
       <div class="setting-btn" @click="toggleSettingPanel">
         <span class="setting-icon">⚙️</span>
       </div>
-      <div class="setting-panel" :class="{ 'show': isSettingPanelVisible }">
+      <div class="setting-panel" :class="{ show: isSettingPanelVisible }">
         <button class="setting-panel-btn draft-btn">保存为草稿</button>
         <button class="setting-panel-btn submit-btn">提交博客</button>
         <button class="setting-panel-btn draft-list-btn">草稿</button>
       </div>
     </div>
   </div>
-
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
-import { MdEditor } from 'md-editor-v3';
-import 'md-editor-v3/lib/style.css';
-
+import { ref } from "vue";
+import { MdEditor } from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
+// const mdEditorRef = ref<any>();
+const blogData = ref({
+  content: "",
+});
+const emit = defineEmits(["save", "draft-list"]);
 const isSettingPanelVisible = ref(false);
+const blogSave = () => {
+  emit("save", blogData.value);
+};
+const onUploadImg = (file: any) => {
+  console.log(file);
+};
 
 const toggleSettingPanel = () => {
   isSettingPanelVisible.value = !isSettingPanelVisible.value;
@@ -103,12 +117,12 @@ const toggleSettingPanel = () => {
 }
 
 .submit-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .draft-list-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 </style>

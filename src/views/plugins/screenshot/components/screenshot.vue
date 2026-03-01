@@ -2,7 +2,7 @@
   <!-- 容器背景是全屏截图 -->
   <div
     class="screenshot-container"
-    :style="{ backgroundImage: `url(${fullScreenImage})` }"
+    :style="{ backgroundImage: `url(${props.fullScreenImage})` }"
   >
     <!-- 截图遮罩层 -->
     <div

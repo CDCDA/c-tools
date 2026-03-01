@@ -5,11 +5,18 @@
   <div class="plugin-config-container">
     <div class="plugin-config-header">
       <div class="plugin-config-header-left">
-        <svg-icon class="plugin-icon" :iconName="pluginConfig?.settings?.icon || 'plugin-icon'" />
+        <svg-icon
+          class="plugin-icon"
+          :iconName="pluginConfig?.settings?.icon || 'plugin-icon'"
+        />
       </div>
       <div class="plugin-config-header-right">
-        <p class="plugin-config-title">{{ pluginConfig?.settings?.label || '插件配置' }}</p>
-        <p class="plugin-config-desc">{{ pluginConfig?.settings?.description || '未设置简介' }}</p>
+        <p class="plugin-config-title">
+          {{ pluginConfig?.settings?.label || "插件配置" }}
+        </p>
+        <p class="plugin-config-desc">
+          {{ pluginConfig?.settings?.description || "未设置简介" }}
+        </p>
       </div>
     </div>
 
@@ -18,26 +25,40 @@
         <el-collapse v-model="activeCollapseNames">
           <el-collapse-item title="基础设置" name="1">
             <el-form-item label="快捷键">
-              <ShortcutInput v-model="pluginConfig.settings.shortcut" :excludeId="pluginConfig.pluginId" />
+              <ShortcutInput
+                v-model="pluginConfig.settings.shortcut"
+                :excludeId="pluginConfig.pluginId"
+              />
             </el-form-item>
             <el-form-item label="是否启用">
               <el-switch v-model="pluginConfig.settings.enabled" />
             </el-form-item>
             <el-form-item label="本地数据">
-              <el-input v-model="pluginConfig.settings.path" placeholder="本地数据路径" disabled>
+              <el-input
+                v-model="pluginConfig.settings.path"
+                placeholder="本地数据路径"
+                disabled
+              >
                 <template #append>
-                  <el-button type="primary" size="mini" @click="openFileDialog">打开</el-button>
+                  <el-button type="primary" size="mini" @click="openFileDialog"
+                    >打开</el-button
+                  >
                 </template>
               </el-input>
             </el-form-item>
             <el-form-item label="备份数据">
-              <el-input v-model="pluginConfig.settings.backPath" placeholder="备份数据路径" disabled>
+              <el-input
+                v-model="pluginConfig.settings.backPath"
+                placeholder="备份数据路径"
+                disabled
+              >
                 <template #append>
-                  <el-button type="primary" size="mini" @click="openFileDialog">打开</el-button>
+                  <el-button type="primary" size="mini" @click="openFileDialog"
+                    >打开</el-button
+                  >
                 </template>
               </el-input>
             </el-form-item>
-
           </el-collapse-item>
 
           <el-collapse-item title="高级配置" name="2">
@@ -56,7 +77,6 @@
           </el-collapse-item>
         </el-collapse>
       </el-form>
-
     </div>
 
     <div class="plugin-config-footer">
@@ -68,7 +88,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pluginData } from "@/utils/plugin.ts";
 import { usePluginConfigStore } from "@/store/modules/pluginConfig.ts";
 import { useShortcutStore } from "@/store/modules/shortcut.ts";
 import ShortcutInput from "@/components/shortcut/shortcutInput.vue";
@@ -84,15 +103,27 @@ const pluginId = computed(() => route.params.id as string);
 // 插件配置
 const pluginConfig = ref({
   pluginId: "",
-  settings: {}
+  settings: {},
 }) as any;
 
 // 折叠面板状态，默认全部展开
 const activeCollapseNames = ref(["1", "2", "3"]);
-
+// 重置插件配置
+const resetConfig = () => {
+  pluginConfig.value.settings = {
+    name: pluginId.value,
+    label: pluginId.value,
+    shortcut: "",
+    enabled: true,
+    newWindow: false,
+    alwaysOnTop: false,
+    fullscreen: false,
+    skipTaskbar: false,
+  };
+};
 // 加载插件信息
 const loadPluginInfo = () => {
-  let config = null as any
+  let config = null as any;
   console.log("pluginId.value:", pluginConfigStore);
   if (pluginId.value) {
     config = pluginConfigStore.getPluginConfig(pluginId.value);
@@ -101,14 +132,28 @@ const loadPluginInfo = () => {
   }
   console.log("找到的插件:", config);
   if (config) {
-    pluginConfig.value = { ...config }
+    pluginConfig.value = { ...config };
   } else {
-    ElNotification.error('未找到指定插件的配置');
+    ElNotification.error("未找到指定插件的配置");
     router.push({ name: "pluginManage" });
   }
 };
-
-
+// 打开文件对话框
+const openFileDialog = () => {
+  // invoke("openFileDialog", {
+  //   title: "选择文件",
+  //   filter: [
+  //     {
+  //       name: "所有文件",
+  //       extensions: ["*"],
+  //     },
+  //   ],
+  // }).then((path) => {
+  //   if (path) {
+  //     pluginConfig.value.settings.path = path;
+  //   }
+  // });
+};
 // 保存插件配置
 const saveConfig = () => {
   console.log("pluginConfig.value:", pluginConfig.value);
@@ -120,12 +165,12 @@ const saveConfig = () => {
       shortcut: pluginConfig.value.settings.shortcut,
       enabled: true,
       type: "plugin",
-      payload: pluginConfig.value.settings
+      payload: pluginConfig.value.settings,
     });
   }
   pluginConfigStore.setPluginConfig(pluginConfig.value);
-  ElNotification.success('插件配置已保存');
-}
+  ElNotification.success("插件配置已保存");
+};
 
 // 监听插件ID变化
 watch(pluginId, () => {
@@ -159,15 +204,12 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
 
-
       .plugin-icon {
         font-size: 60px;
-
       }
     }
 
     .plugin-config-header-right {
-
       flex: 1;
     }
 

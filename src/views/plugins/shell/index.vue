@@ -1,10 +1,11 @@
 <template>
   <div class="page-main shell-container">
-
     <!-- 脚本列表 -->
     <List :list="realScripts">
       <template #default="{ item }">
-        <div class="c-list-item-content" @click="handleClick(item)">{{ item.command }}</div>
+        <div class="c-list-item-content" @click="handleClick(item)">
+          {{ item.command }}
+        </div>
         <div class="c-title flex-between">
           <div class="title">{{ item.name }}</div>
           <div class="tools">
@@ -38,7 +39,11 @@
     </FloatButtons>
 
     <!-- 新增/编辑抽屉 -->
-    <el-drawer v-model="drawerVisible" :title="form.id ? '编辑脚本' : '新增脚本'" size="70%">
+    <el-drawer
+      v-model="drawerVisible"
+      :title="form.id ? '编辑脚本' : '新增脚本'"
+      size="70%"
+    >
       <el-form :model="form" label-width="5rem">
         <el-collapse v-model="activeCollapseNames">
           <el-collapse-item title="基础信息" name="1">
@@ -57,18 +62,41 @@
           </el-collapse-item>
           <el-collapse-item title="脚本内容" name="2">
             <el-form-item label="脚本命令">
-              <editor ref="editorOutputRef" style="min-height: 300px;" class="editor" v-model="form.command"
-                language="shell" placeholder="支持占位符，例如: taskkill /F /PID {{pid}}" />
+              <editor
+                ref="editorOutputRef"
+                style="min-height: 300px"
+                class="editor"
+                v-model="form.command"
+                language="shell"
+                placeholder="支持占位符，例如: taskkill /F /PID {{pid}}"
+              />
             </el-form-item>
           </el-collapse-item>
           <el-collapse-item title="参数管理" name="3">
             <div v-for="(arg, index) in form.args" :key="index" class="arg-row">
-              <el-input v-model="arg.key" placeholder="参数Key (如: port)" size="small" />
-              <el-input v-model="arg.defaultValue" placeholder="默认值" size="small" />
-              <el-button type="danger" :icon="Delete" circle size="small" @click="form.args.splice(index, 1)" />
+              <el-input
+                v-model="arg.key"
+                placeholder="参数Key (如: port)"
+                size="small"
+              />
+              <el-input
+                v-model="arg.defaultValue"
+                placeholder="默认值"
+                size="small"
+              />
+              <el-button
+                type="danger"
+                :icon="Delete"
+                circle
+                size="small"
+                @click="form.args.splice(index, 1)"
+              />
             </div>
-            <el-button type="dashed" style="width: 100%; margin-top: 10px"
-              @click="form.args.push({ key: '', defaultValue: '' })">
+            <el-button
+              type="dashed"
+              style="width: 100%; margin-top: 10px"
+              @click="form.args.push({ key: '', defaultValue: '' })"
+            >
               + 添加参数
             </el-button>
           </el-collapse-item>
@@ -83,7 +111,11 @@
     <!-- 执行前的参数确认弹窗 -->
     <el-dialog v-model="runDialogVisible" title="确认参数" width="400px">
       <el-form label-width="80px">
-        <el-form-item v-for="arg in activeScript?.args" :key="arg.key" :label="arg.key">
+        <el-form-item
+          v-for="arg in activeScript?.args"
+          :key="arg.key"
+          :label="arg.key"
+        >
           <el-input v-model="runParams[arg.key]" />
         </el-form-item>
       </el-form>
@@ -97,17 +129,16 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import { ElNotification, ElMessage, ElMessageBox } from "element-plus";
-import { Command } from '@tauri-apps/plugin-shell';
+import { Command } from "@tauri-apps/plugin-shell";
 import { savePluginData, getPluginData } from "@/utils/localSave.ts";
 import List from "@/components/list/index.vue";
-import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import Editor from "@/components/editor/index.vue";
 import { useShortcutStore } from "@/store/modules/shortcut.ts";
 import ShortcutInput from "@/components/shortcut/shortcutInput.vue";
-import FloatButtons from '@/components/floatButtons/index.vue';
+import FloatButtons from "@/components/floatButtons/index.vue";
 import { Plus, VideoPlay, Edit, Delete } from "@element-plus/icons-vue";
-import { bus } from "@/utils/bus.ts";
-import { useRoute } from 'vue-router'
+import { useRoute } from "vue-router";
 const route = useRoute();
 const shortcutStore = useShortcutStore();
 // 数据类型定义
@@ -119,17 +150,18 @@ interface ScriptArg {
 interface CustomScript {
   id: string;
   name: string;
-  shell: 'powershell' | 'cmd';
+  shell: "powershell" | "cmd";
   command: string;
   args: ScriptArg[];
   createdAt: number;
+  shortcut: string;
 }
 
 // 表单验证规则
-const rules = {
-  name: [{ required: true, message: "请输入脚本名称", trigger: "blur" }],
-  command: [{ required: true, message: "请输入脚本内容", trigger: "blur" }],
-};
+// const rules = {
+//   name: [{ required: true, message: "请输入脚本名称", trigger: "blur" }],
+//   command: [{ required: true, message: "请输入脚本内容", trigger: "blur" }],
+// };
 
 // 状态变量
 const scripts = ref<CustomScript[]>([]);
@@ -139,8 +171,6 @@ const activeScript = ref<CustomScript | null>(null);
 const runParams = ref<Record<string, string>>({});
 const activeCollapseNames = ref(["1", "2", "3"]);
 
-
-
 // 表单初始值
 const initialForm: CustomScript = {
   id: "",
@@ -148,14 +178,15 @@ const initialForm: CustomScript = {
   shell: "powershell",
   command: "",
   args: [],
+  shortcut: "",
   createdAt: Date.now(),
 };
 const form = ref<CustomScript>({ ...initialForm });
 
 // 格式化时间
-const formatTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleString();
-};
+// const formatTime = (timestamp: number) => {
+//   return new Date(timestamp).toLocaleString();
+// };
 
 // 打开编辑器
 const openDrawer = (row?: CustomScript) => {
@@ -194,7 +225,7 @@ const saveScript = async () => {
     ElMessage.warning("名称和命令不能为空");
     return;
   }
-  const index = scripts.value.findIndex(s => s.id === form.value.id);
+  const index = scripts.value.findIndex((s) => s.id === form.value.id);
   if (index > -1) {
     scripts.value[index] = { ...form.value };
   } else {
@@ -211,8 +242,8 @@ const saveScript = async () => {
       type: "command",
       payload: {
         scriptId: form.value.id,
-      }
-    })
+      },
+    });
   }
 
   await saveLocalData();
@@ -222,7 +253,7 @@ const saveScript = async () => {
 
 // 删除脚本
 const deleteScript = async (id: string) => {
-  scripts.value = scripts.value.filter(s => s.id !== id);
+  scripts.value = scripts.value.filter((s) => s.id !== id);
   await saveLocalData();
 };
 
@@ -230,7 +261,7 @@ const deleteScript = async (id: string) => {
 const prepareToRun = (script: CustomScript) => {
   activeScript.value = script;
   runParams.value = {};
-  script.args.forEach(arg => {
+  script.args.forEach((arg) => {
     runParams.value[arg.key] = arg.defaultValue;
   });
 
@@ -249,28 +280,28 @@ const executeFinal = async () => {
   let finalCmd = script.command as any;
 
   // 1. 替换占位符
-  Object.keys(runParams.value).forEach(key => {
+  Object.keys(runParams.value).forEach((key) => {
     finalCmd = finalCmd.replaceAll(`{{${key}}}`, runParams.value[key]);
   });
 
   try {
-    if (script.shell === 'powershell') {
+    if (script.shell === "powershell") {
       // 使用 PowerShell 原生的 Start-Process
       const psArg = `Start-Process powershell -ArgumentList '-NoProfile','-NoExit','-Command','${finalCmd.replace(/'/g, "''")}'`;
-      await Command.create('powershell', [
+      await Command.create("powershell", [
         "-NoProfile",
         "-Command",
-        psArg
+        psArg,
       ]).execute();
     } else {
       // CMD 模式
-      await Command.create('exec-cmd', [
-        '/c',
-        'start',
-        '',
-        'cmd',
-        '/k',
-        finalCmd
+      await Command.create("exec-cmd", [
+        "/c",
+        "start",
+        "",
+        "cmd",
+        "/k",
+        finalCmd,
       ]).execute();
     }
     ElNotification.success("已成功唤起外部终端窗口");
@@ -280,30 +311,29 @@ const executeFinal = async () => {
   }
 };
 
-
-
 const realScripts = computed(() => {
   if (searchText.value) {
-    return scripts.value.filter(s => s.name.includes(searchText.value));
+    return scripts.value.filter((s) => s.name.includes(searchText.value));
   }
   return scripts.value;
 });
 
 // 数据持久化
-const saveLocalData = () => savePluginData("shell_pro", { scripts: scripts.value });
+const saveLocalData = () =>
+  savePluginData("shell_pro", { scripts: scripts.value });
 const loadLocalData = async () => {
   const data = await getPluginData("shell_pro");
   if (data && data.scripts) {
     // 确保每个脚本都有createdAt字段
     scripts.value = data.scripts.map((script: any) => ({
       ...script,
-      createdAt: script.createdAt || Date.now()
+      createdAt: script.createdAt || Date.now(),
     }));
   }
   if (!play.value) return;
   const { scriptId } = route.query;
   if (!scriptId) return;
-  const item = scripts.value.find(s => s.id === scriptId);
+  const item = scripts.value.find((s) => s.id === scriptId);
   if (item) {
     playVideo(item);
   }
@@ -316,29 +346,31 @@ const loadLocalData = async () => {
   //   }
   // });
 };
-const play = ref(false)
+const play = ref(false);
 
-watch(() => route, (val) => {
-  if (!val.query.scriptId) return;
-  play.value = true;
-}, { immediate: true, deep: true })
+watch(
+  () => route,
+  (val) => {
+    if (!val.query.scriptId) return;
+    play.value = true;
+  },
+  { immediate: true, deep: true }
+);
 const handleClick = (item: CustomScript) => {
   writeText(item.command);
   ElNotification.success("脚本已复制到剪贴板");
-}
+};
 const searchText = ref("");
 
 function handleSearch(val: any) {
-  searchText.value = val
+  searchText.value = val;
 }
-
-
 
 onMounted(loadLocalData);
 
 defineExpose({
-  handleSearch
-})
+  handleSearch,
+});
 </script>
 
 <style scoped lang="scss">
@@ -441,10 +473,9 @@ defineExpose({
 }
 
 .c-list-item {
-
   border-radius: 6px;
 
-  border: 2px solid #EBEBEB;
+  border: 2px solid #ebebeb;
   cursor: pointer;
   margin-bottom: 10px;
   width: calc(100% - 14px);
@@ -457,12 +488,12 @@ defineExpose({
     height: calc(100% - 32px);
     overflow: auto;
     padding: 5px;
-    color: rgb(36, 41, 46)
+    color: rgb(36, 41, 46);
   }
 
   .c-title {
     width: calc(100% - 8px);
-    border-top: 1px dashed #EBEBEB;
+    border-top: 1px dashed #ebebeb;
     margin-top: 10px;
     font-size: 15px;
     color: #756e6e;

@@ -5,19 +5,63 @@
         <div class="tip-line">在此添加AI模型</div>
         <div class="tip-line">需先到对应模型的官网申请密钥</div>
       </div>
-      <el-button class="tip-btn" type="primary" @click="handleAdd">添加</el-button>
+      <el-button class="tip-btn" type="primary" @click="handleAdd"
+        >添加</el-button
+      >
     </div>
     <div class="ai-model-list">
       <el-table :data="aiModelList" border>
-        <el-table-column prop="modelName" label="模型名称" align="center" width="100px" show-overflow-tooltip />
-        <el-table-column prop="modelId" label="模型ID" align="center" width="150px" show-overflow-tooltip />
-        <el-table-column prop="baseUrl" label="API地址" align="center" width="150px" show-overflow-tooltip />
-        <el-table-column prop="apiKey" label="API密钥" align="center" width="150px" show-overflow-tooltip />
-        <el-table-column label="操作" align="center" width="120px" fixed="right">
+        <el-table-column
+          prop="modelName"
+          label="模型名称"
+          align="center"
+          width="100px"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="modelId"
+          label="模型ID"
+          align="center"
+          width="150px"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="baseUrl"
+          label="API地址"
+          align="center"
+          width="150px"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="apiKey"
+          label="API密钥"
+          align="center"
+          width="150px"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="操作"
+          align="center"
+          width="120px"
+          fixed="right"
+        >
           <template #default="scope">
-            <el-button type="text" style="color: #409eff" @click="handleEdit(scope.row)" text size="mini">编辑</el-button>
-            <el-button type="text" style="color: #ff4d4f" @click="handleDelete(scope.row)" text
-              size="mini">删除</el-button>
+            <el-button
+              type="text"
+              style="color: #409eff"
+              @click="handleEdit(scope.row)"
+              text
+              size="mini"
+              >编辑</el-button
+            >
+            <el-button
+              type="text"
+              style="color: #ff4d4f"
+              @click="handleDelete(scope.row)"
+              text
+              size="mini"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -65,11 +109,11 @@ const handleDelete = (row: any) => {
   .ai-model-tip {
     margin: 15px;
     border-radius: 4px;
-    background: #252526;
+    background: white;
     height: 80px;
     display: flex;
     align-items: center;
-    border: 1px solid #EBEBEB;
+    border: 1px solid #ebebeb;
     background: linear-gradient(90deg, #f5f7fa 0%, #e4e7ed 100%);
 
     .tip {
@@ -89,7 +133,7 @@ const handleDelete = (row: any) => {
     margin: 15px;
     border-radius: 4px;
     overflow: hidden;
-    background: #252526;
+    background: white;
 
     .el-button {
       margin: 0 5px;

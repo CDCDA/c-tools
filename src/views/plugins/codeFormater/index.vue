@@ -1,17 +1,29 @@
 <template>
   <div class="page-main code-formater">
-    <Editor class="code-editor" ref="codeEditorRef" v-model="codeContent" :language="currentLanguage"
-      @update:language="changeLanguage">
+    <Editor
+      class="code-editor"
+      ref="codeEditorRef"
+      v-model="codeContent"
+      :language="currentLanguage"
+      @update:language="changeLanguage"
+    >
       <template #footer-left-append>
         <el-tooltip content="自动粘贴" placement="top">
-          <svg-icon iconName="otherSvg-粘贴" :class="options.autoPaste ? 'is-active' : ''"
-            @click="options.autoPaste = !options.autoPaste" class="svg-btn" />
+          <svg-icon
+            iconName="otherSvg-粘贴"
+            :class="options.autoPaste ? 'is-active' : ''"
+            @click="options.autoPaste = !options.autoPaste"
+            class="svg-btn"
+          />
         </el-tooltip>
         <el-tooltip content=" 自动格式化" placement="top">
-          <svg-icon iconName="otherSvg-自动格式化" :class="options.autoFormat ? 'is-active' : ''"
-            @click="options.autoFormat = !options.autoFormat" class="svg-btn" />
+          <svg-icon
+            iconName="otherSvg-自动格式化"
+            :class="options.autoFormat ? 'is-active' : ''"
+            @click="options.autoFormat = !options.autoFormat"
+            class="svg-btn"
+          />
         </el-tooltip>
-
       </template>
     </Editor>
   </div>
@@ -35,9 +47,7 @@ const changeLanguage = (lang: string) => {
   saveLocalData();
 };
 
-const codeEditorRef = ref<Editor>();
-
-
+const codeEditorRef = ref<any>();
 
 // 保存代码格式化插件的设置
 const saveLocalData = () => {
@@ -70,13 +80,11 @@ async function loadLocalData() {
 
 onMounted(() => {
   loadLocalData();
-
 });
 
 onUnmounted(() => {
   saveLocalData();
 });
-
 </script>
 
 <style lang="scss" scoped>

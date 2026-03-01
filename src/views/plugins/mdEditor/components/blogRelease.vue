@@ -2,129 +2,203 @@
  * @Description: 博客发布/设置弹窗 (整合了编辑器的所有配置项)
 -->
 <template>
-  <el-dialog class="blog-release" v-model="dialogVisible" style="max-height:75%" :title="('发布设置')" width="600px"
-    :modal="true" append-to-body>
-    <el-form class="blog-release-settings" :model="blogData" :rules="rules" ref="formEl" label-width="5rem">
+  <el-dialog
+    class="blog-release"
+    v-model="dialogVisible"
+    style="max-height: 75%"
+    :title="'发布设置'"
+    width="600px"
+    :modal="true"
+    append-to-body
+  >
+    <el-form
+      class="blog-release-settings"
+      :model="blogData"
+      :rules="rules"
+      ref="formEl"
+      label-width="5rem"
+    >
       <!-- 标题 -->
-      <el-form-item :label="('博客标题')" prop="blogTitle">
-        <el-input v-model="blogData.blogTitle" :placeholder="('请输入博客标题')"></el-input>
+      <el-form-item :label="'博客标题'" prop="blogTitle">
+        <el-input
+          v-model="blogData.blogTitle"
+          :placeholder="'请输入博客标题'"
+        ></el-input>
       </el-form-item>
 
       <!-- 标签 -->
-      <el-form-item :label="('博客标签')">
-        <el-tag v-for="tag in blogData.tags" :key="tag.tagName" class="tag-item" :type="tag.tagType"
-          :effect="tag.effect || 'dark'" closable :disable-transitions="false" @close="tagDel(tag)"
-          style="margin-right: 5px;">
+      <el-form-item :label="'博客标签'">
+        <el-tag
+          v-for="tag in blogData.tags"
+          :key="tag.tagName"
+          class="tag-item"
+          :type="tag.tagType"
+          :effect="tag.effect || 'dark'"
+          closable
+          :disable-transitions="false"
+          @close="tagDel(tag)"
+          style="margin-right: 5px"
+        >
           {{ tag.tagName }}
         </el-tag>
 
-        <el-input v-if="inputVisible" ref="InputRef" v-model="inputValue" class="button-new-input" size="small"
-          @keyup.enter="handleInputConfirm" @blur="handleInputConfirm" />
-        <el-button v-else class="button-new-tag" size="small" @click="showInput">
-          + {{ ('标签') }}
+        <el-input
+          v-if="inputVisible"
+          ref="InputRef"
+          v-model="inputValue"
+          class="button-new-input"
+          size="small"
+          @keyup.enter="handleInputConfirm"
+          @blur="handleInputConfirm"
+        />
+        <el-button
+          v-else
+          class="button-new-tag"
+          size="small"
+          @click="showInput"
+        >
+          + {{ "标签" }}
         </el-button>
-        <el-icon @click="tagVisible = true"
-          style="font-size: 1.2rem; margin-left: 10px; cursor: pointer; vertical-align: middle">
+        <el-icon
+          @click="tagVisible = true"
+          style="
+            font-size: 1.2rem;
+            margin-left: 10px;
+            cursor: pointer;
+            vertical-align: middle;
+          "
+        >
           <Grid />
         </el-icon>
       </el-form-item>
 
       <!-- 分类 -->
-      <el-form-item :label="('博客分类')" prop="typeId">
-        <el-tree-select v-model="blogData.typeId" :data="typeList" check-strictly :props="defaultProps"
-          :placeholder="('请选择分类')" :render-after-expand="false">
+      <el-form-item :label="'博客分类'" prop="typeId">
+        <el-tree-select
+          v-model="blogData.typeId"
+          :data="typeList"
+          check-strictly
+          :props="defaultProps"
+          :placeholder="'请选择分类'"
+          :render-after-expand="false"
+        >
           <template #default="{ data: { typeName } }"> {{ typeName }}</template>
         </el-tree-select>
       </el-form-item>
 
       <!-- 权限/状态设置 -->
-      <el-form-item :label="('文章类型')" prop="isOriginal">
-        <el-switch v-model="blogData.isOriginal" active-value="1" inactive-value="0" :active-text="('原创')"
-          :inactive-text="('转载')" />
+      <el-form-item :label="'文章类型'" prop="isOriginal">
+        <el-switch
+          v-model="blogData.isOriginal"
+          active-value="1"
+          inactive-value="0"
+          :active-text="'原创'"
+          :inactive-text="'转载'"
+        />
       </el-form-item>
 
-      <el-form-item :label="('是否推荐')" prop="isRecommend">
-        <el-switch v-model="blogData.isRecommend" active-value="1" inactive-value="0" :active-text="('推荐')"
-          :inactive-text="('普通')" />
+      <el-form-item :label="'是否推荐'" prop="isRecommend">
+        <el-switch
+          v-model="blogData.isRecommend"
+          active-value="1"
+          inactive-value="0"
+          :active-text="'推荐'"
+          :inactive-text="'普通'"
+        />
       </el-form-item>
 
       <!-- 封面 -->
-      <el-form-item :label="('添加封面')">
+      <el-form-item :label="'添加封面'">
         <upload v-model="blogData.coverUrl" path="blogCover"></upload>
       </el-form-item>
 
       <!-- 摘要 -->
-      <el-form-item :label="('博客摘要')">
-        <el-input v-model="blogData.blogAbstract" type="textarea" :rows="3" :placeholder="('请输入摘要...')"></el-input>
+      <el-form-item :label="'博客摘要'">
+        <el-input
+          v-model="blogData.blogAbstract"
+          type="textarea"
+          :rows="3"
+          :placeholder="'请输入摘要...'"
+        ></el-input>
       </el-form-item>
     </el-form>
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">{{ ('取消') }}</el-button>
-        <el-button type="primary" @click="submit">{{ ('确定发布') }}</el-button>
+        <el-button @click="dialogVisible = false">{{ "取消" }}</el-button>
+        <el-button type="primary" @click="submit">{{ "确定发布" }}</el-button>
       </span>
     </template>
 
     <!-- 内部标签选择弹窗 -->
-    <el-dialog v-model="tagVisible" :title="('标签选择')" width="450px" append-to-body>
+    <el-dialog
+      v-model="tagVisible"
+      :title="'标签选择'"
+      width="450px"
+      append-to-body
+    >
       <div class="tag-list-container">
-        <el-tag v-for="tag in tagList" :key="tag.tagId" class="tag-selection-item"
-          :class="{ 'is-active': tag.isActive }" :type="tag.tagType" :effect="tag.isActive ? 'dark' : 'plain'"
-          @click="chooseTag(tag)">
+        <el-tag
+          v-for="tag in tagList"
+          :key="tag.tagId"
+          class="tag-selection-item"
+          :class="{ 'is-active': tag.isActive }"
+          :type="tag.tagType"
+          :effect="tag.isActive ? 'dark' : 'plain'"
+          @click="chooseTag(tag)"
+        >
           {{ tag.tagName }}
         </el-tag>
       </div>
       <template #footer>
-        <el-button @click="tagVisible = false">{{ ('取消') }}</el-button>
-        <el-button type="primary" @click="confirmTagSelection">{{ ('确定') }}</el-button>
+        <el-button @click="tagVisible = false">{{ "取消" }}</el-button>
+        <el-button type="primary" @click="confirmTagSelection">{{
+          "确定"
+        }}</el-button>
       </template>
     </el-dialog>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus';
-import { Grid } from '@element-plus/icons-vue';
-import { saveBlog, updateBlog } from '@/api/blog';
-import { pageTypes } from '@/api/type';
-import { pageTags } from '@/api/tag';
-import upload from '@/components/upload/index.vue';
-import { loadingService } from '@/components/loading/loading';
+import { ref, nextTick } from "vue";
 
-const router = useRouter();
+import { ElNotification } from "element-plus";
+import { Grid } from "@element-plus/icons-vue";
+import { saveBlog, updateBlog } from "@/api/blog.ts";
+import { pageTypes } from "@/api/type.ts";
+import { pageTags } from "@/api/tag.ts";
+import upload from "@/components/upload/index.vue";
 
 // --- Props & Emits ---
 const props = defineProps({
   blogData: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
-const emit = defineEmits(['resetBlogData', 'success']);
+const emit = defineEmits(["resetBlogData", "success"]);
 
 // --- 响应式数据 ---
 const dialogVisible = ref(false);
 const tagVisible = ref(false);
 const formEl = ref();
 const InputRef = ref();
-const inputValue = ref('');
+const inputValue = ref("");
 const inputVisible = ref(false);
 
 const typeList = ref([]);
-const tagList = ref([]);
+const tagList = ref([]) as any;
 
 const defaultProps = {
-  children: 'children',
-  label: 'typeName',
-  value: 'typeId'
+  children: "children",
+  label: "typeName",
+  value: "typeId",
 };
 
 const rules = {
-  blogTitle: [{ required: true, message: ('请输入博客标题'), trigger: 'blur' }],
-  typeId: [{ required: true, message: ('请选择博客分类'), trigger: 'change' }]
+  blogTitle: [{ required: true, message: "请输入博客标题", trigger: "blur" }],
+  typeId: [{ required: true, message: "请选择博客分类", trigger: "change" }],
 };
 
 // --- 方法 ---
@@ -159,7 +233,7 @@ async function getTagList() {
     // 标记已选中的标签
     tagList.value = rows.map((tag: any) => ({
       ...tag,
-      isActive: props.blogData.tags.some((t: any) => t.tagName === tag.tagName)
+      isActive: props.blogData.tags.some((t: any) => t.tagName === tag.tagName),
     }));
   }
 }
@@ -171,19 +245,19 @@ function handleInputConfirm() {
     const isExist = tags.some((x: any) => x.tagName === inputValue.value);
 
     if (!isExist) {
-      const typeArr = ['primary', 'success', 'info', 'warning', 'danger'];
+      const typeArr = ["primary", "success", "info", "warning", "danger"];
       const randomType = typeArr[Math.floor(Math.random() * typeArr.length)];
       tags.push({
         tagName: inputValue.value,
         tagType: randomType,
-        effect: 'dark'
+        effect: "dark",
       });
     } else {
-      ElNotification.warning({ message: ('该标签已存在'), offset: 100 });
+      ElNotification.warning({ message: "该标签已存在", offset: 100 });
     }
   }
   inputVisible.value = false;
-  inputValue.value = '';
+  inputValue.value = "";
 }
 
 function showInput() {
@@ -206,10 +280,10 @@ function chooseTag(tag: any) {
 function confirmTagSelection() {
   const selectedTags = tagList.value.filter((t: any) => t.isActive);
   // 合并已选标签（去重）
-  props.blogData.tags = selectedTags.map(t => ({
+  props.blogData.tags = selectedTags.map((t: any) => ({
     tagName: t.tagName,
-    tagType: t.tagType || 'primary',
-    effect: 'dark'
+    tagType: t.tagType || "primary",
+    effect: "dark",
   }));
   tagVisible.value = false;
 }
@@ -227,8 +301,8 @@ async function submit() {
           : await saveBlog(props.blogData);
 
         if (res.code === 200) {
-          window.localStorage.removeItem('blogData'); // 发布成功清理草稿
-          ElNotification.success({ message: ('博客发布成功'), offset: 100 });
+          window.localStorage.removeItem("blogData"); // 发布成功清理草稿
+          ElNotification.success({ message: "博客发布成功", offset: 100 });
           // ElMessageBox.confirm(('博客发布成功'), ('提示'), {
           //   confirmButtonText: ('前往博客'),
           //   cancelButtonText: ('写新博客'),
@@ -243,7 +317,7 @@ async function submit() {
           // });
 
           close();
-          emit('success');
+          emit("success");
         }
       } catch (error) {
         console.error(error);

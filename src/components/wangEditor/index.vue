@@ -3,14 +3,25 @@
 -->
 <template>
   <div class="c-editor-wrap" :class="showToolBar ? 'with-toolbar' : ''">
-    <Toolbar class="c-editor-toolbar" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
-    <Editor class="c-editor" :class="showToolBar ? 'with-toolbar' : ''" v-model="text" :defaultConfig="editorConfig"
-      :mode="mode" @onCreated="handleCreated" />
+    <Toolbar
+      class="c-editor-toolbar"
+      :editor="editorRef"
+      :defaultConfig="toolbarConfig"
+      :mode="mode"
+    />
+    <Editor
+      class="c-editor"
+      :class="showToolBar ? 'with-toolbar' : ''"
+      v-model="text"
+      :defaultConfig="editorConfig"
+      :mode="mode"
+      @onCreated="handleCreated"
+    />
   </div>
 </template>
 <script setup lang="ts">
 import "@wangeditor/editor/dist/css/style.css"; // 引入 css
-import { onBeforeUnmount, ref, shallowRef, onMounted, watch } from "vue";
+import { onBeforeUnmount, ref, shallowRef, watch } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import { IEditorConfig } from "@wangeditor/editor";
 const emit = defineEmits(["update:modelValue"]);
@@ -36,7 +47,7 @@ const editorConfig: Partial<IEditorConfig> = {
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef() as any;
 // 内容 HTML
-const valueHtml = ref("<p>hello</p>");
+// const valueHtml = ref("<p>hello</p>");
 const mode = "default";
 const toolbarConfig = {
   toolbarKeys: [
@@ -117,7 +128,7 @@ watch(
   (val: any) => {
     text.value = val;
   },
-  { deep: true },
+  { deep: true }
 );
 
 watch(
@@ -125,7 +136,7 @@ watch(
   (val: any) => {
     emit("update:modelValue", val);
   },
-  { deep: true },
+  { deep: true }
 );
 
 // 组件销毁时，也及时销毁编辑器

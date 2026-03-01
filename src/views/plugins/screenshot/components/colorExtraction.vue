@@ -15,9 +15,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { logicalToPhysical, physicalToLogical } from "@/utils/window.ts";
+import { physicalToLogical } from "@/utils/window.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
 import PixelPerfectMagnifier from "@/components/image/canvasMagnifier.vue";

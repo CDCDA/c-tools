@@ -1,6 +1,10 @@
 <template>
   <div class="c-upload" :class="isUrl ? 'c-upload-url' : ' '">
-    <svg-icon iconName="commonSvg-切换" @click="uploadSwitch" class="upload-switch"></svg-icon>
+    <svg-icon
+      iconName="commonSvg-切换"
+      @click="uploadSwitch"
+      class="upload-switch"
+    ></svg-icon>
     <div v-if="isUrl">
       <el-input v-if="!isArr" v-model="imageValue">
         <template #prepend>
@@ -10,7 +14,12 @@
         </template>
       </el-input>
       <div v-else>
-        <el-input v-for="(item, i) in imageValue" v-model="imageValue[i].url" :key="i" style="margin-bottom: 10px">
+        <el-input
+          v-for="item in imageValue"
+          v-model="item.url"
+          :key="item.url"
+          style="margin-bottom: 10px"
+        >
           <template #prepend>
             <el-icon @click="uploadSwitch">
               <Switch />
@@ -23,16 +32,32 @@
       </div>
     </div>
     <div v-else>
-      <el-upload v-if="!isArr" class="c-uploader" :action="uploadAction" :show-file-list="false"
-        :data="{ path: props.path }" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload"
-        :headers="headers" crossorigin="anonymous">
+      <el-upload
+        v-if="!isArr"
+        class="c-uploader"
+        :action="uploadAction"
+        :show-file-list="false"
+        :data="{ path: props.path }"
+        :on-success="handleAvatarSuccess"
+        :before-upload="beforeAvatarUpload"
+        :headers="headers"
+        crossorigin="anonymous"
+      >
         <c-image v-if="imageValue" :src="imageValue" class="avatar" />
         <el-icon v-else class="c-uploader-icon">
           <Plus />
         </el-icon>
       </el-upload>
-      <el-upload v-else v-model:file-list="imageValue" :action="uploadAction" :data="{ path: props.path }"
-        list-type="picture-card" :on-preview="handlePictureCardPreview" :on-success="handleSuccess" :headers="headers">
+      <el-upload
+        v-else
+        v-model:file-list="imageValue"
+        :action="uploadAction"
+        :data="{ path: props.path }"
+        list-type="picture-card"
+        :on-preview="handlePictureCardPreview"
+        :on-success="handleSuccess"
+        :headers="headers"
+      >
         <el-icon>
           <Plus />
         </el-icon>
@@ -40,46 +65,49 @@
     </div>
   </div>
 
-  <el-dialog v-model="dialogVisible" style="width: 100%; height: 100%; position: absolute">
+  <el-dialog
+    v-model="dialogVisible"
+    style="width: 100%; height: 100%; position: absolute"
+  >
     <c-image :src="dialogImageUrl" />
   </el-dialog>
 </template>
 <script setup lang="ts">
-import { ref, nextTick, onMounted, watch } from 'vue';
-import type { UploadProps } from 'element-plus';
-import { ElMessage } from 'element-plus';
-import { Select, Switch } from '@element-plus/icons-vue';
-import { useUserStore } from '@/store/modules/user';
+import { ref, onMounted, watch } from "vue";
+import type { UploadProps } from "element-plus";
+import { ElMessage } from "element-plus";
+import { Select, Switch } from "@element-plus/icons-vue";
+import { useUserStore } from "@/store/modules/user.ts";
 
 const userStore = useUserStore();
 const imageValue = ref([] as any[]);
 const isArr = ref(false);
 const isUrl = ref(false);
-const uploadAction = `${process.env.NODE_ENV === 'development' ? '/dev-api' : '/prod-api'}/files`;
+const uploadAction = `${process.env.NODE_ENV === "development" ? "/dev-api" : "/prod-api"}/files`;
 
 // 获取token并设置请求头
 const headers = ref({
-  Authorization: userStore.token ? `Bearer ${userStore.token}` : ''
+  Authorization: userStore.token ? `Bearer ${userStore.token}` : "",
 });
-const dialogImageUrl = ref('') as any;
+const dialogImageUrl = ref("") as any;
 const dialogVisible = ref(false);
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 const props = defineProps({
   modelValue: null as any,
   isUrl: false as any,
-  path: '' as any
+  path: "" as any,
 });
 
-const handleAvatarSuccess: UploadProps['onSuccess'] = (response: any) => {
-  if (response.data) emit('update:modelValue', response.data);
-  else ElMessage.error(('上传失败'));
+const handleAvatarSuccess: UploadProps["onSuccess"] = (response: any) => {
+  if (response.data) emit("update:modelValue", response.data);
+  else ElMessage.error("上传失败");
 };
 
-const beforeAvatarUpload: UploadProps['beforeUpload'] = () => {
+const beforeAvatarUpload: UploadProps["beforeUpload"] = () => {
   return true;
 };
 
-const handlePictureCardPreview: UploadProps['onPreview'] = uploadFile => {
+const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url;
   dialogVisible.value = true;
 };
@@ -88,8 +116,8 @@ function uploadSwitch() {
   if (isArr.value && imageValue.value.length == 0) {
     imageValue.value.push({
       id: null,
-      url: '',
-      createTime: ''
+      url: "",
+      createTime: "",
     });
   }
   isUrl.value = !isUrl.value;
@@ -99,10 +127,10 @@ function addNewImageUrl() {
   if (!isUrl.value) return;
   imageValue.value.push({
     id: null,
-    url: '',
-    createTime: ''
+    url: "",
+    createTime: "",
   });
-  emit('update:modelValue', imageValue.value);
+  emit("update:modelValue", imageValue.value);
 }
 
 function handleSuccess(response: any) {
@@ -110,13 +138,13 @@ function handleSuccess(response: any) {
   imageRelations.pop();
   if (response.code === 200) {
     imageRelations.push({
-      name: response.data.replace('http://120.48.127.181/file/', ''),
-      url: response.data
+      name: response.data.replace("http://120.48.127.181/file/", ""),
+      url: response.data,
     });
   } else {
-    ElMessage.error(('图片上传失败'));
+    ElMessage.error("图片上传失败");
   }
-  emit('update:modelValue', imageRelations);
+  emit("update:modelValue", imageRelations);
 }
 onMounted(() => {
   isUrl.value = props.isUrl;
@@ -130,7 +158,7 @@ onMounted(() => {
 });
 watch(
   () => props.modelValue,
-  val => {
+  (val) => {
     isArr.value = Array.isArray(val);
     imageValue.value = val;
   },
@@ -139,11 +167,11 @@ watch(
 
 watch(
   () => imageValue,
-  val => {
-    emit('update:modelValue', val);
+  (val) => {
+    emit("update:modelValue", val);
   },
   {
-    deep: true
+    deep: true,
   }
 );
 </script>

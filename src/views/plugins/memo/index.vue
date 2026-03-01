@@ -1,10 +1,25 @@
 <template>
   <div class="page-main memo">
-    <MemoSidebar ref="memoSidebarRef" :typeList="typeList" :activeType="activeType"
-      @update:activeType="updateActiveType" @addType="addType" @editType="editType" @deleteType="deleteType" />
-    <MemoList ref="memoListRef" :mode="mode" :memoList="memoList" :activeType="activeType" :currentMemo="currentMemo"
-      :selectIds="selectIds" @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer"
-      @update:selectIds="updateSelectIds" />
+    <MemoSidebar
+      ref="memoSidebarRef"
+      :typeList="typeList"
+      :activeType="activeType"
+      @update:activeType="updateActiveType"
+      @addType="addType"
+      @editType="editType"
+      @deleteType="deleteType"
+    />
+    <MemoList
+      ref="memoListRef"
+      :mode="mode"
+      :memoList="memoList"
+      :activeType="activeType"
+      :currentMemo="currentMemo"
+      :selectIds="selectIds"
+      @deleteMemo="deleteMemo"
+      @openMemoDrawer="openMemoDrawer"
+      @update:selectIds="updateSelectIds"
+    />
     <!-- <MemoTools ref="memoToolsRef" :mode="mode" :isAll="isAll" :activeType="activeType" :currentMemo="currentMemo"
       @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer" @changeMode="changeMode" @selectAll="selectAll" /> -->
     <MemoDrawer ref="memoDrawerRef" @submit="submitMemo" />
@@ -15,42 +30,33 @@
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import MemoDrawer from "@/views/plugins/memo/components/memoDrawer.vue";
 
-import { Plus, Delete } from "@element-plus/icons-vue";
 import MemoSidebar from "./components/memoSidebar.vue";
-import MemoTools from "./components/memoTools.vue";
 import MemoList from "./components/memoList.vue";
 
-import { writeText, readText } from "@tauri-apps/plugin-memo-manager";
 import { savePluginData, getPluginData } from "@/utils/localSave.ts";
-import { ElNotification } from "element-plus";
-import { currentWindow } from "@/utils/window.ts";
+import { ElNotification, ElMessageBox } from "element-plus";
 
 const currentMemo = computed(() => {
-  if (mode.value === 'single') {
-    return memoList.value.find((item: any) => item.id === selectIds.value[0]) || {};
+  if (mode.value === "single") {
+    return (
+      memoList.value.find((item: any) => item.id === selectIds.value[0]) || {}
+    );
   }
   return {};
 });
 const selectIds = ref<any>([]);
-const mode = ref('single')
-const isAll = computed(() => {
-  return selectIds.value.length === memoList.value.length;
-})
-function selectAll() {
-  if (mode.value === 'single') {
-    return;
-  }
-  if (selectIds.value.length === memoList.value.length) {
-    selectIds.value = [];
-  } else {
-    selectIds.value = memoList.value.map((item: any) => item.id);
-  }
-}
+const mode = ref("single");
 
-function changeMode() {
-  mode.value = mode.value === 'single' ? 'multi' : 'single';
-  selectIds.value = [];
-}
+// function selectAll() {
+//   if (mode.value === "single") {
+//     return;
+//   }
+//   if (selectIds.value.length === memoList.value.length) {
+//     selectIds.value = [];
+//   } else {
+//     selectIds.value = memoList.value.map((item: any) => item.id);
+//   }
+// }
 
 const typeList = ref([
   {
@@ -64,11 +70,7 @@ const activeType = ref({
   value: "all",
 });
 
-const totalMemoList = ref([]);
-
-function updateCurrentMemo(memo: any) {
-  currentMemo.value = memo;
-}
+const totalMemoList = ref([]) as any;
 
 function updateSelectIds(ids: any) {
   selectIds.value = ids;
@@ -95,11 +97,15 @@ function submitMemo(memoData: any) {
   saveLocalData();
 }
 
-const memoDrawerRef = ref<MemoDrawer>(null);
+const memoDrawerRef = ref<any>(null);
 function openMemoDrawer(action: string, memo?: any) {
-  console.log("openMemoDrawer", action, memo)
-  const memoObj = { ...(memo || currentMemo.value) }
-  memoDrawerRef.value?.init({ action, memo: memoObj, activeType: activeType.value.value });
+  console.log("openMemoDrawer", action, memo);
+  const memoObj = { ...(memo || currentMemo.value) };
+  memoDrawerRef.value?.init({
+    action,
+    memo: memoObj,
+    activeType: activeType.value.value,
+  });
 }
 
 function saveLocalData() {
@@ -130,13 +136,28 @@ async function loadLocalData() {
     value: "all",
   };
 }
-const searchText = ref<any>(null)
+const searchText = ref<any>(null);
 
 const memoList = computed(() => {
   if (activeType.value.value === "all") {
-    return searchText.value ? totalMemoList.value.filter((x: any) => x.title.includes(searchText.value) || x.text.includes(searchText.value)) : totalMemoList.value;
+    return searchText.value
+      ? totalMemoList.value.filter(
+          (x: any) =>
+            x.title.includes(searchText.value) ||
+            x.text.includes(searchText.value)
+        )
+      : totalMemoList.value;
   }
-  return searchText.value ? totalMemoList.value.filter((memo: any) => memo.type === activeType.value.value && (memo.title.includes(searchText.value) || memo.text.includes(searchText.value))) : totalMemoList.value.filter((memo: any) => memo.type === activeType.value.value);
+  return searchText.value
+    ? totalMemoList.value.filter(
+        (memo: any) =>
+          memo.type === activeType.value.value &&
+          (memo.title.includes(searchText.value) ||
+            memo.text.includes(searchText.value))
+      )
+    : totalMemoList.value.filter(
+        (memo: any) => memo.type === activeType.value.value
+      );
 });
 
 function deleteMemo(memo?: any) {
@@ -146,18 +167,24 @@ function deleteMemo(memo?: any) {
       ElNotification.error("请先选择要删除的备忘录");
       return;
     } else {
-      ElMessageBox.confirm(`确认删除 ${selectIds.value.length} 个备忘录吗？`, "Tip", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }).then(() => {
-        totalMemoList.value = totalMemoList.value.filter((item: any) => !selectIds.value.includes(item.id));
+      ElMessageBox.confirm(
+        `确认删除 ${selectIds.value.length} 个备忘录吗？`,
+        "Tip",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).then(() => {
+        totalMemoList.value = totalMemoList.value.filter(
+          (item: any) => !selectIds.value.includes(item.id)
+        );
         ElNotification.success("删除成功");
         selectIds.value = [];
         saveLocalData();
       });
     }
-    return
+    return;
   }
   if (!memo) {
     memo = currentMemo.value;
@@ -171,7 +198,9 @@ function deleteMemo(memo?: any) {
     cancelButtonText: "取消",
     type: "warning",
   }).then(() => {
-    totalMemoList.value = totalMemoList.value.filter((item: any) => item.id !== memo.id);
+    totalMemoList.value = totalMemoList.value.filter(
+      (item: any) => item.id !== memo.id
+    );
     ElNotification.success("删除成功");
     selectIds.value = [];
     saveLocalData();
@@ -184,9 +213,11 @@ const addType = () => {
     cancelButtonText: "取消",
     inputErrorMessage: "请输入分类名称",
     beforeClose: async (action, instance, done) => {
-      if (action === 'confirm') {
+      if (action === "confirm") {
         const value = instance.inputValue;
-        const isExist = typeList.value.find((item: any) => item.label === value);
+        const isExist = typeList.value.find(
+          (item: any) => item.label === value
+        );
         if (isExist) {
           ElNotification.error("分类名称已存在");
           return;
@@ -195,29 +226,33 @@ const addType = () => {
       } else {
         done();
       }
-    }
-  }).then(({ value }) => {
-    // 这里已经通过验证
-    typeList.value.push({
-      label: value,
-      value: new Date().getTime(),
+    },
+  })
+    .then(({ value }) => {
+      // 这里已经通过验证
+      typeList.value.push({
+        label: value,
+        value: new Date().getTime().toString(),
+      });
+      saveLocalData();
+    })
+    .catch(() => {
+      // 用户点击取消
     });
-    saveLocalData();
-  }).catch(() => {
-    // 用户点击取消
-  });
 };
 
 const editType = (typeObj: any) => {
-  const type = { ...typeObj }
+  const type = { ...typeObj };
   ElMessageBox.prompt("", "请输入分类名称", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     inputValue: type.label,
     beforeClose: async (action, instance, done) => {
-      if (action === 'confirm') {
+      if (action === "confirm") {
         const value = instance.inputValue;
-        const filterList = typeList.value.filter((item: any) => item.value !== type.value);
+        const filterList = typeList.value.filter(
+          (item: any) => item.value !== type.value
+        );
         const isExist = filterList.find((item: any) => item.label === value);
         if (isExist) {
           ElNotification.error("分类名称已存在");
@@ -228,7 +263,7 @@ const editType = (typeObj: any) => {
       } else {
         done();
       }
-    }
+    },
   }).then(({ value }) => {
     typeList.value = typeList.value.map((item: any) => {
       if (item.value === type.value) {
@@ -244,7 +279,9 @@ const editType = (typeObj: any) => {
 };
 
 const deleteType = (type: any) => {
-  const isExist = totalMemoList.value.filter((item: any) => item.type === type.value);
+  const isExist = totalMemoList.value.filter(
+    (item: any) => item.type === type.value
+  );
   let confirmMsg = "";
   if (isExist.length > 0) {
     confirmMsg = `该分类下共有 ${isExist.length} 条记录，删除后无法恢复。\n确认删除分类[${type.label}]吗？`;
@@ -256,7 +293,9 @@ const deleteType = (type: any) => {
     cancelButtonText: "取消",
     type: "warning",
   }).then(() => {
-    typeList.value = typeList.value.filter((item: any) => item.value !== type.value);
+    typeList.value = typeList.value.filter(
+      (item: any) => item.value !== type.value
+    );
     activeType.value = {
       label: "全部",
       value: "all",
@@ -266,20 +305,20 @@ const deleteType = (type: any) => {
 };
 
 function handleSearch(val: any) {
-  console.log("触发搜索", val)
-  searchText.value = val
+  console.log("触发搜索", val);
+  searchText.value = val;
 }
 
 onMounted(() => {
   loadLocalData();
 });
 onUnmounted(() => {
-  saveLocalData()
+  saveLocalData();
 });
 
 defineExpose({
-  handleSearch
-})
+  handleSearch,
+});
 </script>
 
 <style lang="scss" scoped>

@@ -21,14 +21,14 @@ import PluginManageBar from "./components/pluginManageBar.vue";
 .plugin-manage-container {
   width: 100vw;
   height: 100vh;
-  background: #252526;
+  background: white;
   position: absolute;
   font-family: "shark";
 
   .plugin-manage-main {
     height: 100%;
     width: inherit;
-    background: #252526;
+    background: white;
     width: 100%;
     display: flex;
   }

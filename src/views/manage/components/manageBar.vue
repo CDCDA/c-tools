@@ -1,10 +1,23 @@
 <template>
   <div class="manage-bar" data-tauri-drag-region>
     <div class="manage-bar-left" data-tauri-drag-region>
-      <el-tag class="manage-name" effect="dark" round closable type="info" @close="handleClick">管理中心</el-tag>
+      <!-- <el-tag class="manage-name" effect="dark" round closable type="info" @close="handleClick">管理中心</el-tag> -->
+      <div class="manage-name">
+        <!-- <svg-icon :iconName="" style="margin-right: 5px" /> -->
+        <div style="margin-bottom: 2px">{{ "管理中心" }}</div>
+        <svg-icon
+          iconName="otherSvg-关闭"
+          style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
+          @click="handleClick"
+        />
+      </div>
     </div>
     <div class="manage-bar-right" data-tauri-drag-region>
-      <svg-icon iconName="pluginIcons-icon" class="plugin-icon" @click="handleClick" />
+      <svg-icon
+        iconName="pluginIcons-icon"
+        class="plugin-icon"
+        @click="handleClick"
+      />
     </div>
   </div>
 </template>
@@ -28,7 +41,7 @@ function handleClick() {
   z-index: 999;
 
   user-select: none;
-  border-bottom: 1px solid #EBEBEB;
+  border-bottom: 1px solid #ebebeb;
 
   .manage-bar-left {
     height: 100%;
@@ -36,31 +49,6 @@ function handleClick() {
     display: flex;
     align-items: center;
     justify-content: center;
-
-    .manage-name {
-      height: 32px;
-      font-size: 18px;
-      padding-right: 15px;
-      padding-left: 20px;
-      background-color: #00968c;
-      color: #fff;
-      border: none;
-
-      :deep(.el-tag__content) {
-        margin-bottom: 4px;
-      }
-
-      :deep(.el-tag__close) {
-        width: 20px;
-        height: 20px;
-        font-size: 20px;
-      }
-
-      .manage-close {
-        margin-left: 5px;
-        cursor: pointer;
-      }
-    }
   }
 
   .manage-bar-right {
@@ -96,6 +84,24 @@ function handleClick() {
         font-size: 20px !important;
       }
     }
+  }
+}
+.manage-name {
+  height: 32px;
+  font-size: 18px;
+  padding-right: 15px;
+  padding-left: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // background-color: var(--el-color-primary);
+  color: black;
+  font-weight: bold;
+  border: none;
+
+  .plugin-close {
+    margin-left: 5px;
+    cursor: pointer;
   }
 }
 </style>

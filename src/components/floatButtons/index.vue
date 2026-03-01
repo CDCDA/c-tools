@@ -1,45 +1,42 @@
 <template>
   <div class="float-buttons" v-drag="{ dragSelf: true }">
-    <div class="base-btn-wrap" @click="
-      toggleSettingPanel">
+    <div class="base-btn-wrap" @click="toggleSettingPanel">
       <slot name="base-btn">
         <div class="base-btn">
           <svg-icon iconName="otherSvg-设置" class="setting-icon" />
         </div>
       </slot>
     </div>
-    <div v-if="props.type === 'panel'" class="float-btns-panel-wrap" :class="{ 'show': isSettingPanelVisible }">
-      <slot name="btns">
-      </slot>
+    <div
+      v-if="props.type === 'panel'"
+      class="float-btns-panel-wrap"
+      :class="{ show: isSettingPanelVisible }"
+    >
+      <slot name="btns"> </slot>
     </div>
   </div>
-
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Setting } from "@element-plus/icons-vue";
+import { ref } from "vue";
 import { vDrag } from "@/directive/drag.ts";
 const props = defineProps({
   type: {
     type: String,
-    default: 'panel'
-  }
-
-})
-const emit = defineEmits(['baseClick']);
+    default: "panel",
+  },
+});
+const emit = defineEmits(["baseClick"]);
 const isSettingPanelVisible = ref(false);
 
 const toggleSettingPanel = () => {
-  if (props.type === 'panel') {
+  if (props.type === "panel") {
     isSettingPanelVisible.value = !isSettingPanelVisible.value;
     console.log(isSettingPanelVisible.value);
   } else {
-    emit('baseClick');
+    emit("baseClick");
   }
-}
-
-
+};
 </script>
 
 <style scoped lang="scss">
@@ -57,7 +54,6 @@ const toggleSettingPanel = () => {
 .base-btn-wrap {
   z-index: 10;
   flex-shrink: 0; // 防止被挤压
-
 }
 
 .base-btn-wrap {

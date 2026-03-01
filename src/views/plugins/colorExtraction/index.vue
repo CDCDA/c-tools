@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { logicalToPhysical, physicalToLogical } from "@/utils/window.ts";
+import { physicalToLogical } from "@/utils/window.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import { listen } from "@tauri-apps/api/event";
@@ -57,12 +57,15 @@ const startPicking = async () => {
 
     await invoke("start_color_picking");
     // 监听鼠标移动
-    const unlistenMouseMove = await listen<[number, number]>("mouse-moved", async (event) => {
-      const [x, y] = event.payload;
-      const { width, height } = await physicalToLogical(x, y);
-      mousePosition.value = { x: width, y: height };
-      console.log(mousePosition.value);
-    });
+    const unlistenMouseMove = await listen<[number, number]>(
+      "mouse-moved",
+      async (event) => {
+        const [x, y] = event.payload;
+        const { width, height } = await physicalToLogical(x, y);
+        mousePosition.value = { x: width, y: height };
+        console.log(mousePosition.value);
+      }
+    );
     cleanupFunctions.push(unlistenMouseMove);
 
     // 注册快捷键

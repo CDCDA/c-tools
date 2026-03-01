@@ -1,11 +1,24 @@
 <template>
-  <div :class="['code-editor-wrapper', { fullscreen: editorOptions.fullScreen }]">
-    <div class="header" data-tauri-drag-region v-if="editorOptions.fullScreen">编辑器</div>
-    <VAceEditor ref="aceEditorRef" v-model:value="editorContent" :lang="currentLanguage" :theme="aceTheme"
-      :options="editorOptions" :style="editorStyle" @init="onEditorInit" />
+  <div
+    :class="['code-editor-wrapper', { fullscreen: editorOptions.fullScreen }]"
+  >
+    <div class="header" data-tauri-drag-region v-if="editorOptions.fullScreen">
+      编辑器
+    </div>
+    <VAceEditor
+      ref="aceEditorRef"
+      v-model:value="editorContent"
+      :lang="currentLanguage"
+      :theme="aceTheme"
+      :options="editorOptions"
+      :style="editorStyle"
+      @init="onEditorInit"
+    />
     <!-- 空态显示 -->
     <div class="empty-state" v-if="!editorContent.trim()">
-      <div class="empty-icon"><svg-icon iconName="otherSvg-大括号"></svg-icon></div>
+      <div class="empty-icon">
+        <svg-icon iconName="otherSvg-大括号"></svg-icon>
+      </div>
       <div class="empty-text">请输入或粘贴JSON内容</div>
     </div>
     <div class="code-editor-footer">
@@ -29,8 +42,12 @@
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="lang in languageList" :disabled="lang === currentLanguage" :key="lang"
-                  @click="changeLanguage(lang)">
+                <el-dropdown-item
+                  v-for="lang in languageList"
+                  :disabled="lang === currentLanguage"
+                  :key="lang"
+                  @click="changeLanguage(lang)"
+                >
                   {{ lang }}
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -38,12 +55,25 @@
           </el-dropdown>
 
           <el-tooltip content="全屏" placement="top">
-            <svg-icon iconName="otherSvg-全屏" class="svg-btn" v-if="!editorOptions.fullScreen"
-              @click="fullScreen"></svg-icon>
-            <svg-icon iconName="otherSvg-退出全屏" class="svg-btn" v-else @click="fullScreen"></svg-icon>
+            <svg-icon
+              iconName="otherSvg-全屏"
+              class="svg-btn"
+              v-if="!editorOptions.fullScreen"
+              @click="fullScreen"
+            ></svg-icon>
+            <svg-icon
+              iconName="otherSvg-退出全屏"
+              class="svg-btn"
+              v-else
+              @click="fullScreen"
+            ></svg-icon>
           </el-tooltip>
           <el-tooltip content="格式化" placement="top">
-            <svg-icon iconName="otherSvg-格式刷" class="svg-btn" @click="formatContent" />
+            <svg-icon
+              iconName="otherSvg-格式刷"
+              class="svg-btn"
+              @click="formatContent"
+            />
           </el-tooltip>
         </slot>
         <slot name="footer-right-append"></slot>
@@ -88,7 +118,10 @@ import "ace-builds/src-noconflict/worker-javascript";
 
 // 配置 worker 路径
 const aceConfig = ace.config;
-aceConfig.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/");
+aceConfig.set(
+  "basePath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/"
+);
 aceConfig.setModuleUrl(
   "ace/mode/javascript_worker",
   "https://cdn.jsdelivr.net/npm/ace-builds@1.32.2/src-noconflict/worker-javascript.js"
@@ -124,7 +157,16 @@ function fullScreen() {
   editorOptions.fullScreen = !editorOptions.fullScreen;
 }
 // 语言映射
-const languageList = ["json", "sql", "javascript", "java", "css", "html", "shell", "nginx"] as any;
+const languageList = [
+  "json",
+  "sql",
+  "javascript",
+  "java",
+  "css",
+  "html",
+  "shell",
+  "nginx",
+] as any;
 
 // 主题映射
 const themeMap = {
@@ -289,7 +331,10 @@ const formatContent = () => {
       formattedContent = JSON.stringify(parsed, null, 2);
     } else if (currentLanguage.value === "sql") {
       formattedContent = format(currentContent, { language: "sql" });
-    } else if (currentLanguage.value === "javascript" || currentLanguage.value === "java") {
+    } else if (
+      currentLanguage.value === "javascript" ||
+      currentLanguage.value === "java"
+    ) {
       // Java 属于 C 风格家族，js_beautify 处理效果很好
       formattedContent = js_beautify(currentContent, {
         indent_size: currentLanguage.value === "java" ? 4 : 2, // Java 规范通常是 4 空格
@@ -349,52 +394,61 @@ const formatContent = () => {
       });
     } else if (currentLanguage.value === "shell") {
       // 简单的Shell脚本格式化，基于缩进
-      const lines = currentContent.split('\n');
+      const lines = currentContent.split("\n");
       let indentLevel = 0;
       const indentSize = 2;
-      const formattedLines = lines.map(line => {
+      const formattedLines = lines.map((line: string) => {
         const trimmedLine = line.trim();
-        if (trimmedLine.endsWith('{') || trimmedLine.endsWith('do') || trimmedLine.endsWith('then')) {
-          const result = ' '.repeat(indentLevel * indentSize) + trimmedLine;
+        if (
+          trimmedLine.endsWith("{") ||
+          trimmedLine.endsWith("do") ||
+          trimmedLine.endsWith("then")
+        ) {
+          const result = " ".repeat(indentLevel * indentSize) + trimmedLine;
           indentLevel++;
           return result;
-        } else if (trimmedLine.startsWith('}') || trimmedLine.startsWith('done') || trimmedLine.startsWith('fi')) {
+        } else if (
+          trimmedLine.startsWith("}") ||
+          trimmedLine.startsWith("done") ||
+          trimmedLine.startsWith("fi")
+        ) {
           indentLevel = Math.max(0, indentLevel - 1);
-          return ' '.repeat(indentLevel * indentSize) + trimmedLine;
+          return " ".repeat(indentLevel * indentSize) + trimmedLine;
         } else {
-          return ' '.repeat(indentLevel * indentSize) + trimmedLine;
+          return " ".repeat(indentLevel * indentSize) + trimmedLine;
         }
       });
-      formattedContent = formattedLines.join('\n');
+      formattedContent = formattedLines.join("\n");
     } else if (currentLanguage.value === "nginx") {
       // Nginx配置文件格式化
-      const lines = currentContent.split('\n');
+      const lines = currentContent.split("\n");
       let indentLevel = 0;
       const indentSize = 2;
-      const indent = ' '.repeat(indentSize);
-      let result = '';
+      const indent = " ".repeat(indentSize);
+      let result = "";
 
       for (const line of lines) {
         let trimmed = line.trim();
 
-        if (trimmed === '') {
-          result += '\n';
+        if (trimmed === "") {
+          result += "\n";
           continue;
         }
 
         // 处理闭合括号
-        if (trimmed.endsWith('}')) {
+        if (trimmed.endsWith("}")) {
           if (trimmed.length > 1) {
-            result += indent.repeat(indentLevel) + trimmed.replace('}', '') + '\n';
-            trimmed = '}';
+            result +=
+              indent.repeat(indentLevel) + trimmed.replace("}", "") + "\n";
+            trimmed = "}";
           }
           indentLevel = Math.max(0, indentLevel - 1);
         }
         // 添加缩进
-        result += indent.repeat(indentLevel) + trimmed + '\n';
+        result += indent.repeat(indentLevel) + trimmed + "\n";
 
         // 处理开括号
-        if (trimmed.endsWith('{')) {
+        if (trimmed.endsWith("{")) {
           indentLevel++;
         }
       }
@@ -466,7 +520,10 @@ function escapeSpecialChars() {
 
   try {
     const currentContent = editorInstance.value.getValue();
-    const escapedContent = currentContent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedContent = currentContent.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
     safeSetValue(escapedContent);
     debouncedEmit(escapedContent);
   } catch (error: any) {
@@ -481,7 +538,10 @@ function unescapeSpecialChars() {
 
   try {
     const currentContent = editorInstance.value.getValue();
-    const unescapedContent = currentContent.replace(/\\([.*+?^${}()|[\]\\])/g, "$1");
+    const unescapedContent = currentContent.replace(
+      /\\([.*+?^${}()|[\]\\])/g,
+      "$1"
+    );
     safeSetValue(unescapedContent);
     debouncedEmit(unescapedContent);
   } catch (error: any) {
@@ -581,7 +641,7 @@ defineExpose({
     justify-content: space-between;
     padding: 0 10px;
     height: 40px;
-    border-top: 1px solid #EBEBEB;
+    border-top: 1px solid #ebebeb;
 
     .code-editor-footer-left,
     .code-editor-footer-right {
@@ -598,7 +658,6 @@ defineExpose({
     }
 
     .code-editor-footer-left {
-
       .label-value-item {
         margin: 0px 5px;
         color: #666666;
@@ -611,11 +670,7 @@ defineExpose({
       }
     }
 
-
-
     .svg-btn {
-
-
       span {
         height: 100%;
         display: flex;
@@ -635,7 +690,7 @@ defineExpose({
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid #EBEBEB;
+    border-bottom: 1px solid #ebebeb;
   }
 
   // Ace Editor 会自动填充容器
@@ -651,7 +706,8 @@ defineExpose({
 // Ace Editor 全局样式调整
 .code-editor-wrapper {
   .ace_editor {
-    font-family: "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace !important;
+    font-family:
+      "Consolas", "Monaco", "Andale Mono", "Ubuntu Mono", monospace !important;
     font-size: 14px !important;
     background: white !important;
 

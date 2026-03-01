@@ -4,23 +4,39 @@
       <!-- <el-tag class="plugin-name" effect="dark" round closable type="info" @close="close"><svg-icon
           :iconName="plugin.meta.icon" style="margin-right: 5px;" />{{ plugin.label }}</el-tag> -->
       <div class="plugin-name">
-        <svg-icon :iconName="plugin.meta.icon" style="margin-right: 5px;" />
-        <div style="margin-bottom: 2px;">{{ plugin.label }}</div>
-        <svg-icon iconName="otherSvg-关闭" style="cursor: pointer;margin-left: 5px;width: 22px;height: 22px;"
-          @click="close" />
+        <svg-icon :iconName="plugin.meta.icon" style="margin-right: 5px" />
+        <div style="margin-bottom: 2px">{{ plugin.label }}</div>
+        <svg-icon
+          iconName="otherSvg-关闭"
+          style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
+          @click="close"
+        />
       </div>
-
     </div>
     <div class="plugin-bar-center" data-tauri-drag-region>
-      <svg-icon iconName="otherSvg-搜索" v-if="props.plugin.meta.search"
-        style="margin-left: 20px; width: 23px; height: 23px"></svg-icon>
+      <svg-icon
+        iconName="otherSvg-搜索"
+        v-if="props.plugin.meta.search"
+        style="margin-left: 20px; width: 23px; height: 23px"
+      ></svg-icon>
 
-      <el-input class="plugin-bar-search" v-model="searchText" data-tauri-drag-region v-prevent-drag
-        v-if="props.plugin.meta.search" @keyup.enter="handleSearch()" placeholder="请输入关键字" />
+      <el-input
+        class="plugin-bar-search"
+        v-model="searchText"
+        data-tauri-drag-region
+        v-prevent-drag
+        v-if="props.plugin.meta.search"
+        @keyup.enter="handleSearch()"
+        placeholder="请输入关键字"
+      />
     </div>
     <div class="plugin-bar-right" data-tauri-drag-region>
       <el-dropdown @command="handleCommand">
-        <svg-icon iconName="otherSvg-设置" data-tauri-drag-region style="width: 23px; height: 23px"></svg-icon>
+        <svg-icon
+          iconName="otherSvg-设置"
+          data-tauri-drag-region
+          style="width: 23px; height: 23px"
+        ></svg-icon>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="window">分离为独立窗口</el-dropdown-item>
@@ -33,16 +49,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useSettingStore } from "@/store/modules/setting.ts";
+import { ref, onMounted, onUnmounted } from "vue";
 import { createNewWindow } from "@/utils/plugin.ts";
 import { useRouter } from "vue-router";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { vPreventDrag } from "@/directive/preventDrag.ts"
+import { vPreventDrag } from "@/directive/preventDrag.ts";
 import { bus } from "@/utils/bus.ts";
 const currentWindow = getCurrentWindow();
 const router = useRouter();
-import { Setting } from "@element-plus/icons-vue";
 const props = defineProps({
   plugin: {
     type: Object,
@@ -69,22 +83,19 @@ const handleCommand = async (command: string) => {
   }
 };
 
-
 function handleSearch() {
-  emit("pluginSearch", searchText.value)
+  emit("pluginSearch", searchText.value);
 }
 
 onMounted(() => {
-  bus.on('separate-plugin-window', (data) => {
-    handleCommand('window');
+  bus.on("separate-plugin-window", () => {
+    handleCommand("window");
   });
 });
 
 onUnmounted(() => {
-  bus.off('separate-plugin-window'); // 记得解绑
+  bus.off("separate-plugin-window"); // 记得解绑
 });
-
-
 </script>
 
 <style lang="scss" scoped>
@@ -123,8 +134,6 @@ onUnmounted(() => {
       color: black;
       font-weight: bold;
       border: none;
-
-
 
       .plugin-close {
         margin-left: 5px;

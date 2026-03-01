@@ -1,61 +1,73 @@
 <template>
   <div class="page-main md-editor">
-    <MdEditor class="markdown-editor" ref="mdEditorRef" v-model="mdForm.content" @onSave="handleSave"
-      @onUploadImg="onUploadImg" />
+    <MdEditor
+      class="markdown-editor"
+      ref="mdEditorRef"
+      v-model="mdForm.content"
+      @onSave="handleSave"
+      @onUploadImg="onUploadImg"
+    />
 
     <FloatButtons>
       <template #btns>
-        <el-button class="float-btns-panel-btn" type="primary" @click="handleBlogList">博客列表</el-button>
-        <el-button class="float-btns-panel-btn" type="success" @click="handleSubmit">提交博客</el-button>
+        <el-button
+          class="float-btns-panel-btn"
+          type="primary"
+          @click="handleBlogList"
+          >博客列表</el-button
+        >
+        <el-button
+          class="float-btns-panel-btn"
+          type="success"
+          @click="handleSubmit"
+          >提交博客</el-button
+        >
       </template>
     </FloatButtons>
 
     <!-- 博客发布弹窗 -->
-    <BlogRelease ref="blogReleaseRef" :blogData="blogData" @resetBlogData="resetBlogData" />
+    <BlogRelease
+      ref="blogReleaseRef"
+      :blogData="blogData"
+      @resetBlogData="resetBlogData"
+    />
 
     <!-- 博客列表抽屉 -->
     <BlogListDrawer ref="blogListDrawerRef" @edit-blog="handleEditBlog" />
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useUserStore } from '@/store/modules/user.ts';
-import { MdEditor } from 'md-editor-v3';
-import { Setting } from "@element-plus/icons-vue";
-import FloatButtons from '@/components/floatButtons/index.vue';
-import BlogRelease from './components/blogRelease.vue';
-import BlogListDrawer from './components/blogListDrawer.vue';
+import { ref } from "vue";
+import { useUserStore } from "@/store/modules/user.ts";
+import { MdEditor } from "md-editor-v3";
+import FloatButtons from "@/components/floatButtons/index.vue";
+import BlogRelease from "./components/blogRelease.vue";
+import BlogListDrawer from "./components/blogListDrawer.vue";
 
-import 'md-editor-v3/lib/style.css';
+import "md-editor-v3/lib/style.css";
 
 const mdForm = ref({
-  title: '',
-  content: ''
-})
+  title: "",
+  content: "",
+});
 
 const blogData = ref({
   tags: [],
   userId: useUserStore().userId,
-  content: '',
-  typeId: '',
-  coverUrl: '',
-  blogAbstract: '',
-  isRecommend: '0',
-  isOriginal: '1'
-});
+  content: "",
+  typeId: "",
+  coverUrl: "",
+  blogAbstract: "",
+  isRecommend: "0",
+  isOriginal: "1",
+}) as any;
 
-const draftList = ref<any[]>([]);
-const isSettingPanelVisible = ref(false);
 const blogReleaseRef = ref(null) as any;
 const blogListDrawerRef = ref(null) as any;
 
-const toggleSettingPanel = () => {
-  isSettingPanelVisible.value = !isSettingPanelVisible.value;
-};
-
 const handleSave = () => {
   // 保存为草稿的逻辑
-  console.log('保存为草稿');
+  console.log("保存为草稿");
 };
 
 const handleSubmit = () => {
@@ -65,19 +77,14 @@ const handleSubmit = () => {
   blogReleaseRef.value.open();
 };
 
-const handleDraftList = () => {
-  // 查看草稿列表的逻辑
-  console.log('查看草稿列表');
-};
+// const handleDraftList = () => {
+//   // 查看草稿列表的逻辑
+//   console.log('查看草稿列表');
+// };
 
 const handleBlogList = () => {
   // 打开博客列表抽屉
   blogListDrawerRef.value.open();
-};
-
-const getBlogInfo = (id: number) => {
-  // 获取博客详情的逻辑
-  console.log('获取博客详情');
 };
 
 const handleEditBlog = (blog: any) => {
@@ -87,21 +94,21 @@ const handleEditBlog = (blog: any) => {
   blogData.value = {
     ...blogData.value,
     title: blog.blogTitle,
-    content: blog.content
+    content: blog.content,
   };
 };
 
 const resetBlogData = () => {
   // 重置博客数据的逻辑
-  mdForm.value.title = '';
-  mdForm.value.content = '';
+  mdForm.value.title = "";
+  mdForm.value.content = "";
   blogData.value = {
-    title: '',
-    content: '',
+    title: "",
+    content: "",
     tags: [],
-    typeId: '',
-    coverUrl: '',
-    blogAbstract: ''
+    typeId: "",
+    coverUrl: "",
+    blogAbstract: "",
   };
 };
 
@@ -114,7 +121,6 @@ const onUploadImg = (file: File) => {
   height: 100%;
   position: relative;
 
-
   .markdown-editor {
     height: 100%;
     border-radius: 4px;
@@ -124,7 +130,6 @@ const onUploadImg = (file: File) => {
 .page-main.md-editor {
   border: none;
 }
-
 
 .setting {
   position: fixed;
@@ -203,12 +208,12 @@ const onUploadImg = (file: File) => {
 }
 
 .submit-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .draft-list-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 </style>

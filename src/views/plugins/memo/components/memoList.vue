@@ -1,16 +1,33 @@
 <template>
   <div class="memo-list">
-    <List :list="memoList" @update:selectIds="updateSelectIds" ref="listRef" @dbClick="handleDbClick"
-      @batchDelete="emit('deleteMemo', item)">
-      <template #default="{ item, index }">
+    <List
+      :list="props.memoList"
+      @update:selectIds="updateSelectIds"
+      ref="listRef"
+      @dbClick="handleDbClick"
+      @batchDelete="handleBatchDelete"
+    >
+      <template #default="{ item }">
         <div class="memo-list-item">
           <!-- 1. 在父容器上绑定双击事件 -->
-          <div class="editor-content-view" v-html="item.content" @click="handleClick"></div>
+          <div
+            class="editor-content-view"
+            v-html="item.content"
+            @click="handleClick"
+          ></div>
           <div class="memo-title flex-between">
             <div class="title">{{ item.title }}</div>
             <div class="tools">
-              <svg-icon iconName="otherSvg-编辑" class="svg-btn" @click="emit('openMemoDrawer', 'edit', item)" />
-              <svg-icon iconName="otherSvg-删除" class="svg-btn" @click="emit('deleteMemo', item)" />
+              <svg-icon
+                iconName="otherSvg-编辑"
+                class="svg-btn"
+                @click="emit('openMemoDrawer', 'edit', item)"
+              />
+              <svg-icon
+                iconName="otherSvg-删除"
+                class="svg-btn"
+                @click="emit('deleteMemo', item)"
+              />
             </div>
           </div>
         </div>
@@ -21,15 +38,18 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import MemoDrawer from "@/views/plugins/memo/components/memoDrawer.vue";
 import { invoke } from "@tauri-apps/api/core";
-import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager";
-import { copyImgToClipboard } from "@/utils/clipboard";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { copyImgToClipboard } from "@/utils/clipboard.ts";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 const currentWindow = getCurrentWindow();
-import { ElMessage, ElNotification } from "element-plus";
-const emit = defineEmits(["update:selectIds", "submitMemo", "deleteMemo", "openMemoDrawer"]);
+import { ElNotification } from "element-plus";
+const emit = defineEmits([
+  "update:selectIds",
+  "submitMemo",
+  "deleteMemo",
+  "openMemoDrawer",
+]);
 const props = defineProps({
   memoList: {
     type: Array as any,
@@ -37,18 +57,21 @@ const props = defineProps({
   },
   mode: {
     type: String,
-    default: 'single',
+    default: "single",
   },
   selectIds: {
     type: Array as any,
     default: () => [],
-  }
+  },
 });
 
-const currentMemo = ref(null);
+const handleBatchDelete = (item: any) => {
+  emit("deleteMemo", item);
+};
+
 const updateSelectIds = (ids: any) => {
   emit("update:selectIds", ids);
-}
+};
 
 const handleDbClick = async (item: any) => {
   // 模拟双击事件
@@ -58,7 +81,6 @@ const handleDbClick = async (item: any) => {
 };
 
 const handleClick = (event: MouseEvent) => {
-
   const target = event.target as HTMLElement;
   const pElement = target.closest("p");
   if (!pElement) {
@@ -76,15 +98,12 @@ const handleClick = (event: MouseEvent) => {
     ElNotification.success("已复制到剪贴板");
   }
 };
-const listRef = ref(null);
+const listRef = ref(null) as any;
 
 defineExpose({
   getSelectIds: () => listRef.value.getSelectIds(),
 });
-
 </script>
-
-
 
 <style lang="scss" scoped>
 .memo-list {
@@ -105,7 +124,6 @@ defineExpose({
     .c-list-item {
       position: relative;
 
-
       .memo-list-item {
         max-height: 220px;
         border-radius: 6px;
@@ -117,8 +135,6 @@ defineExpose({
         display: flex;
         flex-direction: column;
         justify-content: start;
-
-
 
         .editor-content-view {
           height: calc(100% - 32px);
@@ -167,8 +183,6 @@ defineExpose({
             }
           }
         }
-
-
       }
 
       &:hover .memo-title .tools {

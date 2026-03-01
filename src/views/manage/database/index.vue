@@ -5,17 +5,49 @@
         <div class="tip-line">在此添加数据库</div>
         <div class="tip-line">目前支持mysql和pg</div>
       </div>
-      <el-button class="tip-btn" type="primary" @click="handleAdd">添加</el-button>
+      <el-button class="tip-btn" type="primary" @click="handleAdd"
+        >添加</el-button
+      >
     </div>
     <div class="database-model-list">
       <el-table :data="databaseList" border>
-        <el-table-column prop="name" label="数据库名称" align="center" width="auto" show-overflow-tooltip />
-        <el-table-column prop="url" label="数据库URL" align="center" width="auto" show-overflow-tooltip />
-        <el-table-column label="操作" align="center" width="120px" fixed="right">
+        <el-table-column
+          prop="name"
+          label="数据库名称"
+          align="center"
+          width="auto"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="url"
+          label="数据库URL"
+          align="center"
+          width="auto"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="操作"
+          align="center"
+          width="120px"
+          fixed="right"
+        >
           <template #default="scope">
-            <el-button type="text" style="color: #409eff" @click="handleEdit(scope.row)" text size="mini">编辑</el-button>
-            <el-button type="text" style="color: #ff4d4f" @click="handleDelete(scope.row)" text
-              size="mini">删除</el-button>
+            <el-button
+              type="text"
+              style="color: #409eff"
+              @click="handleEdit(scope.row)"
+              text
+              size="mini"
+              >编辑</el-button
+            >
+            <el-button
+              type="text"
+              style="color: #ff4d4f"
+              @click="handleDelete(scope.row)"
+              text
+              size="mini"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -77,13 +109,13 @@ onMounted(() => {
   .database-model-tip {
     margin: 15px;
     border-radius: 4px;
-    background: #252526;
+    background: white;
     height: 80px;
     width: calc(100% - 32px);
     display: flex;
     align-items: center;
     background: linear-gradient(90deg, #f5f7fa 0%, #e4e7ed 100%);
-    border: 1px solid #EBEBEB;
+    border: 1px solid #ebebeb;
 
     .tip {
       display: flex;
@@ -102,7 +134,7 @@ onMounted(() => {
     margin: 15px;
     border-radius: 4px;
     overflow: hidden;
-    background: #252526;
+    background: white;
 
     .el-button {
       margin: 0 5px;
