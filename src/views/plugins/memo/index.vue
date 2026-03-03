@@ -1,25 +1,10 @@
 <template>
   <div class="page-main memo">
-    <MemoSidebar
-      ref="memoSidebarRef"
-      :typeList="typeList"
-      :activeType="activeType"
-      @update:activeType="updateActiveType"
-      @addType="addType"
-      @editType="editType"
-      @deleteType="deleteType"
-    />
-    <MemoList
-      ref="memoListRef"
-      :mode="mode"
-      :memoList="memoList"
-      :activeType="activeType"
-      :currentMemo="currentMemo"
-      :selectIds="selectIds"
-      @deleteMemo="deleteMemo"
-      @openMemoDrawer="openMemoDrawer"
-      @update:selectIds="updateSelectIds"
-    />
+    <MemoSidebar ref="memoSidebarRef" :typeList="typeList" :activeType="activeType"
+      @update:activeType="updateActiveType" @addType="addType" @editType="editType" @deleteType="deleteType" />
+    <MemoList ref="memoListRef" :mode="mode" :memoList="memoList" :activeType="activeType" :currentMemo="currentMemo"
+      :selectIds="selectIds" @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer"
+      @update:selectIds="updateSelectIds" />
     <!-- <MemoTools ref="memoToolsRef" :mode="mode" :isAll="isAll" :activeType="activeType" :currentMemo="currentMemo"
       @deleteMemo="deleteMemo" @openMemoDrawer="openMemoDrawer" @changeMode="changeMode" @selectAll="selectAll" /> -->
     <MemoDrawer ref="memoDrawerRef" @submit="submitMemo" />
@@ -75,9 +60,10 @@ const totalMemoList = ref([]) as any;
 function updateSelectIds(ids: any) {
   selectIds.value = ids;
 }
-
+const memoListRef = ref<any>(null);
 function updateActiveType(type: any) {
   activeType.value = type;
+  memoListRef.value?.clearSelectIds();
 }
 
 function submitMemo(memoData: any) {
@@ -142,22 +128,22 @@ const memoList = computed(() => {
   if (activeType.value.value === "all") {
     return searchText.value
       ? totalMemoList.value.filter(
-          (x: any) =>
-            x.title.includes(searchText.value) ||
-            x.text.includes(searchText.value)
-        )
+        (x: any) =>
+          x.title.includes(searchText.value) ||
+          x.text.includes(searchText.value)
+      )
       : totalMemoList.value;
   }
   return searchText.value
     ? totalMemoList.value.filter(
-        (memo: any) =>
-          memo.type === activeType.value.value &&
-          (memo.title.includes(searchText.value) ||
-            memo.text.includes(searchText.value))
-      )
+      (memo: any) =>
+        memo.type === activeType.value.value &&
+        (memo.title.includes(searchText.value) ||
+          memo.text.includes(searchText.value))
+    )
     : totalMemoList.value.filter(
-        (memo: any) => memo.type === activeType.value.value
-      );
+      (memo: any) => memo.type === activeType.value.value
+    );
 });
 
 function deleteMemo(memo?: any) {
@@ -318,6 +304,9 @@ onUnmounted(() => {
 
 defineExpose({
   handleSearch,
+  handleAdd: () => {
+    openMemoDrawer('add')
+  },
 });
 </script>
 

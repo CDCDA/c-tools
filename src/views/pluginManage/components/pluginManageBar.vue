@@ -5,19 +5,12 @@
       <div class="plugin-manage-name">
         <!-- <svg-icon :iconName="" style="margin-right: 5px" /> -->
         <div style="margin-bottom: 2px">{{ "插件管理" }}</div>
-        <svg-icon
-          iconName="otherSvg-关闭"
-          style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
-          @click="handleClick"
-        />
+        <svg-icon iconName="otherSvg-关闭" style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
+          @click="handleClick" />
       </div>
     </div>
     <div class="plugin-manage-bar-right" data-tauri-drag-region>
-      <svg-icon
-        iconName="pluginIcons-icon"
-        class="plugin-icon"
-        @click="handleClick"
-      />
+      <svg-icon iconName="pluginIcons-icon" class="plugin-icon" @click="handleClick" />
     </div>
   </div>
 </template>
@@ -41,7 +34,7 @@ function handleClick() {
   z-index: 999;
 
   user-select: none;
-  border-bottom: 1px solid #ebebeb;
+  // border-bottom: 1px solid #ebebeb;
 
   .plugin-manage-bar-left {
     height: 100%;
@@ -67,6 +60,7 @@ function handleClick() {
     }
   }
 }
+
 .plugin-manage-name {
   height: 32px;
   font-size: 18px;

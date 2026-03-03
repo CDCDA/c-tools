@@ -3,7 +3,8 @@
     <!-- 独立窗口 头部 -->
     <PluginHeader :plugin="plugin" v-if="headerType === 'window' && plugin?.showHeader" />
     <!-- 主应用 头部 -->
-    <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginSearch="pluginSearch" />
+    <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginDataAdd="pluginDataAdd"
+      @pluginSearch="pluginSearch" />
     <div class="plugin-main" :class="loading ? 'loading' : ''">
       <router-view v-slot="{ Component }">
         <component :is="Component" ref="currentRouteRef" />
@@ -44,6 +45,10 @@ watch(
 const currentRouteRef = ref(null) as any
 function pluginSearch(val: string) {
   currentRouteRef.value?.handleSearch(val)
+}
+function pluginDataAdd() {
+  console.log("pluginDataAdd")
+  currentRouteRef.value?.handleAdd()
 }
 </script>
 

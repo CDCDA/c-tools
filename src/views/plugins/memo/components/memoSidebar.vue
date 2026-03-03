@@ -1,31 +1,20 @@
 <template>
   <div class="memo-bar-container">
     <el-menu class="memo-bar">
-      <el-menu-item
-        v-for="item in props.typeList"
-        @click="emit('update:activeType', item)"
-        :key="item.value"
-        :index="item.value"
-        :class="{ 'is-active': item.value === activeType.value }"
-      >
+      <el-menu-item v-for="item in props.typeList" @click="emit('update:activeType', item)" :key="item.value"
+        :index="item.value" :class="{ 'is-active': item.value === activeType.value }">
         <div class="menu-content flex-between">
           <span>{{ item.label }}</span>
           <div class="tools flex-center">
-            <svg-icon
-              iconName="otherSvg-编辑"
-              style="margin-left: 5px; font-size: 16px"
-              @click="emit('editType', item)"
-              v-if="item.value !== 'all'"
-            />
+            <svg-icon iconName="otherSvg-编辑" style="margin-left: 5px; font-size: 16px" @click="emit('editType', item)"
+              v-if="item.value !== 'all'" />
             <!-- <el-icon @click="emit('editType', item)" v-if="item.value !== 'all'">
               <Edit />
             </el-icon> -->
-            <svg-icon
-              iconName="otherSvg-删除"
-              style="margin-left: 5px; font-size: 16px"
-              @click="emit('deleteType', item)"
-              v-if="item.value !== 'all'"
-            />
+            <svg-icon iconName="otherSvg-删除" style="margin-left: 5px; font-size: 16px" @click="emit('deleteType', item)"
+              v-if="item.value !== 'all'" />
+            <svg-icon iconName="otherSvg-新增" style="margin-left: 5px; font-size: 16px" @click="emit('addType', item)"
+              v-if="item.value == 'all'" />
             <!-- <el-icon @click="emit('deleteType', item)" v-if="item.value !== 'all'">
               <Delete />
             </el-icon> -->

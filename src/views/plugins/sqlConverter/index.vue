@@ -4,11 +4,27 @@
       <el-input v-model="inputSql" class="sql-input" type="textarea" clearable> </el-input>
     </div>
     <div class="sql-tools">
-      <el-select v-model="options.language" class="tool-item" style="width: 150px">
-        <el-option v-for="lang in languageList" :key="lang.value" :label="lang.label" :value="lang.value" />
-      </el-select>
-      <el-checkbox v-model="options.autoCopy" class="tool-item" label="自动复制" />
-      <el-button type="primary" size="mini" class="tool-item" @click="parseLogToSQL"> 转化 </el-button>
+      <el-dropdown class="label-value-item" placement="top" trigger="click">
+        <el-button type="text" size="mini" class="language-button" style="margin-right: 12px;">
+          {{ currentLanguage.label }}
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item v-for="lang in languageList" :disabled="lang.value === currentLanguage.value"
+              :key="lang.value" @click="changeLanguage(lang)">
+              {{ lang.label }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <el-tooltip class="item" effect="dark" content="自动粘贴">
+        <svg-icon iconName="otherSvg-粘贴" :class="options.autoPaste ? 'is-active' : ''" class="tool-item svg-btn"
+          @click="copyToClipboard" />
+      </el-tooltip>
+      <el-tooltip class="item" effect="dark" content="开始转化">
+        <svg-icon iconName="otherSvg-启动" class="tool-item svg-btn" @click="parseLogToSQL" />
+      </el-tooltip>
+
     </div>
     <div class="sql-output-wrap">
       <Editor class="sql-output" ref="sqlOutputRef" v-model="outputSql" language="sql" />
@@ -23,7 +39,7 @@ import { format } from "sql-formatter";
 import { ElNotification } from "element-plus";
 const options = ref({
   language: "sql",
-  autoCopy: true,
+  autoPaste: true,
 }) as any;
 const inputSql = ref("");
 const outputSql = ref("");
@@ -37,6 +53,10 @@ const languageList = [
   { label: "DB2", value: "db2" },
   { label: "PL/SQL", value: "plsql" },
 ];
+const currentLanguage = ref({ label: "MySQL", value: "mysql" });
+function changeLanguage(lang: any) {
+  currentLanguage.value = lang;
+}
 async function parseLogToSQL() {
   // 提取SQL语句和参数行
   const lines = inputSql.value.split("\n");
@@ -152,7 +172,7 @@ async function parseLogToSQL() {
       uppercase: true, // 关键字大写
     } as any);
     // sqlOutputRef.value?.setValue(outputSql.value);
-    options.value.autoCopy ? copyResult() : "";
+    options.value.autoPaste ? copyResult() : "";
   } catch (err: any) {
     outputSql.value = "SQL格式化错误: " + err.message;
     ElNotification.error(outputSql.value);
@@ -205,9 +225,7 @@ const copyResult = async () => {
   align-items: center;
   justify-content: end;
 
-  .tool-item {
-    margin-left: 15px;
-  }
+
 }
 
 .sql-output {

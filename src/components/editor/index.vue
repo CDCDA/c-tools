@@ -1,19 +1,10 @@
 <template>
-  <div
-    :class="['code-editor-wrapper', { fullscreen: editorOptions.fullScreen }]"
-  >
+  <div :class="['code-editor-wrapper', { fullscreen: editorOptions.fullScreen }]">
     <div class="header" data-tauri-drag-region v-if="editorOptions.fullScreen">
       编辑器
     </div>
-    <VAceEditor
-      ref="aceEditorRef"
-      v-model:value="editorContent"
-      :lang="currentLanguage"
-      :theme="aceTheme"
-      :options="editorOptions"
-      :style="editorStyle"
-      @init="onEditorInit"
-    />
+    <VAceEditor ref="aceEditorRef" v-model:value="editorContent" :lang="currentLanguage" :theme="aceTheme"
+      :options="editorOptions" :style="editorStyle" @init="onEditorInit" />
     <!-- 空态显示 -->
     <div class="empty-state" v-if="!editorContent.trim()">
       <div class="empty-icon">
@@ -36,18 +27,14 @@
         <slot name="footer-right-prepend"></slot>
 
         <slot name="footer-right">
-          <el-dropdown class="label-value-item" placement="top" trigger="click">
+          <el-dropdown v-if="!langHide" class="label-value-item" placement="top" trigger="click">
             <el-button type="text" size="mini" class="language-button">
               {{ currentLanguage }}
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item
-                  v-for="lang in languageList"
-                  :disabled="lang === currentLanguage"
-                  :key="lang"
-                  @click="changeLanguage(lang)"
-                >
+                <el-dropdown-item v-for="lang in languageList" :disabled="lang === currentLanguage" :key="lang"
+                  @click="changeLanguage(lang)">
                   {{ lang }}
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -55,25 +42,12 @@
           </el-dropdown>
 
           <el-tooltip content="全屏" placement="top">
-            <svg-icon
-              iconName="otherSvg-全屏"
-              class="svg-btn"
-              v-if="!editorOptions.fullScreen"
-              @click="fullScreen"
-            ></svg-icon>
-            <svg-icon
-              iconName="otherSvg-退出全屏"
-              class="svg-btn"
-              v-else
-              @click="fullScreen"
-            ></svg-icon>
+            <svg-icon iconName="otherSvg-全屏" class="svg-btn" v-if="!editorOptions.fullScreen"
+              @click="fullScreen"></svg-icon>
+            <svg-icon iconName="otherSvg-退出全屏" class="svg-btn" v-else @click="fullScreen"></svg-icon>
           </el-tooltip>
           <el-tooltip content="格式化" placement="top">
-            <svg-icon
-              iconName="otherSvg-格式刷"
-              class="svg-btn"
-              @click="formatContent"
-            />
+            <svg-icon iconName="otherSvg-格式刷" class="svg-btn" @click="formatContent" />
           </el-tooltip>
         </slot>
         <slot name="footer-right-append"></slot>
@@ -135,6 +109,7 @@ const props = defineProps({
   modelValue: { type: String, default: "" },
   language: { type: String, default: "json" },
   theme: { type: String, default: "light" },
+  langHide: { type: Boolean, default: false },
   // 新增防抖延迟配置
   debounceDelay: { type: Number, default: 300 },
 });

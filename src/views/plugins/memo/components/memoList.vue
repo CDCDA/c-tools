@@ -1,33 +1,16 @@
 <template>
   <div class="memo-list">
-    <List
-      :list="props.memoList"
-      @update:selectIds="updateSelectIds"
-      ref="listRef"
-      @dbClick="handleDbClick"
-      @batchDelete="handleBatchDelete"
-    >
+    <List :list="props.memoList" @update:selectIds="updateSelectIds" ref="listRef" @dbClick="handleDbClick"
+      @batchDelete="handleBatchDelete">
       <template #default="{ item }">
         <div class="memo-list-item">
           <!-- 1. 在父容器上绑定双击事件 -->
-          <div
-            class="editor-content-view"
-            v-html="item.content"
-            @click="handleClick"
-          ></div>
+          <div class="editor-content-view" v-html="item.content" @click="handleClick"></div>
           <div class="memo-title flex-between">
             <div class="title">{{ item.title }}</div>
             <div class="tools">
-              <svg-icon
-                iconName="otherSvg-编辑"
-                class="svg-btn"
-                @click="emit('openMemoDrawer', 'edit', item)"
-              />
-              <svg-icon
-                iconName="otherSvg-删除"
-                class="svg-btn"
-                @click="emit('deleteMemo', item)"
-              />
+              <svg-icon iconName="otherSvg-编辑" class="svg-btn" @click="emit('openMemoDrawer', 'edit', item)" />
+              <svg-icon iconName="otherSvg-删除" class="svg-btn" @click="emit('deleteMemo', item)" />
             </div>
           </div>
         </div>
@@ -102,6 +85,7 @@ const listRef = ref(null) as any;
 
 defineExpose({
   getSelectIds: () => listRef.value.getSelectIds(),
+  clearSelectIds: () => listRef.value.clearSelectIds(),
 });
 </script>
 

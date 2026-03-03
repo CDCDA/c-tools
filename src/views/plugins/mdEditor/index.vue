@@ -1,36 +1,17 @@
 <template>
-  <div class="page-main md-editor">
-    <MdEditor
-      class="markdown-editor"
-      ref="mdEditorRef"
-      v-model="mdForm.content"
-      @onSave="handleSave"
-      @onUploadImg="onUploadImg"
-    />
+  <div class="page-main md-editor-main">
+    <MdEditor class="markdown-editor" ref="mdEditorRef" v-model="mdForm.content" @onSave="handleSave"
+      @onUploadImg="onUploadImg" />
 
     <FloatButtons>
       <template #btns>
-        <el-button
-          class="float-btns-panel-btn"
-          type="primary"
-          @click="handleBlogList"
-          >博客列表</el-button
-        >
-        <el-button
-          class="float-btns-panel-btn"
-          type="success"
-          @click="handleSubmit"
-          >提交博客</el-button
-        >
+        <el-button class="float-btns-panel-btn" type="primary" @click="handleBlogList">博客列表</el-button>
+        <el-button class="float-btns-panel-btn" type="success" @click="handleSubmit">提交博客</el-button>
       </template>
     </FloatButtons>
 
     <!-- 博客发布弹窗 -->
-    <BlogRelease
-      ref="blogReleaseRef"
-      :blogData="blogData"
-      @resetBlogData="resetBlogData"
-    />
+    <BlogRelease ref="blogReleaseRef" :blogData="blogData" @resetBlogData="resetBlogData" />
 
     <!-- 博客列表抽屉 -->
     <BlogListDrawer ref="blogListDrawerRef" @edit-blog="handleEditBlog" />
@@ -117,9 +98,11 @@ const onUploadImg = (file: File) => {
 };
 </script>
 <style lang="scss" scoped>
-.md-editor {
-  height: 100%;
+.md-editor-main {
+  height: calc(100% - 20px);
   position: relative;
+  background: transparent;
+  padding: 10px;
 
   .markdown-editor {
     height: 100%;

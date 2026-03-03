@@ -2,49 +2,27 @@
   <div class="page-main file-tree-json">
     <div class="file-select">
       <el-input v-model="options.path">
-        <template #prepend
-          ><span style="cursor: pointer" @click="selectFile()"
-            >选择文件夹</span
-          ></template
-        >
-        <template #append
-          ><span style="cursor: pointer" @click="handleCopy"
-            >复制json</span
-          ></template
-        >
+        <template #prepend><span style="cursor: pointer" @click="selectFile()">选择文件夹</span></template>
+        <template #append><span style="cursor: pointer" @click="handleCopy">复制json</span></template>
       </el-input>
     </div>
     <div class="file-json">
-      <Editor
-        ref="jsonEditorRef"
-        v-model="fileJson"
-        language="json"
-        v-loading="loading"
-      >
+      <Editor ref="jsonEditorRef" v-model="fileJson" language="json" v-loading="loading" :langHide="true">
         <template #footer-left-prepend>
-          <div class="svg-btn">
+          <div class="label-value-item">
             <span class="label">耗时:</span>
             <span class="value">{{ (consumingTime / 1000).toFixed(2) }}s</span>
           </div>
         </template>
         <template #footer-right-prepend>
-          <el-button type="text" class="svg-btn" @click="hanldeOpenConfig"
-            >文件查询配置</el-button
-          >
-          <el-button type="text" class="svg-btn" @click="handleCharTree"
-            >字符树</el-button
-          >
-          <el-button type="text" class="svg-btn" @click="handleJsonTree"
-            >json树</el-button
-          >
+          <el-button type="text" class="label-value-item" @click="hanldeOpenConfig">文件查询配置</el-button>
+          <el-button type="text" class="label-value-item" @click="handleCharTree">字符树</el-button>
+          <el-button type="text" class="label-value-item" @click="handleJsonTree">json树</el-button>
         </template>
       </Editor>
     </div>
 
-    <file-config-drawer
-      ref="fileConfigDrawerRef"
-      @update:options="updateOptions"
-    />
+    <file-config-drawer ref="fileConfigDrawerRef" @update:options="updateOptions" />
   </div>
 </template>
 

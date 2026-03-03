@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import { useEventBusStore } from "@/store/modules/eventBus.ts";
-
+import { setWindowSize } from "@/utils/window.ts";
 const routes: Array<any> = [
   {
     path: "/login",
@@ -12,10 +12,7 @@ const routes: Array<any> = [
     path: "/pluginSearch",
     name: "pluginSearch",
     meta: { name: "应用查询" },
-    component: () =>
-      import(
-        /* webpackChunkName: "about" */ "/src/views/plugins/pluginSearch.vue"
-      ),
+    component: () => import(/* webpackChunkName: "about" */ "/src/views/plugins/pluginSearch.vue"),
   },
   {
     path: "/plugin",
@@ -37,6 +34,7 @@ const routes: Array<any> = [
           type: "tool",
           search: true,
           showHeader: true,
+          add: true,
         },
         component: () => import("@/views/plugins/memo/index.vue"),
       },
@@ -234,8 +232,7 @@ const routes: Array<any> = [
           alwaysOnTop: false,
           newWindow: false,
         },
-        component: () =>
-          import("@/views/plugins/screenshotAndSuspended/index.vue"),
+        component: () => import("@/views/plugins/screenshotAndSuspended/index.vue"),
       },
 
       {
@@ -451,6 +448,8 @@ const routes: Array<any> = [
           label: "插件配置",
           isHidden: true,
           affix: true,
+          width: 800,
+          height: 220,
         },
         component: () => import("/src/views/pluginManage/config/index.vue"),
       },
@@ -462,14 +461,21 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach(() => {
+router.beforeEach((to: any) => {
   const eventBusStore = useEventBusStore();
-  eventBusStore.pluginLoading = true;
+  if (to.meta?.id) {
+    eventBusStore.pluginLoading = true;
+    setWindowSize(800, 35);
+  }
 });
 
-router.afterEach(() => {
+router.afterEach((to: any) => {
   const eventBusStore = useEventBusStore();
-  eventBusStore.pluginLoading = true;
+  eventBusStore.pluginLoading = false;
+  console.log("sss", to);
+  if (!to.meta?.id) {
+    setWindowSize();
+  }
 });
 
 export default router;

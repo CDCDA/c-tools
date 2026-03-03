@@ -68,7 +68,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .sidebar {
   width: 250px;
-  border-right: 1px solid #EBEBEB;
+  // border-right: 1px solid #EBEBEB;
   height: calc(100% - 51px);
   display: flex;
   flex-direction: column;
@@ -77,7 +77,7 @@ onMounted(() => {
 .sidebar-menu {
   flex: 1;
   padding: 0px 6px 10px 6px;
-  background: #f5f7fa;
+  background: transparent;
   overflow-y: auto;
   height: calc(100% - 50px);
 
@@ -137,11 +137,11 @@ onMounted(() => {
 
 // 个人中心样式
 .personal {
-  border-top: 1px solid #EBEBEB;
+  border-top: 1px solid #eff0f0;
   padding: 5px 10px;
-  height: 42px;
+  height: 38px;
   cursor: pointer;
-  background: #ffffff;
+  background: transparent;
 
   .personal-content {
     display: flex;
@@ -168,18 +168,18 @@ onMounted(() => {
     }
 
     .user-icon-box {
-      width: 45px;
-      height: 45px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: #f0f0f0;
+      background: #666666;
 
       .user-icon {
         width: 24px;
         height: 24px;
-        fill: #606266;
+        color: #ffffff;
       }
     }
 

@@ -6,37 +6,24 @@
       <div class="plugin-name">
         <svg-icon :iconName="plugin.meta.icon" style="margin-right: 5px" />
         <div style="margin-bottom: 2px">{{ plugin.label }}</div>
-        <svg-icon
-          iconName="otherSvg-关闭"
-          style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
-          @click="close"
-        />
+        <svg-icon iconName="otherSvg-关闭" style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
+          @click="close" />
       </div>
     </div>
     <div class="plugin-bar-center" data-tauri-drag-region>
-      <svg-icon
-        iconName="otherSvg-搜索"
-        v-if="props.plugin.meta.search"
-        style="margin-left: 20px; width: 23px; height: 23px"
-      ></svg-icon>
+      <svg-icon iconName="otherSvg-搜索" v-if="props.plugin.meta.search"
+        style="margin-left: 20px; width: 23px; height: 23px;cursor: pointer" @click="handleSearch"></svg-icon>
 
-      <el-input
-        class="plugin-bar-search"
-        v-model="searchText"
-        data-tauri-drag-region
-        v-prevent-drag
-        v-if="props.plugin.meta.search"
-        @keyup.enter="handleSearch()"
-        placeholder="请输入关键字"
-      />
+      <el-input class="plugin-bar-search" v-model="searchText" data-tauri-drag-region v-prevent-drag
+        v-if="props.plugin.meta.search" @keyup.enter="handleSearch()" placeholder="请输入关键字" />
     </div>
     <div class="plugin-bar-right" data-tauri-drag-region>
+      <svg-icon iconName="otherSvg-新增" v-if="plugin.meta.add"
+        style="color:#666666; width: 29px; height: 29px; margin-right: 5px; cursor: pointer;z-index: 10;"
+        @click="handleAdd"></svg-icon>
+
       <el-dropdown @command="handleCommand">
-        <svg-icon
-          iconName="otherSvg-设置"
-          data-tauri-drag-region
-          style="width: 23px; height: 23px"
-        ></svg-icon>
+        <svg-icon iconName="otherSvg-设置" style="width: 23px; height: 23px"></svg-icon>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="window">分离为独立窗口</el-dropdown-item>
@@ -63,7 +50,7 @@ const props = defineProps({
     default: () => ({}),
   },
 });
-const emit = defineEmits(["pluginSearch"]);
+const emit = defineEmits(["pluginSearch", "pluginDataAdd"]);
 const searchText = ref("");
 
 const close = () => {
@@ -85,6 +72,11 @@ const handleCommand = async (command: string) => {
 
 function handleSearch() {
   emit("pluginSearch", searchText.value);
+}
+
+function handleAdd() {
+  console.log("handleAdd")
+  emit("pluginDataAdd");
 }
 
 onMounted(() => {
@@ -151,7 +143,7 @@ onUnmounted(() => {
 
   .plugin-bar-right {
     height: 100%;
-    width: 60px;
+    width: 80px;
     display: flex;
     align-items: center;
     justify-content: end;

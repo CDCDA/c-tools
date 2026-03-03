@@ -1,28 +1,14 @@
 <template>
   <div class="c-list">
-    <el-empty
-      v-if="list.length === 0"
-      image=""
-      image-style="height: 100px"
-      description="暂无数据"
-    />
-    <div
-      v-for="(item, index) in list"
-      :key="item.id || index"
-      :class="['c-list-item', { active: selectIds.includes(item.id) }]"
-      @click="(e) => handleSelect(e, item)"
-      @dblclick="handleDbClick(item)"
-    >
+    <el-empty v-if="list.length === 0" image="" image-style="height: 100px" description="暂无数据" />
+    <div v-for="(item, index) in list" :key="item.id || index"
+      :class="['c-list-item', { active: selectIds.includes(item.id) }]" @click="(e) => handleSelect(e, item)"
+      @dblclick="handleDbClick(item)">
       <slot :item="item" :index="index"> </slot>
     </div>
     <!-- 批量删除按钮 -->
 
-    <svg-icon
-      iconName="otherSvg-删除"
-      class="svg-btn"
-      v-if="selectIds.length > 1"
-      @click="handleBatchDelete"
-    />
+    <svg-icon iconName="otherSvg-删除" class="svg-btn" v-if="selectIds.length > 1" @click="handleBatchDelete" />
   </div>
 </template>
 
@@ -96,8 +82,14 @@ const handleDbClick = async (item: any) => {
 const handleBatchDelete = () => {
   emit("batchDelete", selectIds.value);
 };
+
+
 defineExpose({
   getSelectIds: () => selectIds.value,
+  clearSelectIds: () => {
+    selectIds.value = [];
+    emit("update:selectIds", []);
+  },
 });
 </script>
 <style lang="scss" scoped>

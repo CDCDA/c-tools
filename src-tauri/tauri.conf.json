@@ -14,7 +14,7 @@
       {
         "title": "cTools",
         "width": 800,
-        "height": 200,
+        "height": 220,
         "label": "main",
         "minimizable": true,
         "decorations": false,
@@ -44,7 +44,7 @@
       "icons/正则.ico"
     ],
     "resources": [
-      "icons/32x32.png"
+      "icons/icon.ico"
     ]
   },
   "plugins": {

@@ -21,14 +21,14 @@ import PluginManageBar from "./components/pluginManageBar.vue";
 .plugin-manage-container {
   width: 100vw;
   height: 100vh;
-  background: white;
+  background: transparent;
   position: absolute;
   font-family: "shark";
 
   .plugin-manage-main {
     height: 100%;
     width: inherit;
-    background: white;
+    background: transparent;
     width: 100%;
     display: flex;
   }
@@ -39,6 +39,9 @@ import PluginManageBar from "./components/pluginManageBar.vue";
     overflow: auto;
     display: flex;
     overflow: hidden;
+    background: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.02);
+    border-radius: 6px 0 0 0;
   }
 }
 </style>
