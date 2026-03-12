@@ -19,7 +19,7 @@
       </el-dropdown>
       <el-tooltip class="item" effect="dark" content="自动粘贴">
         <svg-icon iconName="otherSvg-粘贴" :class="options.autoPaste ? 'is-active' : ''" class="tool-item svg-btn"
-          @click="copyToClipboard" />
+          @click="options.autoPaste = !options.autoPaste" />
       </el-tooltip>
       <el-tooltip class="item" effect="dark" content="开始转化">
         <svg-icon iconName="otherSvg-启动" class="tool-item svg-btn" @click="parseLogToSQL" />

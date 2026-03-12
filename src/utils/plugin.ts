@@ -92,6 +92,7 @@ export const selectPlugin = async (plugin: any, router: any) => {
 };
 
 export async function createNewWindow(plugin: any) {
+  console.log("创建新窗口", plugin);
   currentWindow.emit(`create-window`, {
     windowData: {
       label: `tool-${plugin.name}`,

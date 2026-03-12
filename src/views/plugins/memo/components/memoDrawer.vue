@@ -1,11 +1,11 @@
 <template>
-  <el-drawer v-model="open" title="添加备忘录" size="75%" direction="btt" @close="close">
+  <el-drawer v-model="open" title="添加备忘录" size="75%" direction="btt" @close="close" :modal="false">
     <div class="drawer-content">
-      <el-form :model="memoData" ref="formRef" :rules="rules" style="height: 100%;" label-width="4rem">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="memoData.title" placeholder="请输入标题" @keyup.enter="submit()" />
+      <el-form :model="memoData" ref="formRef" :rules="rules" style="height: 100%;" label-width="0">
+        <el-form-item prop="title">
+          <el-input v-model="memoData.title" placeholder="请输入标题" @keyup.enter.native="submit()" />
         </el-form-item>
-        <el-form-item label="内容" prop="content">
+        <el-form-item label="" prop="content">
           <WangEditor ref="wangEditorRef" style="height: 285px;" v-model="memoData.content" showToolBar />
         </el-form-item>
       </el-form>
@@ -43,13 +43,13 @@ const close = () => {
 }
 
 const submit = () => {
-  formRef.value?.validate((valid: any) => {
-    if (valid) {
-      memoData.value.text = wangEditorRef.value?.getText();
-      emit("submit", memoData.value);
-      close()
-    }
-  });
+  memoData.value.text = wangEditorRef.value?.getText();
+  if (!memoData.value.text) {
+    ElNotification.error("请输入内容");
+    return;
+  }
+  emit("submit", memoData.value);
+  close()
 };
 
 defineExpose({

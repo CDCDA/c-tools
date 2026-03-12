@@ -7,11 +7,7 @@
         </div>
       </slot>
     </div>
-    <div
-      v-if="props.type === 'panel'"
-      class="float-btns-panel-wrap"
-      :class="{ show: isSettingPanelVisible }"
-    >
+    <div v-if="props.type === 'panel'" class="float-btns-panel-wrap" :class="{ show: isSettingPanelVisible }">
       <slot name="btns"> </slot>
     </div>
   </div>
@@ -96,7 +92,7 @@ const toggleSettingPanel = () => {
   display: flex;
   align-items: center;
   background-color: #fff;
-  border-radius: 25px;
+  border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   opacity: 0;
   transition: all 0.3s ease;

@@ -1,20 +1,20 @@
 <template>
-  <div
-    class="app-container"
-    :style="{
-      background: settingStore.transparent
-        ? 'transparent'
-        : 'linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important',
-    }"
-  >
+  <div class="app-container" :style="{
+    background: settingStore.transparent
+      ? 'transparent'
+      : '#F5F5F7 !important',
+  }">
     <RouterView />
     <GlobalParamModal />
   </div>
+  <!-- rgb(249 249 249) -->
+  <!-- #FAF9F6 -->
+  <!-- linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important -->
 </template>
 
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount } from "vue";
-import { adjustWindowSize } from "@/utils/window.ts";
+import { adjustWindowSize, setWindowSize } from "@/utils/window.ts";
 import { useRouter } from "vue-router";
 import { saveAllStore, loadAllStore } from "@/utils/storeManage.ts";
 import { listen } from "@tauri-apps/api/event";
@@ -32,6 +32,7 @@ const currentWindow = getCurrentWindow();
 
 async function setupWindow() {
   console.log("当前窗口", currentWindow);
+
   if (currentWindow.label === "main") {
     settingStore.transparent = false;
     // 初始化所有store(包括快捷键)
@@ -43,12 +44,14 @@ async function setupWindow() {
       const newWindow = new Windows();
       const { windowData, params } = event.payload;
       const win = await newWindow.createWin(windowData, params);
-      console.log("params:", params);
       if (params.duration) {
         setTimeout(() => {
           win.close();
         }, params.duration);
       }
+    });
+    nextTick(() => {
+      adjustWindowSize();
     });
     return;
   }
@@ -90,23 +93,20 @@ async function setupWindow() {
         eventBusStore.set("fullScreenImage", params.fullScreenImage);
         break;
     }
+    console.log("params:", params);
     currentWindow.show();
   });
 
   await currentWindow.emit(`window-ready-${currentWindow.label}`);
 }
 
-function init() {
-  // enable()
+async function init() {
+  setWindowSize(800, 35);
   setupWindow();
-  nextTick(() => {
-    adjustWindowSize();
-  });
 }
 init();
 
-onBeforeUnmount(() => {
-  // console.log("【成功】关闭窗口:", currentWindow.label);
+onBeforeUnmount(async () => {
   saveAllStore();
 });
 </script>
@@ -123,6 +123,16 @@ onBeforeUnmount(() => {
   --el-button-hover-bg-color: #00968c !important;
   /* --el-table-border-color: #EBEBEB !important;
   --el-border-color-lighter: #EBEBEB !important; */
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* 防止出现双滚动条 */
 }
 
 body {

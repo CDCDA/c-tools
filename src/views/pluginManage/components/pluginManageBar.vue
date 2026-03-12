@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="plugin-manage-bar-right" data-tauri-drag-region>
-      <svg-icon iconName="pluginIcons-icon" class="plugin-icon" @click="handleClick" />
+      <svg-icon iconName="pluginIcons-双剑" class="plugin-icon" @click="handleClick" style="color: #666666;" />
     </div>
   </div>
 </template>

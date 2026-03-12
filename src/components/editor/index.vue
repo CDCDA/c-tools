@@ -10,7 +10,7 @@
       <div class="empty-icon">
         <svg-icon iconName="otherSvg-大括号"></svg-icon>
       </div>
-      <div class="empty-text">请输入或粘贴JSON内容</div>
+      <div class="empty-text">请输入或粘贴内容</div>
     </div>
     <div class="code-editor-footer">
       <div class="code-editor-footer-left">

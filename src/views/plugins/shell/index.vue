@@ -39,11 +39,7 @@
     </FloatButtons>
 
     <!-- 新增/编辑抽屉 -->
-    <el-drawer
-      v-model="drawerVisible"
-      :title="form.id ? '编辑脚本' : '新增脚本'"
-      size="70%"
-    >
+    <el-drawer v-model="drawerVisible" :title="form.id ? '编辑脚本' : '新增脚本'" size="70%">
       <el-form :model="form" label-width="5rem">
         <el-collapse v-model="activeCollapseNames">
           <el-collapse-item title="基础信息" name="1">
@@ -62,41 +58,18 @@
           </el-collapse-item>
           <el-collapse-item title="脚本内容" name="2">
             <el-form-item label="脚本命令">
-              <editor
-                ref="editorOutputRef"
-                style="min-height: 300px"
-                class="editor"
-                v-model="form.command"
-                language="shell"
-                placeholder="支持占位符，例如: taskkill /F /PID {{pid}}"
-              />
+              <editor ref="editorOutputRef" style="min-height: 300px" class="editor" v-model="form.command"
+                language="shell" placeholder="支持占位符，例如: taskkill /F /PID {{pid}}" />
             </el-form-item>
           </el-collapse-item>
           <el-collapse-item title="参数管理" name="3">
             <div v-for="(arg, index) in form.args" :key="index" class="arg-row">
-              <el-input
-                v-model="arg.key"
-                placeholder="参数Key (如: port)"
-                size="small"
-              />
-              <el-input
-                v-model="arg.defaultValue"
-                placeholder="默认值"
-                size="small"
-              />
-              <el-button
-                type="danger"
-                :icon="Delete"
-                circle
-                size="small"
-                @click="form.args.splice(index, 1)"
-              />
+              <el-input v-model="arg.key" placeholder="参数Key (如: port)" size="small" />
+              <el-input v-model="arg.defaultValue" placeholder="默认值" size="small" />
+              <el-button type="danger" :icon="Delete" circle size="small" @click="form.args.splice(index, 1)" />
             </div>
-            <el-button
-              type="dashed"
-              style="width: 100%; margin-top: 10px"
-              @click="form.args.push({ key: '', defaultValue: '' })"
-            >
+            <el-button type="dashed" style="width: 100%; margin-top: 10px"
+              @click="form.args.push({ key: '', defaultValue: '' })">
               + 添加参数
             </el-button>
           </el-collapse-item>
@@ -111,11 +84,7 @@
     <!-- 执行前的参数确认弹窗 -->
     <el-dialog v-model="runDialogVisible" title="确认参数" width="400px">
       <el-form label-width="80px">
-        <el-form-item
-          v-for="arg in activeScript?.args"
-          :key="arg.key"
-          :label="arg.key"
-        >
+        <el-form-item v-for="arg in activeScript?.args" :key="arg.key" :label="arg.key">
           <el-input v-model="runParams[arg.key]" />
         </el-form-item>
       </el-form>
@@ -399,7 +368,7 @@ defineExpose({
 .shell-container {
   height: calc(100% - 30px);
   width: calc(100% - 30px);
-  background: #fff;
+  background: transparent;
 }
 
 .shell-header {

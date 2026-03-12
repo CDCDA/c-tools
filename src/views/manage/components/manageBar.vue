@@ -5,19 +5,12 @@
       <div class="manage-name">
         <!-- <svg-icon :iconName="" style="margin-right: 5px" /> -->
         <div style="margin-bottom: 2px">{{ "管理中心" }}</div>
-        <svg-icon
-          iconName="otherSvg-关闭"
-          style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
-          @click="handleClick"
-        />
+        <svg-icon iconName="otherSvg-关闭" style="cursor: pointer; margin-left: 5px; width: 22px; height: 22px"
+          @click="handleClick" />
       </div>
     </div>
     <div class="manage-bar-right" data-tauri-drag-region>
-      <svg-icon
-        iconName="pluginIcons-icon"
-        class="plugin-icon"
-        @click="handleClick"
-      />
+      <svg-icon iconName="pluginIcons-双剑" class="plugin-icon" @click="handleClick" style="color: #666666;" />
     </div>
   </div>
 </template>
@@ -86,6 +79,7 @@ function handleClick() {
     }
   }
 }
+
 .manage-name {
   height: 32px;
   font-size: 18px;

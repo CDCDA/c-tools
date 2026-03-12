@@ -1,7 +1,8 @@
 <template>
   <div class="plugin-container">
     <!-- 独立窗口 头部 -->
-    <PluginHeader :plugin="plugin" v-if="headerType === 'window' && plugin?.showHeader" />
+    <PluginHeader :plugin="plugin" v-if="headerType === 'window' && plugin?.showHeader" @pluginDataAdd="pluginDataAdd"
+      @pluginSearch="pluginSearch" />
     <!-- 主应用 头部 -->
     <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginDataAdd="pluginDataAdd"
       @pluginSearch="pluginSearch" />

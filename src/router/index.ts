@@ -173,67 +173,67 @@ const routes: Array<any> = [
         },
         component: () => import("@/views/plugins/codeGenerator/index.vue"),
       },
-      {
-        path: "/colorExtraction",
-        name: "colorExtraction",
-        meta: {
-          id: 11,
-          label: "取色",
-          description: "取色",
-          icon: "pluginIcons-取色",
-          ico: "icons/取色.ico",
-          shortcut: "Alt+3",
-          type: "tool",
-          showHeader: false,
-          transparent: true,
-          fullscreen: true,
-          skipTaskbar: true,
-          alwaysOnTop: true,
-          newWindow: false,
-        },
-        component: () => import("@/views/plugins/colorExtraction/index.vue"),
-      },
-      {
-        path: "/screenshot",
-        name: "screenshot",
-        meta: {
-          id: 12,
-          label: "截图",
-          description: "截图",
-          icon: "pluginIcons-截图",
-          ico: "icons/截图.ico",
-          shortcut: "Alt+S",
-          showHeader: false,
-          transparent: true,
-          type: "tool",
-          fullscreen: true,
-          skipTaskbar: false,
-          alwaysOnTop: false,
-          newWindow: true,
-          closeHiden: true,
-        },
-        component: () => import("@/views/plugins/screenshot/index.vue"),
-      },
-      {
-        path: "/screenshotAndSuspended",
-        name: "screenshotAndSuspended",
-        meta: {
-          id: 13,
-          label: "截图并悬浮",
-          description: "截图并悬浮",
-          icon: "pluginIcons-截图并悬浮",
-          ico: "icons/截图并悬浮.ico",
-          shortcut: "Alt+D",
-          showHeader: false,
-          transparent: true,
-          skipTaskbar: true,
-          type: "tool",
-          fullscreen: true,
-          alwaysOnTop: false,
-          newWindow: false,
-        },
-        component: () => import("@/views/plugins/screenshotAndSuspended/index.vue"),
-      },
+      // {
+      //   path: "/colorExtraction",
+      //   name: "colorExtraction",
+      //   meta: {
+      //     id: 11,
+      //     label: "取色",
+      //     description: "取色",
+      //     icon: "pluginIcons-取色",
+      //     ico: "icons/取色.ico",
+      //     shortcut: "Alt+3",
+      //     type: "tool",
+      //     showHeader: false,
+      //     transparent: true,
+      //     fullscreen: true,
+      //     skipTaskbar: true,
+      //     alwaysOnTop: true,
+      //     newWindow: false,
+      //   },
+      //   component: () => import("@/views/plugins/colorExtraction/index.vue"),
+      // },
+      // {
+      //   path: "/screenshot",
+      //   name: "screenshot",
+      //   meta: {
+      //     id: 12,
+      //     label: "截图",
+      //     description: "截图",
+      //     icon: "pluginIcons-截图",
+      //     ico: "icons/截图.ico",
+      //     shortcut: "Alt+S",
+      //     showHeader: false,
+      //     transparent: true,
+      //     type: "tool",
+      //     fullscreen: true,
+      //     skipTaskbar: false,
+      //     alwaysOnTop: false,
+      //     newWindow: true,
+      //     closeHiden: true,
+      //   },
+      //   component: () => import("@/views/plugins/screenshot/index.vue"),
+      // },
+      // {
+      //   path: "/screenshotAndSuspended",
+      //   name: "screenshotAndSuspended",
+      //   meta: {
+      //     id: 13,
+      //     label: "截图并悬浮",
+      //     description: "截图并悬浮",
+      //     icon: "pluginIcons-截图并悬浮",
+      //     ico: "icons/截图并悬浮.ico",
+      //     shortcut: "Alt+D",
+      //     showHeader: false,
+      //     transparent: true,
+      //     skipTaskbar: true,
+      //     type: "tool",
+      //     fullscreen: true,
+      //     alwaysOnTop: false,
+      //     newWindow: false,
+      //   },
+      //   component: () => import("@/views/plugins/screenshotAndSuspended/index.vue"),
+      // },
 
       {
         path: "/translation",
@@ -461,20 +461,27 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to: any) => {
+router.beforeEach(async (to: any) => {
   const eventBusStore = useEventBusStore();
   if (to.meta?.id) {
     eventBusStore.pluginLoading = true;
     setWindowSize(800, 35);
+    // await new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve(null);
+    //   }, 5000);
+    // });
   }
 });
 
 router.afterEach((to: any) => {
   const eventBusStore = useEventBusStore();
   eventBusStore.pluginLoading = false;
-  console.log("sss", to);
+  // console.log("sss", to);
   if (!to.meta?.id) {
     setWindowSize();
+  } else {
+    setWindowSize(to.meta?.width || 800, to.meta?.height || 600);
   }
 });
 

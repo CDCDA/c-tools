@@ -18,11 +18,12 @@
         "label": "main",
         "minimizable": true,
         "decorations": false,
-        "transparent": true
+        "transparent": true,
+        "devtools": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost https://asset.localhost"
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net"
     }
   },
   "bundle": {

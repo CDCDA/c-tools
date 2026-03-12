@@ -49,42 +49,38 @@ impl FileNode {
 
 fn is_not_hidden_jwalk(
     entry: &DirEntry<((), ())>,
-    exclude_files: &Vec<String>,
-    include_files: &Vec<String>,
+    exclude_files: &[String], // 使用切片而非 Vec 引用
+    include_files: &[String],
 ) -> bool {
-    let mut is_hidden = false;
+    let file_name_os = entry.file_name();
+    let file_name_str = file_name_os.to_string_lossy(); // 只转换一次
+
+    // 1. 基础隐藏检查（点开头通常最先排除，效率最高）
+    if file_name_str.starts_with('.') {
+        return false;
+    }
+
+    // 2. 排除逻辑
     if !exclude_files.is_empty() {
-        let file_name = entry.file_name().to_string_lossy();
-        for exclude_file in exclude_files {
-            if file_name.contains(exclude_file) {
-                is_hidden = true;
-                break;
-            }
+        if exclude_files.iter().any(|ex| file_name_str.contains(ex)) {
+            return false;
         }
     }
+
+    // 3. 包含逻辑
     if !include_files.is_empty() {
-        let file_name = entry.file_name().to_string_lossy();
         let is_file = entry.file_type().is_file();
-        if !is_file {
-            is_hidden = false;
-        } else {
-            for include_file in include_files {
-                // eprintln!("文件名:{};包含文件:{}", file_name, include_file);
-                if !file_name.contains(include_file) {
-                    is_hidden = true;
-                    break;
-                }
+        if is_file {
+            // 这里假设逻辑是：必须包含 include_files 中的任意一个 (OR 逻辑)
+            // 如果是必须包含全部，则把 any 改为 all
+            if !include_files.iter().any(|inc| file_name_str.contains(inc)) {
+                return false;
             }
         }
     }
 
-    entry
-        .file_name()
-        .to_str()
-        .map(|s| !s.starts_with('.') && !is_hidden)
-        .unwrap_or(false)
+    true
 }
-
 // #[tauri::command]
 // pub fn list_directory_recursive(
 //     _path: String,
@@ -170,6 +166,9 @@ pub fn list_directory_recursive_jwalk(
     include_files: String,
     max_depth: usize,
 ) -> Result<Vec<FileNode>, String> {
+    let start_time = std::time::Instant::now();
+    eprintln!("[list_directory_recursive_jwalk] 开始扫描目录: {}", path);
+
     let root_path = PathBuf::from(path);
     if !root_path.is_dir() {
         return Err(format!("路径 '{}' 不是一个有效的目录", root_path.display()));
@@ -237,8 +236,6 @@ pub fn list_directory_recursive_jwalk(
         // depth 从 1 开始，所以我们要映射到从 0 开始的索引
         let relative_depth = depth - 1;
 
-        // --- 这就是社区通用的、安全的树构建逻辑 ---
-
         // 1. 回溯：如果当前深度小于索引路径的长度，说明我们已经完成了子树的遍历
         // 需要回退到正确的父节点。
         if relative_depth < node_path_indices.len() {
@@ -275,6 +272,13 @@ pub fn list_directory_recursive_jwalk(
             node_path_indices.push(new_node_index);
         }
     }
+
+    let elapsed = start_time.elapsed();
+    eprintln!(
+        "[list_directory_recursive_jwalk] 扫描完成，共 {} 个条目，耗时: {:?}",
+        roots.len(),
+        elapsed
+    );
 
     Ok(roots)
 }

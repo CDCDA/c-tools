@@ -24,7 +24,7 @@ export const windowConfig = {
   height: 600,            // 窗口高度
   minWidth: null,         // 窗口最小宽度
   minHeight: null,        // 窗口最小高度
-  skipTaskbar: true,      // 是否跳过任务栏
+  skipTaskbar: false,      // 是否跳过任务栏
   // x: null,                // 窗口相对于屏幕左侧坐标
   // y: null,                // 窗口相对于屏幕顶端坐标
   // center: true,           // 窗口居中显示

@@ -1,32 +1,30 @@
 <template>
-  <el-drawer v-model="dialogVisible" title="博客列表" size="50%" direction="rtl" @close="handleClose">
-    <div class="blog-list-container">
-      <List :list="blogList" @update:selectIds="updateSelectIds" ref="listRef" @dbClick="handleDbClick" idKey="blogId"
+  <el-drawer v-model="dialogVisible" title="草稿列表" size="50%" direction="rtl" @close="handleClose">
+    <div class="draft-list-container">
+      <List :list="draftList" @update:selectIds="updateSelectIds" ref="listRef" @dbClick="handleDbClick" idKey="id"
         @batchDelete="handleBatchDelete">
         <template #default="{ item }">
           <div class="c-list-item-content">
-            {{ item.blogAbstract }}
+            {{ item.content.substring(0, 100) }}{{ item.content.length > 100 ? '...' : '' }}
           </div>
           <div class="c-title flex-between">
-            <div class="title">{{ item.blogTitle }}</div>
-
+            <div class="title">{{ item.title }}</div>
             <div class="draft-info">
+              <span class="create-time">{{ formatTime(item.createTime) }}</span>
               <div class="tools">
                 <el-tooltip class="item" effect="dark" content="编辑">
-                  <el-icon @click="emit('edit-blog', item)">
+                  <el-icon @click="editDraft(item)">
                     <Edit />
                   </el-icon>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="删除">
-                  <el-icon @click="deleteBlog(item.blogId)">
+                  <el-icon @click="deleteDraft(item.id)">
                     <Delete />
                   </el-icon>
                 </el-tooltip>
               </div>
             </div>
           </div>
-
-
         </template>
       </List>
     </div>
@@ -36,86 +34,86 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import List from "@/components/list/index.vue";
-import { pageBlogs, deleteBlogs } from "@/api/blog.ts";
-import { Edit, Delete } from "@element-plus/icons-vue";
-import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
-const dialogVisible = ref(false);
-const loading = ref(false);
-const blogList = ref<any[]>([]);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const total = ref(0);
-const queryForm = ref({
-  blogTitle: "",
-  pageNum: currentPage.value,
-  pageSize: pageSize.value,
+import { Delete, Edit } from "@element-plus/icons-vue";
+import { ElMessageBox, ElNotification } from "element-plus";
+
+const props = defineProps({
+  draftList: {
+    type: Array,
+    default: () => []
+  }
 });
-const emit = defineEmits(["edit-blog", "delete-blog"]);
+
+const dialogVisible = ref(false);
+const selectIds = ref<number[]>([]);
+const emit = defineEmits(["edit-draft", "update-draft-list"]);
+
+// 格式化时间
+const formatTime = (timeString: string) => {
+  const date = new Date(timeString);
+  return date.toLocaleString();
+};
+
+// 处理关闭
 const handleClose = () => {
   dialogVisible.value = false;
 };
-// 模拟获取博客列表数据
-const getBlogList = async () => {
-  loading.value = true;
-  const { code, rows, total: totalCount } = await pageBlogs(queryForm.value);
-  if (code === 200) {
-    blogList.value = rows || [];
-    total.value = totalCount || 0;
-  }
-};
 
-const selectIds = ref<number[]>([]);
-
+// 更新选中ID
 const updateSelectIds = (ids: number[]) => {
   selectIds.value = ids;
 };
 
+// 处理双击
 const handleDbClick = (item: any) => {
-  emit("edit-blog", item);
+  editDraft(item);
 };
 
-const deleteBlog = (id: number) => {
-  ElMessageBox.confirm('确定要删除这篇博客吗？', '警告', {
+// 编辑草稿
+const editDraft = (draft: any) => {
+  emit('edit-draft', draft);
+  dialogVisible.value = false;
+};
+
+// 删除草稿
+const deleteDraft = (id: number) => {
+  ElMessageBox.confirm('确定要删除这个草稿吗？', '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(async () => {
-    const res = await deleteBlogs([id]);
-    if (res.code === 200) {
-      ElNotification.success('删除成功');
-      getBlogList();
-    }
+  }).then(() => {
+    const newDraftList = props.draftList.filter((item: any) => item.id !== id);
+    emit('update-draft-list', newDraftList);
+    ElNotification.success('删除成功');
   }).catch(() => {
     // 取消删除
   });
 };
 
+// 批量删除
 const handleBatchDelete = () => {
   if (selectIds.value.length === 0) {
-    ElMessage.warning('请选择要删除的博客');
+    ElNotification.warning('请选择要删除的草稿');
     return;
   }
-  ElMessageBox.confirm('确定删除选中的博客吗？', '提示', {
+
+  ElMessageBox.confirm(`确定要删除选中的 ${selectIds.value.length} 个草稿吗？`, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
-    type: 'warning',
-  }).then(async () => {
-    const res = await deleteBlogs(selectIds.value);
-    if (res.code === 200) {
-      ElMessage.success('删除成功');
-      getBlogList();
-      selectIds.value = [];
-    }
+    type: 'warning'
+  }).then(() => {
+    const newDraftList = props.draftList.filter((item: any) => !selectIds.value.includes(item.id));
+    emit('update-draft-list', newDraftList);
+    ElNotification.success('删除成功');
+    selectIds.value = [];
+  }).catch(() => {
+    // 取消删除
   });
 };
-
-
-
 
 // 打开抽屉
 const open = () => {
   dialogVisible.value = true;
-  getBlogList();
 };
 
 // 关闭抽屉
@@ -134,7 +132,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
-.blog-list-container {
+.draft-list-container {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -198,26 +196,5 @@ defineExpose({
       }
     }
   }
-}
-
-.blog-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.blog-title {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 400px;
-}
-
-.blog-list-footer {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

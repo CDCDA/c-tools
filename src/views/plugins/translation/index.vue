@@ -6,11 +6,7 @@
           <div class="part-header">
             <div class="part-title">待翻译文本</div>
             <div class="part-tools">
-              <el-dropdown
-                class="label-value-btn"
-                placement="bottom"
-                trigger="click"
-              >
+              <el-dropdown class="label-value-btn" placement="bottom" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
                   {{
                     sourceLangList.find(
@@ -20,11 +16,8 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item
-                      v-for="lang in sourceLangList"
-                      :key="lang.value"
-                      @click="options.sourceLang = lang.value"
-                    >
+                    <el-dropdown-item v-for="lang in sourceLangList" :key="lang.value"
+                      @click="options.sourceLang = lang.value">
                       {{ lang.label }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -43,11 +36,8 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item
-                      v-for="lang in targetLangList"
-                      :key="lang.value"
-                      @click="options.targetLang = lang.value"
-                    >
+                    <el-dropdown-item v-for="lang in targetLangList" :key="lang.value"
+                      @click="options.targetLang = lang.value">
                       {{ lang.label }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -56,20 +46,12 @@
             </div>
           </div>
           <div class="part-main">
-            <el-input
-              type="textarea"
-              v-model="originalText"
-              @input="debouncedTranslate"
-              placeholder="请输入待翻译文本"
-            />
+            <el-input type="textarea" v-model="originalText" @input="debouncedTranslate" placeholder="请输入待翻译文本" />
           </div>
           <div class="part-footer">
             <div class="part-footer-left">
               <div class="part-footer-item">
-                <el-checkbox
-                  v-model="options.autoReadClipboard"
-                  style="margin-bottom: 2px"
-                >
+                <el-checkbox v-model="options.autoReadClipboard" style="margin-bottom: 2px">
                   自动读取剪贴板
                 </el-checkbox>
               </div>
@@ -77,10 +59,7 @@
             <div class="part-footer-right">
               <div class="part-footer-item">
                 <span class="pre-text">
-                  <el-tooltip
-                    content="自动读取剪贴板时，如果剪贴板内容小于限制字符数，将自动翻译"
-                    placement="bottom"
-                  >
+                  <el-tooltip content="自动读取剪贴板时，如果剪贴板内容小于限制字符数，将自动翻译" placement="bottom">
                     <el-icon style="margin-top: 1px">
                       <QuestionFilled />
                     </el-icon>
@@ -88,12 +67,8 @@
                   限制字符数
                 </span>
 
-                <el-input
-                  class="linit-number-input"
-                  v-model="options.limitNumber"
-                  placeholder="限制字符数"
-                  style="box-shadow: none; width: 60px; border: none"
-                />
+                <el-input class="linit-number-input" v-model="options.limitNumber" placeholder="限制字符数"
+                  style="box-shadow: none; width: 60px; border: none" />
               </div>
             </div>
           </div>
@@ -105,11 +80,7 @@
             <div class="part-title">翻译结果</div>
             <div class="part-tools">
               <span class="pre-text">自动转为</span>
-              <el-dropdown
-                class="label-value-btn"
-                placement="top"
-                trigger="click"
-              >
+              <el-dropdown class="label-value-btn" placement="top" trigger="click">
                 <el-button type="text" size="mini" style="margin-bottom: -2px">
                   {{
                     formatList.find(
@@ -119,12 +90,8 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item
-                      v-for="format in formatList"
-                      :disabled="format.value === options.autoFormatType"
-                      :key="format.value"
-                      @click="options.autoFormatType = format.value"
-                    >
+                    <el-dropdown-item v-for="format in formatList" :disabled="format.value === options.autoFormatType"
+                      :key="format.value" @click="options.autoFormatType = format.value">
                       {{ format.label }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -133,19 +100,12 @@
             </div>
           </div>
           <div class="part-main">
-            <el-input
-              type="textarea"
-              v-model="translateText"
-              placeholder="请输入待翻译文本"
-            />
+            <el-input type="textarea" v-model="translateText" placeholder="请输入待翻译文本" />
           </div>
           <div class="part-footer">
             <div class="part-footer-right">
               <div class="part-footer-item">
-                <el-checkbox
-                  v-model="options.autoCopy"
-                  style="margin-bottom: 2px"
-                >
+                <el-checkbox v-model="options.autoCopy" style="margin-bottom: 2px">
                   自动复制
                 </el-checkbox>
               </div>
@@ -153,16 +113,8 @@
             <div class="part-footer-right">
               <div class="part-footer-item">
                 <span class="pre-text">切换为</span>
-                <el-dropdown
-                  class="label-value-btn"
-                  placement="bottom"
-                  trigger="click"
-                >
-                  <el-button
-                    type="text"
-                    size="mini"
-                    style="margin-bottom: -2px"
-                  >
+                <el-dropdown class="label-value-btn" placement="bottom" trigger="click">
+                  <el-button type="text" size="mini" style="margin-bottom: -2px">
                     {{
                       formatList.find(
                         (format) => format.value === options.formatType
@@ -171,17 +123,10 @@
                   </el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
-                      <el-dropdown-item
-                        v-for="format in formatList"
-                        :disabled="format.value === options.formatType"
-                        :key="format.value"
-                        @click="
-                          translateText = formatText(
-                            translateText,
-                            format.value
-                          )
-                        "
-                      >
+                      <el-dropdown-item v-for="format in formatList" :disabled="format.value === options.formatType"
+                        :key="format.value" @click="
+                          handleFormat(format.value)
+                          ">
                         {{ format.label }}
                       </el-dropdown-item>
                     </el-dropdown-menu>
@@ -209,6 +154,7 @@ import { savePluginData, getPluginData } from "@/utils/localSave.ts";
 const originalText = ref("");
 // 翻译结果
 const translateText = ref("");
+const originalTranslateText = ref("");
 
 const sourceLangList = [
   {
@@ -311,6 +257,13 @@ const options = ref({
   limitNumber: 100,
 });
 
+const handleFormat = (type: string) => {
+  options.value.formatType = type;
+  translateText.value = formatText(originalTranslateText.value, type);
+};
+
+
+
 const switchLang = () => {
   const temp = options.value.sourceLang;
   options.value.sourceLang = options.value.targetLang;
@@ -334,6 +287,7 @@ const handleTranslate = async () => {
     target: "en",
   });
   tempText.value = JSON.parse(JSON.stringify(res));
+  originalTranslateText.value = res;
   translateText.value = formatText(res, options.value.autoFormatType);
   if (options.value.autoCopy) {
     writeText(translateText.value);
@@ -354,51 +308,61 @@ const handleTranslate = async () => {
 //   }
 // };
 
+
 function formatText(text: string, type: string): string {
-  // 先处理输入文本，移除多余空格，标准化分隔符
-  const normalized = text
-    .trim()
-    .replace(/[_\s]+/g, " ") // 将下划线和多个空格统一为单个空格
-    .toLowerCase();
-  console.log("normalized", text, type);
-  switch (type) {
-    case "upperCamelCase": // PascalCase
-      return normalized
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join("");
+  try {
+    // 先处理输入文本，移除多余空格，标准化分隔符
+    const normalized = text
+      .trim()
+      .replace(/[_\s]+/g, " ") // 将下划线和多个空格统一为单个空格
+      .toLowerCase();
+    console.log("normalized", text, type);
+    switch (type) {
+      case "upperCamelCase": // PascalCase
+        return normalized
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join("");
 
-    case "lowerCamelCase": // camelCase
-      return normalized
-        .split(" ")
-        .map((word, index) =>
-          index === 0
-            ? word.toLowerCase()
-            : word.charAt(0).toUpperCase() + word.slice(1)
-        )
-        .join("");
+      case "lowerCamelCase": // camelCase
+        return normalized
+          .split(" ")
+          .map((word, index) =>
+            index === 0
+              ? word.toLowerCase()
+              : word.charAt(0).toUpperCase() + word.slice(1)
+          )
+          .join("");
 
-    case "underline": // snake_case
-      return normalized.replace(/\s+/g, "_");
+      case "underline": // snake_case
+        return normalized.replace(/\s+/g, "_");
 
-    case "kebab-case": // 新增：短横线连接
-      return normalized.replace(/\s+/g, "-");
+      case "kebab-case": // 新增：短横线连接
+        return normalized.replace(/\s+/g, "-");
 
-    case "constant": // CONSTANT_CASE
-      return normalized.replace(/\s+/g, "_").toUpperCase();
+      case "constant": // CONSTANT_CASE
+        return normalized.replace(/\s+/g, "_").toUpperCase();
 
-    case "sentence": // Sentence case
-      return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+      case "sentence": // Sentence case
+        return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 
-    case "title": // Title Case
-      return normalized
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+      case "title": // Title Case
+        return normalized
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
 
-    default:
-      return tempText.value;
+      default:
+        return tempText.value;
+    }
+  } catch (error) {
+    ElNotification.error({
+      title: "格式化文本失败:",
+      message: error.message,
+    });
+    return "";
   }
+
 }
 
 onMounted(async () => {

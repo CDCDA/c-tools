@@ -1,8 +1,8 @@
 <template>
   <div class="c-list">
     <el-empty v-if="list.length === 0" image="" image-style="height: 100px" description="暂无数据" />
-    <div v-for="(item, index) in list" :key="item.id || index"
-      :class="['c-list-item', { active: selectIds.includes(item.id) }]" @click="(e) => handleSelect(e, item)"
+    <div v-for="(item, index) in list" :key="item[props.idKey] || index"
+      :class="['c-list-item', { active: selectIds.includes(item[props.idKey]) }]" @click="(e) => handleSelect(e, item)"
       @dblclick="handleDbClick(item)">
       <slot :item="item" :index="index"> </slot>
     </div>
@@ -32,6 +32,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  idKey: {
+    type: String,
+    default: "id",
+  },
 });
 
 const emit = defineEmits([
@@ -53,24 +57,26 @@ watch(
 );
 
 const handleSelect = (event: MouseEvent, item: any) => {
+  // console.log("qq", item);
   // 检查是否按下了Ctrl键
   const isCtrlPressed = event.ctrlKey || event.metaKey; // metaKey for Mac
 
   if (props.mode === "multi" || isCtrlPressed) {
     let newSelectIds = [...selectIds.value];
-    if (newSelectIds.includes(item.id)) {
+    if (newSelectIds.includes(item[props.idKey])) {
       // 如果已选中，则移除
-      newSelectIds = newSelectIds.filter((id) => id !== item.id);
+      newSelectIds = newSelectIds.filter((id) => id !== item[props.idKey]);
     } else {
       // 如果未选中，则添加
-      newSelectIds.push(item.id);
+      newSelectIds.push(item[props.idKey]);
     }
     selectIds.value = newSelectIds;
     emit("update:selectIds", newSelectIds);
   } else {
     // 单选模式
-    selectIds.value = [item.id];
-    emit("update:selectIds", [item.id]);
+    selectIds.value = [item[props.idKey]];
+    console.log("qq", selectIds.value);
+    emit("update:selectIds", [item[props.idKey]]);
   }
   emit("oneClick", item);
 };
