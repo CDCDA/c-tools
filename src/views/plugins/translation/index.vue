@@ -144,6 +144,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Switch } from "@element-plus/icons-vue";
+import { ElNotification } from "element-plus"
 import { translate } from "@/api/translation.ts";
 import { debounce } from "lodash";
 import { QuestionFilled } from "@element-plus/icons-vue";
@@ -355,10 +356,10 @@ function formatText(text: string, type: string): string {
       default:
         return tempText.value;
     }
-  } catch (error) {
+  } catch (error: any) {
     ElNotification.error({
       title: "格式化文本失败:",
-      message: error.message,
+      message: error,
     });
     return "";
   }

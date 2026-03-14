@@ -99,7 +99,7 @@ onUnmounted(() => {
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  padding: 10px 0 0 0;
+  padding: 8px 0 8px 0;
   // border-bottom: 1px solid #EBEBEB;
 
   i {

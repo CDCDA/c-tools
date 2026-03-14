@@ -2,38 +2,19 @@
   <div class="plugin-search">
     <div class="plugin-search-header-bar" data-tauri-drag-region>
       <div class="plugin-search-header-bar-left" data-tauri-drag-region>
-        <svg-icon
-          iconName="otherSvg-搜索"
-          v-if="!loading"
-          data-tauri-drag-region
-          style="margin-left: 20px; width: 23px; height: 23px"
-        ></svg-icon>
-        <el-input
-          v-if="!loading"
-          class="plugin-search-header-bar-search"
-          data-tauri-drag-region
-          v-model="searchText"
-          @input="handleSearch"
-          v-prevent-drag
-          placeholder="请输入命令/应用"
-        />
+        <svg-icon iconName="otherSvg-搜索" v-if="!loading" data-tauri-drag-region
+          style="margin-left: 20px; width: 23px; height: 23px"></svg-icon>
+        <el-input v-if="!loading" class="plugin-search-header-bar-search" data-tauri-drag-region v-model="searchText"
+          @input="handleSearch" v-prevent-drag placeholder="请输入命令/应用" />
         <div class="plugin-name" v-else>
-          <svg-icon
-            :iconName="currentPlugin.meta.icon"
-            style="margin-right: 5px"
-          />
+          <svg-icon :iconName="currentPlugin.meta.icon" style="margin-right: 5px" />
           <div style="margin-bottom: 2px">{{ currentPlugin.label }}</div>
           <!-- <svg-icon iconName="otherSvg-关闭" style="cursor: pointer;margin-left: 5px;width: 22px;height: 22px;"
             @click="close" /> -->
         </div>
       </div>
       <div class="plugin-search-header-bar-right" data-tauri-drag-region>
-        <c-image
-          v-if="!loading"
-          class="user-avatar"
-          :src="avatarUrl"
-          @click="handleAvatarClick"
-        ></c-image>
+        <c-image v-if="!loading" class="user-avatar" :src="avatarUrl" @click="handleAvatarClick"></c-image>
         <div class="loading-spinner" v-else v-loading="loading"></div>
       </div>
     </div>
@@ -41,12 +22,7 @@
       <div class="plugin-wrap">
         <!-- <div class="title">最近使用</div> -->
         <div class="plugin-list recent-used">
-          <div
-            class="plugin-item"
-            v-for="plugin in plugins"
-            :key="plugin.id"
-            @click="selectPlugin(plugin, router)"
-          >
+          <div class="plugin-item" v-for="plugin in plugins" :key="plugin.id" @click="selectPlugin(plugin, router)">
             <svg-icon style="color: #666666" :iconName="plugin.icon" />
             <div class="plugin-item-title">{{ plugin.label }}</div>
           </div>
@@ -258,7 +234,7 @@ onActivated(() => {
 :deep(.el-loading-spinner) {
   height: 100%;
   right: 0px !important;
-  margin-top: -16px !important;
+  margin-top: -18px !important;
   display: flex;
   align-items: center;
   justify-content: center;

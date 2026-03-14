@@ -16,8 +16,8 @@
       <svg-icon iconName="otherSvg-新增" v-if="plugin.meta.add"
         style="color:#666666; width: 29px; height: 29px; margin-right: 5px; cursor: pointer;z-index: 10;"
         @click="handleAdd"></svg-icon>
-      <svg-icon iconName="otherSvg-放大窗口" @click="blowUp" v-if="!isFull" />
-      <svg-icon iconName="otherSvg-缩小窗口" @click="blowDown" v-else />
+      <!-- <svg-icon iconName="otherSvg-放大窗口" @click="blowUp" v-if="!isFull" />
+      <svg-icon iconName="otherSvg-缩小窗口" @click="blowDown" v-else /> -->
 
       <svg-icon iconName="otherSvg-未固定" style="font-size: 22px" @click="fixed" v-if="!isFixed" />
       <svg-icon iconName="otherSvg-已固定" style="font-size: 22px" @click="fixed" v-else />
@@ -84,7 +84,7 @@ currentWindow.setAlwaysOnTop(isFixed.value);
   color: #a0a8d0;
   z-index: 999;
   user-select: none;
-  padding: 8px 0 0 2px;
+  padding: 8px 0 0 8px;
 
   .plugin-header-search {
     height: 100%;

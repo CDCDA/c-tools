@@ -94,7 +94,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: fit-content;
-  padding: 10px 10px 10px 0;
+  padding: 0px 10px 10px 0;
   flex: 1;
   margin-left: 155px;
   margin-right: 5px;

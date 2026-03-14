@@ -1,4 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use tauri::menu::MenuItemKind::Icon;
 mod commands;
 mod core;
 use commands::color_commands::{
@@ -115,8 +116,23 @@ fn main() {
             // 我们需要为线程独立克隆这些 Arc。
             let is_picking_arc = app_state_instance.is_picking.clone();
             let mouse_state_arc = app_state_instance.mouse_state.clone();
-
+            let main_window = app.get_webview_window("main").unwrap();
+            main_window.set_icon(app.default_window_icon().unwrap().clone())?;
             let app_handle = app.app_handle().clone(); // 克隆 app_handle 以便移动到线程
+                                                       //                                            // 复制一份 handle 用于线程内调用
+                                                       // let window_handle = main_window.clone();
+
+            // // 延迟一小段时间强制刷新任务栏状态
+            // std::thread::spawn(move || {
+            //     std::thread::sleep(std::time::Duration::from_millis(200));
+            //     // 隐藏
+            //     let _ = window_handle.hide();
+            //     // 稍等后再显示
+            //     std::thread::sleep(std::time::Duration::from_millis(1000));
+            //     let _ = window_handle.show();
+            //     // 确保聚焦
+            //     let _ = window_handle.set_focus();
+            // });
 
             // 高性能鼠标监听线程
             std::thread::spawn(move || {

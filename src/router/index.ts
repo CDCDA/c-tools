@@ -300,6 +300,25 @@ const routes: Array<any> = [
         component: () => import("@/views/plugins/shell/index.vue"),
       },
       {
+        path: "/browser",
+        name: "browser",
+        meta: {
+          id: 18,
+          label: "浏览器",
+          description: "内置浏览器",
+          icon: "pluginIcons-全球",
+          ico: "icons/browser.ico",
+          shortcut: "Alt+B",
+          showHeader: true,
+          transparent: false,
+          type: "tool",
+          fullscreen: false,
+          alwaysOnTop: false,
+          newWindow: true,
+        },
+        component: () => import("@/views/plugins/browser/index.vue"),
+      },
+      {
         path: "/image",
         name: "image",
         meta: {

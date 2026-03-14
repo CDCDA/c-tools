@@ -19,6 +19,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import WangEditor from "@/components/wangEditor/index.vue";
+import { ElNotification } from "element-plus"
+
 const open = ref(false);
 const memoData = ref<any>({});
 const emit = defineEmits(["submit"]);

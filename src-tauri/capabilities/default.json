@@ -60,6 +60,16 @@
         }
       ]
     },
+    "core:webview:allow-webview-close",
+    "core:webview:allow-webview-show",
+    "core:webview:allow-set-webview-auto-resize",
+    "core:webview:allow-set-webview-focus",
+    "core:webview:allow-set-webview-size",
+    "core:webview:allow-set-webview-position",
+    "core:webview:allow-set-webview-zoom",
+    "core:webview:allow-webview-hide",
+    "core:webview:allow-webview-position",
+    "core:webview:allow-webview-size",
     "global-shortcut:allow-is-registered",
     "notification:allow-request-permission",
     "notification:default",
