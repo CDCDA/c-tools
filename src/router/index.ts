@@ -315,6 +315,9 @@ const routes: Array<any> = [
           fullscreen: false,
           alwaysOnTop: false,
           newWindow: true,
+          headerConfig: {
+            center: "browser",
+          },
         },
         component: () => import("@/views/plugins/browser/index.vue"),
       },

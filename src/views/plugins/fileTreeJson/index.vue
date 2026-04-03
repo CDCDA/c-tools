@@ -1,7 +1,7 @@
 <template>
   <div class="page-main file-tree-json">
     <div class="file-select">
-      <el-input v-model="options.path">
+      <el-input v-model="options.path" @keyup.native.enter="selectFile(options.path)">
         <template #prepend><span style="cursor: pointer" @click="selectFile()">选择文件夹</span></template>
         <template #append><span style="cursor: pointer" @click="handleCopy">复制json</span></template>
       </el-input>
@@ -169,7 +169,7 @@ onMounted(async () => {
   const fileOptions = window.localStorage.getItem("fileTreeJson-fileOptions");
   if (fileOptions) {
     options.value = JSON.parse(fileOptions);
-    selectFile(options.value.path);
+    // selectFile(options.value.path);
   }
 });
 </script>

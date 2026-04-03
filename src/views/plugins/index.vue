@@ -1,8 +1,9 @@
 <template>
   <div class="plugin-container">
     <!-- 独立窗口 头部 -->
-    <PluginHeader :plugin="plugin" v-if="headerType === 'window' && plugin?.showHeader" @pluginDataAdd="pluginDataAdd"
-      @pluginSearch="pluginSearch" />
+    <PluginHeader :plugin="plugin" :header-config="plugin?.meta?.headerConfig"
+      v-if="headerType === 'window' && plugin?.showHeader" @pluginDataAdd="pluginDataAdd" @pluginSearch="pluginSearch"
+      @navigate="handleNavigate" @update:url="handleUrlUpdate" />
     <!-- 主应用 头部 -->
     <PluginBar :plugin="plugin" v-if="headerType === 'main' && plugin?.showHeader" @pluginDataAdd="pluginDataAdd"
       @pluginSearch="pluginSearch" />
@@ -50,6 +51,16 @@ function pluginSearch(val: string) {
 function pluginDataAdd() {
   console.log("pluginDataAdd")
   currentRouteRef.value?.handleAdd()
+}
+
+function handleNavigate(url: string) {
+  currentRouteRef.value?.handleNavigate?.(url)
+}
+
+function handleUrlUpdate(url: string) {
+  if (currentRouteRef.value) {
+    currentRouteRef.value.inputUrl = url
+  }
 }
 </script>
 

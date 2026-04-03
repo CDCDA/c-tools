@@ -64,15 +64,15 @@ class Windows {
     const win = new WebviewWindow(args.label, args)
     // 窗口创建完毕/失败
     win.once('tauri://created', async () => {
-      if (!params.ico) {
-        return;
-      }
-      try {
-        const image = await (Image).fromPath(params.ico);
-        await win.setIcon(image);
-      } catch (error) {
-        console.error("设置图标失败:", error);
-      }
+      // if (!params.ico) {
+      //   return;
+      // }
+      // try {
+      //   const image = await (Image).fromPath(params.ico);
+      //   await win.setIcon(image);
+      // } catch (error) {
+      //   console.error("设置图标失败:", error);
+      // }
     })
 
     win.once(`window-ready-${args.label}`, async () => {

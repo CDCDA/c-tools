@@ -5,9 +5,21 @@
   "windows": [
     "main",
     "tool-*",
-    "tip"
+    "tip",
+    "tool-browser"
+  ],
+  "webviews": [
+    "content-browser"
   ],
   "permissions": [
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        {
+          "url": "https://**"
+        }
+      ]
+    },
     {
       "identifier": "http:default",
       "allow": [
@@ -16,6 +28,9 @@
         },
         {
           "url": "http://localhost:1420/plugin/screenshot"
+        },
+        {
+          "url": "https://javaguide.cn/**"
         }
       ],
       "deny": [

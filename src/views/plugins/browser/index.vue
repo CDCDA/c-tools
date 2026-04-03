@@ -1,14 +1,7 @@
 <template>
   <div class="page-main webview-plugin">
     <div class="url-input-container" v-if="!currentUrl">
-      <el-input v-model="inputUrl" placeholder="请输入网址，回车跳转" class="url-input" @keyup.enter="handleNavigate"
-        @focus="handleFocus">
-        <template #prefix>
-          <el-icon>
-            <Link />
-          </el-icon>
-        </template>
-      </el-input>
+      <div class="empty-hint">请在顶部输入网址访问</div>
     </div>
     <div ref="webviewContainerRef" class="webview-container" v-else>
       <div class="loading">正在加载...</div>
@@ -18,13 +11,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { Link, Browser } from "@element-plus/icons-vue";
-import { open } from "@tauri-apps/plugin-shell";
-import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { ElNotification } from "element-plus";
 import { Webview } from "@tauri-apps/api/webview"
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { LogicalSize, LogicalPosition } from "@tauri-apps/api/window";
+import { LogicalSize } from "@tauri-apps/api/window";
+import { getPluginData, savePluginData } from "@/utils/localSave.ts";
 
 const inputUrl = ref("");
 const currentUrl = ref("");
@@ -34,19 +25,34 @@ const historyIndex = ref(-1);
 let webviewWindow: any = null;
 let resizeObserver: ResizeObserver | null = null;
 
-const handleNavigate = async () => {
-  let url = inputUrl.value.trim();
+const STORAGE_KEY = "browser";
+
+onMounted(async () => {
+  const savedData = await getPluginData(STORAGE_KEY);
+  if (savedData?.lastUrl) {
+    handleNavigate(savedData.lastUrl);
+  }
+});
+
+const handleNavigate = async (url: string) => {
   if (!url) {
     ElNotification.warning("请先输入网址");
     return;
   }
 
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
+  let finalUrl = url;
+  if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+    finalUrl = "https://" + finalUrl;
   }
 
-  navigateTo(url);
+  await savePluginData(STORAGE_KEY, { lastUrl: finalUrl });
+  navigateTo(finalUrl);
 };
+
+defineExpose({
+  handleNavigate,
+  inputUrl
+});
 
 const navigateTo = async (url: string) => {
   if (historyIndex.value < history.value.length - 1) {
@@ -78,7 +84,7 @@ const loadWebview = async (url: string) => {
     webviewWindow = new Webview(currentWindow, `content-browser`, {
       url: url,
       x: 0,
-      y: 50,
+      y: 42,
       width: rect.width,
       height: rect.height,
     });
@@ -119,15 +125,10 @@ const updateWebviewSize = async () => {
     ));
 
     // 同步位置 (x, y 会根据 DOM 元素位置自动偏移，避开 Header)
-    await webviewWindow.setPosition(0, 50);
+    await webviewWindow.setPosition(0, 42);
   } catch (e) {
     console.error("Layout Sync Failed:", e);
   }
-};
-
-const handleFocus = (e: FocusEvent) => {
-  const target = e.target as HTMLInputElement;
-  target.select();
 };
 
 
@@ -173,6 +174,11 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     padding: 20px;
+
+    .empty-hint {
+      font-size: 16px;
+      color: #999;
+    }
 
     .url-input {
       width: 80%;

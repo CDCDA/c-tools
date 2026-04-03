@@ -2,13 +2,14 @@
   <div class="app-container" :style="{
     background: settingStore.transparent
       ? 'transparent'
-      : '#F5F5F7 !important',
+      : 'linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important',
   }">
     <RouterView />
     <GlobalParamModal />
   </div>
   <!-- rgb(249 249 249) -->
   <!-- #FAF9F6 -->
+   <!-- #F5F5F7 -->
   <!-- linear-gradient(135deg, #F7FAFC 0%, #E8F8F9 50%, #FAF9F6 100%) !important -->
 </template>
 
